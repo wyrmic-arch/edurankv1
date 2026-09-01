@@ -50,6 +50,18 @@ app.get("/daily", async (c) => {
     const complete = progress >= def.target;
     let claimed = claimedKeys.has(def.key);
     if (complete && !claimed) {
+      // Award FIRST, then record the claim. If the ledger insert fails, we
+      // don't write the completion row and the next call retries. If the
+      // completion insert fails, the user is still paid (rare/acceptable —
+      // the next call would no-op because metrics stay >= target, but the
+      // PK on challenge_completions prevents a second award via INSERT
+      // retry in any case).
+      const { balanceAfter } = await awardPoints(c.env, {
+        userId: user.id,
+        delta: def.reward,
+        reason: "daily_challenge",
+        description: `Daily challenge cleared — ${def.label}`,
+      });
       await db
         .insert(challengeCompletions)
         .values({
@@ -60,12 +72,6 @@ app.get("/daily", async (c) => {
           claimedAt: Date.now(),
         })
         .onConflictDoNothing();
-      const { balanceAfter } = await awardPoints(c.env, {
-        userId: user.id,
-        delta: def.reward,
-        reason: "daily_challenge",
-        description: `Daily challenge cleared — ${def.label}`,
-      });
       user.balance = balanceAfter;
       claimed = true;
     }
