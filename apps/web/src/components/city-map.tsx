@@ -139,11 +139,20 @@ export function CityMap({
                   setTooltip(null);
                 }}
                 onClick={() => router.push(`/district/${d.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(`/district/${d.id}`);
+                  }
+                }}
+                tabIndex={0}
+                focusable="true"
                 style={{
                   cursor: "pointer",
                   transformOrigin: `${d.cx}px ${d.cy}px`,
                   transform: isHovered ? "scale(1.02)" : "scale(1)",
                   transition: "transform 180ms ease",
+                  outline: "none",
                 }}
                 role="link"
                 aria-label={`${d.name} district — ${noteCounts[d.id] ?? 0} notes`}
@@ -201,7 +210,17 @@ export function CityMap({
                   e.stopPropagation();
                   router.push(m.href);
                 }}
-                style={{ cursor: "pointer" }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    router.push(m.href);
+                  }
+                }}
+                tabIndex={0}
+                focusable="true"
+                style={{ cursor: "pointer", outline: "none" }}
+                role="link"
+                aria-label={m.label}
               >
                 <circle cx={m.x} cy={m.y} r="26" fill={m.color} fillOpacity="0.12" className="animate-pulseRing" style={{ transformOrigin: `${m.x}px ${m.y}px` }} />
                 <circle cx={m.x} cy={m.y} r="15" fill="#0A0E14" stroke={m.color} strokeWidth="2.5" />
