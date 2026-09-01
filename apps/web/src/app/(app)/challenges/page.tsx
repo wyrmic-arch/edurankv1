@@ -46,7 +46,7 @@ export default function ChallengesPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <div className="hud-label mb-1 inline-flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> DAILY HEISTS</div>
-          <h1 className="font-display uppercase text-4xl">Today0027s board</h1>
+          <h1 className="font-display uppercase text-4xl">Today&rsquo;s board</h1>
         </div>
         <div className="text-right">
           <div className="hud-label inline-flex items-center gap-1.5"><CalendarClock className="w-3 h-3" /> RESETS IN</div>
