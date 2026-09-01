@@ -16,8 +16,7 @@ bucket_name = "edurank-notes"
 binding = "AI"
 
 [vars]
-# Production Pages origin + every preview/branch deployment under the same
-# Pages project (one per git branch). Each preview URL is on its own
-# subdomain, so we list the production one and the exact previews we've
-# shipped to today. Add new previews here as needed.
-ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,https://edurank.pages.dev,https://master.edurank.pages.dev,https://58e3323d.edurank.pages.dev,https://f67c2e4e.edurank.pages.dev"
+# Permissive CORS for now — we'll lock it down once the Vercel domain is known.
+# Origins that hit the API are: the web app on Vercel (any preview or prod URL
+# under *.vercel.app / edurank.co.za), plus local dev.
+ALLOWED_ORIGINS = "*"
