@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import { z } from "zod";
+import type { UserRole } from "@edurank/shared";
 import { ApiError, type AppEnv, type NoteRow, type UserRow } from "../types";
 
 export function parseBody<T extends z.ZodTypeAny>(schema: T, data: unknown): z.infer<T> {
@@ -38,7 +39,7 @@ export function publicUser(u: UserRow, schoolName: string | null, rank: number) 
     grade: u.grade,
     schoolId: u.schoolId,
     schoolName,
-    role: u.role as "user" | "admin",
+    role: u.role as UserRole,
     balance: u.balance,
     totalEarned: u.totalEarned,
     totalSpent: u.totalSpent,

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
+import type { UserRole } from "@edurank/shared";
 import { badges, purchases, schools, shopItems, userBadges, users } from "../db/schema";
 import { requireUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, rankOf } from "../lib/points";
@@ -144,7 +145,10 @@ app.get("/users/:id", async (c) => {
   )[0];
   if (!row) err(404, "No such player on the board.");
 
-  const rank = await rankOf(c.env, row.user.totalEarned);
+  // Drizzle returns role as `string`; narrow it here at the API boundary.
+  const userRow: UserRow = { ...row.user, role: row.user.role as UserRole };
+
+  const rank = await rankOf(c.env, userRow.totalEarned);
 
   const badgeRows = await db
     .select({
@@ -169,7 +173,7 @@ app.get("/users/:id", async (c) => {
     .from(sql`(SELECT 1)`);
 
   return c.json({
-    user: publicUser(row.user, row.schoolName, rank),
+    user: publicUser(userRow, row.schoolName, rank),
     stats: {
       uploads: Number(stats?.uploads ?? 0),
       downloadsReceived: Number(stats?.downloadsReceived ?? 0),

@@ -5,6 +5,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { sessions, users } from "../db/schema";
 import { sha256Hex } from "./password";
 import { shortId } from "./id";
+import type { UserRole } from "@edurank/shared";
 import { ApiError, type UserRow } from "../types";
 
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
@@ -39,7 +40,10 @@ async function userForToken(c: Context, token: string | undefined): Promise<User
     .innerJoin(users, eq(users.id, sessions.userId))
     .where(and(eq(sessions.id, id), gt(sessions.expiresAt, Date.now())))
     .limit(1);
-  return rows[0]?.user ?? null;
+  const u = rows[0]?.user;
+  if (!u) return null;
+  // Drizzle returns role as `string`; narrow it to UserRole at the boundary.
+  return { ...u, role: u.role as UserRole };
 }
 
 function bearerFrom(c: Context): string | undefined {

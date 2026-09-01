@@ -33,6 +33,9 @@ export type LedgerReason =
   | "cosmetic_purchase"
   | "admin_adjust";
 
+export type UserRole = "user" | "admin";
+export const USER_ROLES: readonly UserRole[] = ["user", "admin"] as const;
+
 export const LEDGER_REASON_LABELS: Record<LedgerReason, string> = {
   upload_approved: "Note approved",
   download_received: "Your note was downloaded",
@@ -145,7 +148,7 @@ export interface PublicUser {
   grade: number | null;
   schoolId: string | null;
   schoolName?: string | null;
-  role: "user" | "admin";
+  role: UserRole;
   balance: number;
   totalEarned: number;
   totalSpent: number;

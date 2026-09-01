@@ -1,4 +1,4 @@
-import type { LedgerReason } from "@edurank/shared";
+import type { LedgerReason, UserRole } from "@edurank/shared";
 
 export interface Bindings {
   DB: D1Database;
@@ -34,7 +34,7 @@ export interface UserRow {
   bio: string;
   grade: number | null;
   schoolId: string | null;
-  role: string;
+  role: UserRole;
   balance: number;
   totalEarned: number;
   totalSpent: number;
