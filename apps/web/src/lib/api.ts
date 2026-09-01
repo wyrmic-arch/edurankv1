@@ -19,6 +19,10 @@ export class ApiClientError extends Error {
   }
 }
 
+export function isApiClientError(e: unknown): e is ApiClientError {
+  return e instanceof ApiClientError;
+}
+
 async function request<T>(path: string, opts: { method?: string; body?: unknown; form?: FormData } = {}): Promise<T> {
   const headers: Record<string, string> = {};
   const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
