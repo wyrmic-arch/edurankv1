@@ -73,9 +73,13 @@ export function Navbar() {
             <Link
               href={`/profile/${user.id}`}
               className="hidden sm:flex items-center gap-2 border border-volt/30 bg-volt/5 px-3 py-1.5 clip-hud-sm hover:border-volt/60 transition-colors"
+              title={`Wallet · ${user.streakCount}-day streak`}
             >
               <Flame className="w-3.5 h-3.5 text-gold" />
               <PTS value={user.balance} size="sm" />
+              <span className="font-mono text-[10px] text-dim border-l border-line pl-2 ml-1">
+                {user.streakCount}d
+              </span>
             </Link>
 
             <div className="relative" ref={menuRef}>
