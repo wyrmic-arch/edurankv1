@@ -103,10 +103,16 @@ export function useMidnightCountdown(): string {
   const [label, setLabel] = useState("--:--:--");
   useEffect(() => {
     const tick = () => {
-      const now = new Date();
-      const next = new Date(now);
-      next.setHours(24, 0, 0, 0); // SAST == local machine tz in dev; good enough for a countdown
-      const diff = Math.max(0, next.getTime() - now.getTime());
+      // SAST is fixed at UTC+2 (no DST). The next SAST midnight is the
+      // moment when the current SAST wall-clock day rolls over.
+      // Trick: shift the current UTC time forward by 2h, take the start of
+      // the next UTC day, then shift back. That gives the next SAST midnight
+      // as a UTC ms timestamp.
+      const now = Date.now();
+      const sastNow = now + 2 * 3600 * 1000; // pretend UTC is actually SAST
+      const startOfNextUtcDay = Math.ceil(sastNow / 86_400_000) * 86_400_000;
+      const targetUtcMs = startOfNextUtcDay - 2 * 3600 * 1000; // shift back
+      const diff = Math.max(0, targetUtcMs - now);
       const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
       const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
       const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
