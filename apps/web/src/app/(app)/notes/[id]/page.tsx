@@ -42,10 +42,19 @@ export default function NoteDetailPage() {
 
   async function upvote() {
     if (!note) return;
+    // Optimistic update — flip the UI instantly, roll back on failure.
+    const wasUpvoted = note.upvotedByMe;
+    const previousCount = note.upvoteCount;
+    setNote({
+      ...note,
+      upvotedByMe: !wasUpvoted,
+      upvoteCount: wasUpvoted ? previousCount - 1 : previousCount + 1,
+    });
     try {
       const res = await api.upvote(note.id);
-      setNote({ ...note, upvotedByMe: res.upvotedByMe, upvoteCount: res.upvoteCount });
+      setNote((n) => (n ? { ...n, upvotedByMe: res.upvotedByMe, upvoteCount: res.upvoteCount } : n));
     } catch (e) {
+      setNote((n) => (n ? { ...n, upvotedByMe: wasUpvoted, upvoteCount: previousCount } : n));
       setFlash(e instanceof Error ? e.message : "Upvote failed");
     }
   }
