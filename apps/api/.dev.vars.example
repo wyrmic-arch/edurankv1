@@ -1,2 +1,9 @@
+# Optional. Without it, the image pipeline serves designed SVG placeholders.
 UNSPLASH_ACCESS_KEY=
+
+# Comma-separated origin allowlist for local dev CORS. Must match what the
+# web app is served from.
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+
+# Local-only seed script secret. Never set this in prod.
 DEV_SEED_SECRET=local-dev-seed
