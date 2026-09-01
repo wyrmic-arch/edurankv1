@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { POINTS_RULES, type LedgerReason } from "@edurank/shared";
-import { pointsLedger, users } from "../db/schema";
+import { pointsLedger, streakClaims, users } from "../db/schema";
 import { shortId } from "./id";
 import { dateKeySAST } from "./dates";
 import type { UserRow } from "../types";
@@ -75,6 +75,28 @@ export async function processStreak(
   const reward = Math.min(POINTS_RULES.STREAK_CAP, POINTS_RULES.STREAK_BASE + POINTS_RULES.STREAK_STEP * (nextCount - 1));
 
   const db = drizzle(env.DB);
+
+  // Write the claim token FIRST. If the worker dies between this insert and
+  // the user/ledger update, a retry sees the claim row and short-circuits —
+  // no double-pay, no stuck streak. PK on (user_id, date_key) makes the insert
+  // itself idempotent under concurrent calls.
+  try {
+    await db.insert(streakClaims).values({
+      userId: user.id,
+      dateKey: today,
+      streakCount: nextCount,
+      reward,
+      claimedAt: Date.now(),
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("UNIQUE") || msg.includes("constraint")) {
+      // Already claimed today (concurrent request or previous crash) — bail.
+      return { user, awardedToday: 0 };
+    }
+    throw e;
+  }
+
   await db
     .update(users)
     .set({ lastStreakDate: today, streakCount: nextCount, bestStreak: best })

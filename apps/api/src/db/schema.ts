@@ -231,3 +231,23 @@ export const challengeCompletions = sqliteTable(
     pk: primaryKey({ columns: [t.userId, t.dateKey, t.challengeKey] }),
   }),
 );
+
+// One row per (user, SAST date) — written before the streak ledger row so a
+// worker crash between "award" and "update users.last_streak_date" can't
+// double-pay. Also gates the user-update itself: if a claim row exists,
+// neither the award nor the streak counter advance on a retry.
+export const streakClaims = sqliteTable(
+  "streak_claims",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    dateKey: text("date_key").notNull(), // 'YYYY-MM-DD' SAST
+    streakCount: integer("streak_count").notNull(),
+    reward: integer("reward").notNull().default(0),
+    claimedAt: integer("claimed_at").notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.dateKey] }),
+  }),
+);
