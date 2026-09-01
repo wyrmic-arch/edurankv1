@@ -72,6 +72,9 @@ export default function Landing() {
             The study notes arena. Upload your notes, earn <span className="font-mono text-ink">PTS</span>, unlock
             exam packs from the sharpest students in the country — and take your district on the map.
           </p>
+          <p className="mt-4 max-w-md text-dim text-sm leading-relaxed">
+            Built by a 20-year-old who watched classmates buy and sell notes in school — so they have one place to do it.
+          </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link href="/register" className="btn-volt text-base px-7 py-3">
               Start earning PTS <ArrowRight className="w-4 h-4" />
