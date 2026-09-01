@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, FileText, ShieldAlert, X } from "lucide-react";
 import { api, type AdminPendingNote, type AdminStats } from "@/lib/api";
 import { useAuth } from "@/lib/store";
@@ -14,6 +14,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const previewUrlRef = useRef<string | null>(null);
 
   const load = useCallback(() => {
     Promise.all([api.adminPending(), api.adminStats()])
@@ -25,6 +26,13 @@ export default function AdminPage() {
   }, []);
 
   useEffect(load, [load]);
+
+  // Revoke any pending blob URL when the page unmounts to avoid leaking it.
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
 
   async function act(note: AdminPendingNote, action: "approve" | "reject") {
     setError(null);
@@ -47,7 +55,11 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error(`Preview failed (${res.status})`);
       const blob = await res.blob();
-      window.open(URL.createObjectURL(blob), "_blank");
+      // Revoke any previous preview URL before allocating a new one.
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+      const url = URL.createObjectURL(blob);
+      previewUrlRef.current = url;
+      window.open(url, "_blank");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Preview failed");
     }
