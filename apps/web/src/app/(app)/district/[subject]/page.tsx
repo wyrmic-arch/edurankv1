@@ -10,6 +10,8 @@ import { ErrorPanel, EmptyState, Spinner } from "@/components/hud";
 import { NoteCard } from "@/components/notecard";
 import { GRADES } from "@edurank/shared";
 
+export const runtime = "edge";
+
 const SORTS = [
   { key: "recent", label: "NEWEST" },
   { key: "downloads", label: "MOST DOWNLOADED" },

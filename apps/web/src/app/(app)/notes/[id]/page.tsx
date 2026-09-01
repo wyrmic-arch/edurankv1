@@ -9,6 +9,8 @@ import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { fileSize, timeAgo } from "@/lib/format";
 
+export const runtime = "edge";
+
 export default function NoteDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { setUser, user } = useAuth();

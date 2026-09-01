@@ -11,6 +11,8 @@ import { Avatar, TierChip } from "@/components/avatar";
 import { PayoutTeaser } from "@/components/payout-teaser";
 import { dateTime } from "@/lib/format";
 
+export const runtime = "edge";
+
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
   const { user: me } = useAuth();
