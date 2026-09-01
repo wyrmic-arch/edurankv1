@@ -33,7 +33,6 @@ export function MiniMap({ active }: { active?: string }) {
         {MARKERS.map((m) => (
           <circle key={m.id} cx={m.x} cy={m.y} r="14" fill={m.color} fillOpacity="0.9" />
         ))}
-        {active && <circle cx="0" cy="0" r="0" />}
       </svg>
       <div className="flex items-center justify-between px-2 py-1 border-t border-line">
         <span className="hud-label !text-[9px]">MZANSI CITY</span>
