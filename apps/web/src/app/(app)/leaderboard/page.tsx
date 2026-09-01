@@ -1,0 +1,162 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Crown } from "lucide-react";
+import { api, type LeaderRow, type Subject, type School } from "@/lib/api";
+import { Avatar, TierChip } from "@/components/avatar";
+import { PTS, ErrorPanel, Spinner } from "@/components/hud";
+
+type Scope = "global" | "subject" | "school";
+type Range = "weekly" | "all-time";
+
+export default function LeaderboardPage() {
+  const [scope, setScope] = useState<Scope>("global");
+  const [range, setRange] = useState<Range>("weekly");
+  const [subjectId, setSubjectId] = useState("");
+  const [schoolId, setSchoolId] = useState("");
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [rows, setRows] = useState<LeaderRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.subjects().then((r) => setSubjects(r.items)).catch(() => {});
+    api.schools().then((r) => setSchools(r.items)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    let live = true;
+    setRows(null);
+    setError(null);
+    if (scope === "subject" && !subjectId) return setRows([]);
+    if (scope === "school" && !schoolId) return setRows([]);
+    api
+      .leaderboard(scope, range, scope === "subject" ? { subjectId } : scope === "school" ? { schoolId } : undefined)
+      .then((r) => live && setRows(r.items))
+      .catch((e) => live && setError(e.message));
+    return () => {
+      live = false;
+    };
+  }, [scope, range, subjectId, schoolId]);
+
+  const podium = rows?.slice(0, 3) ?? [];
+  const rest = rows?.slice(3) ?? [];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="hud-label mb-1">NATIONAL STANDINGS</div>
+        <h1 className="font-display uppercase text-4xl">The board</h1>
+      </div>
+
+      {/* controls */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex gap-1">
+          {(["global", "subject", "school"] as Scope[]).map((s) => (
+            <Tab key={s} active={scope === s} onClick={() => setScope(s)}>
+              {s === "global" ? "GLOBAL" : s.toUpperCase()}
+            </Tab>
+          ))}
+        </div>
+        <div className="mx-2 h-5 w-px bg-line hidden sm:block" />
+        <div className="flex gap-1">
+          {(["weekly", "all-time"] as Range[]).map((r) => (
+            <Tab key={r} active={range === r} onClick={() => setRange(r)}>
+              {r === "weekly" ? "THIS WEEK" : "ALL-TIME"}
+            </Tab>
+          ))}
+        </div>
+
+        {scope === "subject" && (
+          <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="ml-auto px-3 py-2 clip-hud-sm text-sm">
+            <option value="">Pick a subject…</option>
+            {subjects.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        )}
+        {scope === "school" && (
+          <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="ml-auto px-3 py-2 clip-hud-sm text-sm">
+            <option value="">Pick a school…</option>
+            {schools.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {error ? (
+        <ErrorPanel message={error} onRetry={() => setRange(range)} />
+      ) : rows === null ? (
+        <Spinner label="TALLYING THE BOARD…" />
+      ) : (scope === "subject" && !subjectId) || (scope === "school" && !schoolId) ? (
+        <p className="text-mute py-10 text-center text-sm">Select a {scope} above to load its board.</p>
+      ) : rows.length === 0 ? (
+        <p className="text-mute py-10 text-center text-sm">No ranked players here yet — be the first on the board.</p>
+      ) : (
+        <>
+          {/* podium */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[1, 0, 2].map((slot) => {
+              const row = podium[slot];
+              if (!row) return null;
+              const colors = ["#FFC24B", "#C9D4E2", "#D4A373"];
+              return (
+                <Link
+                  key={row.userId}
+                  href={`/profile/${row.userId}`}
+                  className={`panel p-5 flex flex-col items-center text-center gap-2 hover:border-ink/30 transition-all relative overflow-hidden ${
+                    slot === 0 ? "sm:-mt-4 sm:pb-8 border-gold/40 shadow-glow-gold" : ""
+                  }`}
+                >
+                  <span className="absolute top-2 right-3 font-display text-4xl opacity-20" style={{ color: colors[slot] }}>
+                    #{row.rank}
+                  </span>
+                  {slot === 0 && <Crown className="w-5 h-5 text-gold" />}
+                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} frameColor={colors[slot]} size={56} />
+                  <div className="font-semibold truncate max-w-full">{row.displayName}</div>
+                  <TierChip totalEarned={row.points} />
+                  <PTS value={row.points} tone={slot === 0 ? "gold" : "volt"} size="lg" />
+                  <span className="hud-label !text-[9px]">{row.schoolName ?? "NO SCHOOL"}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* table */}
+          <ol className="panel divide-y divide-line/70">
+            {rest.map((row) => (
+              <li key={row.userId}>
+                <Link href={`/profile/${row.userId}`} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-2/60 transition-colors">
+                  <span className="font-mono text-sm text-dim w-10 shrink-0">#{row.rank}</span>
+                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={32} />
+                  <span className="flex-1 min-w-0">
+                    <span className="block font-medium truncate">{row.displayName}</span>
+                    <span className="block hud-label !text-[9px] truncate">
+                      {row.schoolName ?? "no school"}{row.grade ? ` · GR ${row.grade}` : ""}
+                    </span>
+                  </span>
+                  <PTS value={row.points} />
+                </Link>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Tab({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`font-display uppercase tracking-wider text-xs px-4 py-2 border clip-hud-sm transition-colors ${
+        active ? "border-volt text-volt bg-volt/10 shadow-glow-volt" : "border-line text-mute hover:text-ink"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
