@@ -10,6 +10,7 @@ import challengeRoutes from "./routes/challenges";
 import adminRoutes from "./routes/admin";
 import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
+import { rateLimit } from "./lib/ratelimit";
 
 const app = new Hono<AppEnv>();
 
@@ -46,6 +47,14 @@ app.route("/challenges", challengeRoutes);
 app.route("/admin", adminRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
+
+// Mutating endpoints get per-IP throttling. Auth is the harshest because
+// password-guessing is the highest-value abuse vector.
+app.use("/auth/register", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/login", rateLimit({ max: 5, windowMs: 60_000 }));
+app.use("/notes/*/unlock", rateLimit({ max: 10, windowMs: 60_000 }));
+app.use("/notes/*/upvote", rateLimit({ max: 30, windowMs: 60_000 }));
+app.use("/shop/*/purchase", rateLimit({ max: 5, windowMs: 60_000 }));
 
 // Public R2 read passthrough for avatars/covers/img keys (files stay gated
 // behind /notes/:id/file).
