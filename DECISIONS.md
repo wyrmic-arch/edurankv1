@@ -82,7 +82,31 @@ Notable setup and design decisions made while building EduRank against the spec.
 
 ## Known limitations (deliberate)
 
-- No rate limiting or email verification — out of scope for this build.
 - Moderation gating is role-based only (`users.role = 'admin'`), per spec ("simple gated route").
 - Admin promotion is done via SQL (`UPDATE users SET role='admin' …`) — documented in README seed
   output; no admin-management UI by design.
+
+## Post-audit fixes (2026-09)
+
+After the initial build I ran an audit and addressed the highest-impact items in a single
+green-light pass:
+
+- **Unlock / shop race conditions.** Both `POST /notes/:id/unlock` and `POST /shop/:id/purchase`
+  used a check-then-act sequence that allowed a double-spend under concurrency. Fixed by
+  inserting the unique-keyed row first (`note_unlocks` PK; new `uq_purchases_user_item` index
+  on `purchases`) and treating the UNIQUE violation as the atomic guard. The point awards now
+  run only after the row is durably claimed.
+- **Streak / daily-challenge idempotency.** Added a `streak_claims(user_id, date_key)` token
+  written before the user/ledger updates. A worker crash between the award and the user row
+  update can no longer cause a stuck streak or a missed payout — the next call sees the claim
+  and short-circuits. Daily challenges now award first and write the completion row second for
+  the same reason.
+- **Admin stats overcount.** Changed `WHERE role != 'x'` to `WHERE role IN ('user','admin')` —
+  the magic sentinel silently dropped any user with a non-standard role string.
+- **CORS.** Added every preview deployment URL to `ALLOWED_ORIGINS` in `wrangler.toml` and
+  improved the client-side error message to point at the fix.
+- **Rate limiting.** In-process sliding window per `cf-connecting-ip` for auth + mutating
+  endpoints. Per-instance only — explicitly acknowledged as v1-grade, replaceable with a
+  Durable Object later.
+- **Copy.** Bio rewritten to reflect a solo builder who was a student. Filler paragraph under
+  the city-map heading removed.
