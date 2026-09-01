@@ -44,53 +44,56 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-void bg-grid flex items-center justify-center px-4">
+    <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/" className="font-display text-2xl tracking-wider block mb-8 text-center">
-          EDU<span className="text-volt">RANK</span>
+        <Link href="/" className="font-mono text-[15px] font-bold tracking-tight block mb-10 text-center no-underline">
+          EDURANK
         </Link>
-        <div className="panel p-7">
-          <div className="hud-label mb-1">IDENTIFY YOURSELF</div>
-          <h1 className="font-display text-3xl uppercase mb-6">Enter the city</h1>
 
-          <form onSubmit={submit} className="space-y-4">
+        <div className="panel p-8">
+          <div className="label mb-2">IDENTIFY YOURSELF</div>
+          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Enter the city.</h1>
+
+          <form onSubmit={submit} className="space-y-5">
             <FormField label="Email" type="email" value={email} onChange={setEmail} required autoFocus />
             <FormField label="Password" type="password" value={password} onChange={setPassword} required />
+
             {error && (
-              <p className={`text-sm border px-3 py-2 clip-hud-sm ${error.startsWith("Can't reach") ? "border-gold/50 bg-gold/5 text-gold" : "border-blood/40 bg-blood/5 text-blood"}`}>
+              <p className={`text-[13px] border px-3 py-2 ${error.toLowerCase().includes("reach") ? "border-ink bg-ink/5" : "border-mark text-mark bg-mark/5"}`}>
                 {error}
               </p>
             )}
-            <button disabled={busy} className="btn-volt w-full py-3">
-              {busy ? "CHECKING CREDENTIALS…" : "LOG IN"}
+
+            <button disabled={busy} type="submit" className="btn-solid w-full">
+              {busy ? "CHECKING…" : "LOG IN"}
             </button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-line">
-            <div className="hud-label mb-2">DEMO ACCOUNTS (SEEDED)</div>
+          <div className="rule mt-8 pt-6">
+            <div className="label mb-3">DEMO ACCOUNTS (SEEDED)</div>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => void submitWith("player1@edurank.co.za", PLAYER_PASSWORD)}
                 disabled={busy}
-                className="btn-ghost !py-2 text-[11px]"
+                className="btn-ghost !text-[10px]"
               >
-                PLAYER · 1 435 PTS
+                PLAYER · 1,435 PTS
               </button>
               <button
                 type="button"
                 onClick={() => void submitWith(ADMIN_EMAIL, ADMIN_PASSWORD)}
                 disabled={busy}
-                className="btn-ghost !py-2 text-[11px] !border-blood/40 hover:!border-blood"
+                className="btn-ghost !text-[10px]"
               >
                 ADMIN / MODERATOR
               </button>
             </div>
           </div>
 
-          <p className="text-mute text-sm mt-6 text-center">
+          <p className="text-mute text-[13px] mt-8 text-center">
             New here?{" "}
-            <Link href="/register" className="text-volt hover:underline font-medium">
+            <Link href="/register" className="text-ink no-underline hover:underline font-medium">
               Enlist free
             </Link>
           </p>

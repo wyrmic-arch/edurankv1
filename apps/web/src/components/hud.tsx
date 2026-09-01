@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { AlertTriangle, Inbox, Loader2 } from "lucide-react";
 
 export function Panel({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`panel panel-shadow ${className}`}>{children}</div>;
+  return <div className={`panel ${className}`}>{children}</div>;
 }
 
 export function SectionTitle({
@@ -17,31 +17,31 @@ export function SectionTitle({
   right?: ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between gap-4 mb-4">
+    <div className="flex items-end justify-between gap-6 mb-6">
       <div>
-        {kicker && <div className="hud-label mb-1">{kicker}</div>}
-        <h2 className="font-display text-2xl md:text-3xl uppercase tracking-wide">{title}</h2>
+        {kicker && <div className="label mb-2">{kicker}</div>}
+        <h2 className="font-sans text-3xl font-medium tracking-tight">{title}</h2>
       </div>
-      {right}
+      {right && <div className="shrink-0">{right}</div>}
     </div>
   );
 }
 
-export function PTS({ value, tone = "volt", size = "md" }: { value: number; tone?: "volt" | "gold" | "blood" | "ink"; size?: "sm" | "md" | "lg" }) {
+export function PTS({ value, tone = "ink", size = "md" }: { value: number; tone?: "ink" | "mark" | "ok"; size?: "sm" | "md" | "lg" }) {
   const tones = {
-    volt: "text-volt",
-    gold: "text-gold",
-    blood: "text-blood",
     ink: "text-ink",
+    mark: "text-mark",
+    ok: "text-ok",
   } as const;
   const sizes = {
     sm: "text-xs",
     md: "text-sm",
-    lg: "text-xl",
+    lg: "text-2xl",
   } as const;
   return (
-    <span className={`font-mono font-semibold tracking-wide ${tones[tone]} ${sizes[size]}`}>
-      {value.toLocaleString("en-ZA")} <span className="text-[0.8em] opacity-80">PTS</span>
+    <span className={`font-mono font-bold tabular-nums ${tones[tone]} ${sizes[size]}`}>
+      {value.toLocaleString("en-ZA")}
+      <span className="ml-1 text-[0.7em] font-normal text-mute">PTS</span>
     </span>
   );
 }
@@ -49,22 +49,22 @@ export function PTS({ value, tone = "volt", size = "md" }: { value: number; tone
 export function Spinner({ label }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16 text-mute">
-      <Loader2 className="w-6 h-6 animate-spin text-volt" />
-      {label && <div className="hud-label">{label}</div>}
+      <Loader2 className="w-5 h-5 animate-spin" />
+      {label && <div className="label">{label}</div>}
     </div>
   );
 }
 
 export function ErrorPanel({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <Panel className="p-6 border-blood/40">
+    <Panel className="p-6 border-mark">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-blood shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-mark shrink-0 mt-0.5" />
         <div className="flex-1">
-          <div className="font-display uppercase text-blood tracking-wider">Transmission failed</div>
+          <div className="font-medium">Could not load.</div>
           <p className="text-mute text-sm mt-1">{message}</p>
           {onRetry && (
-            <button onClick={onRetry} className="btn-ghost mt-4 !py-1.5 !px-3 text-xs">
+            <button onClick={onRetry} className="btn-ghost mt-4">
               Retry
             </button>
           )}
@@ -76,23 +76,22 @@ export function ErrorPanel({ message, onRetry }: { message: string; onRetry?: ()
 
 export function EmptyState({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
   return (
-    <div className="border border-dashed border-line clip-hud p-10 text-center">
-      <Inbox className="w-6 h-6 mx-auto text-dim mb-3" />
-      <div className="font-display uppercase tracking-wider text-lg">{title}</div>
+    <div className="border border-dashed border-ruleSoft p-10 text-center">
+      <Inbox className="w-5 h-5 mx-auto text-dim mb-3" />
+      <div className="font-medium">{title}</div>
       {hint && <p className="text-mute text-sm mt-1 max-w-sm mx-auto">{hint}</p>}
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
 }
 
-/** Mission-style progress bar */
-export function Progress({ value, target, color = "#A6FF3F" }: { value: number; target: number; color?: string }) {
+export function Progress({ value, target }: { value: number; target: number }) {
   const pct = Math.min(100, Math.round((value / Math.max(1, target)) * 100));
   return (
-    <div className="h-2 bg-surface-3 border border-line relative overflow-hidden">
+    <div className="h-px bg-ruleSoft relative">
       <div
-        className="absolute inset-y-0 left-0 transition-all duration-500"
-        style={{ width: `${pct}%`, background: color, boxShadow: `0 0 12px ${color}66` }}
+        className="absolute inset-y-0 left-0 bg-ink transition-all duration-500"
+        style={{ width: `${pct}%` }}
       />
     </div>
   );
@@ -103,15 +102,10 @@ export function useMidnightCountdown(): string {
   const [label, setLabel] = useState("--:--:--");
   useEffect(() => {
     const tick = () => {
-      // SAST is fixed at UTC+2 (no DST). The next SAST midnight is the
-      // moment when the current SAST wall-clock day rolls over.
-      // Trick: shift the current UTC time forward by 2h, take the start of
-      // the next UTC day, then shift back. That gives the next SAST midnight
-      // as a UTC ms timestamp.
       const now = Date.now();
-      const sastNow = now + 2 * 3600 * 1000; // pretend UTC is actually SAST
+      const sastNow = now + 2 * 3600 * 1000;
       const startOfNextUtcDay = Math.ceil(sastNow / 86_400_000) * 86_400_000;
-      const targetUtcMs = startOfNextUtcDay - 2 * 3600 * 1000; // shift back
+      const targetUtcMs = startOfNextUtcDay - 2 * 3600 * 1000;
       const diff = Math.max(0, targetUtcMs - now);
       const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
       const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
@@ -142,14 +136,14 @@ export function FormField({
 }) {
   return (
     <label className="block">
-      <span className="hud-label block mb-1.5">{label}</span>
+      <span className="label block mb-2">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         required={required}
         autoFocus={autoFocus}
-        className="w-full px-3 py-2.5 clip-hud-sm"
+        className="w-full px-3 py-2.5 bg-paper text-body"
       />
     </label>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BadgeCheck, Check, Frame as FrameIcon, Layers, Palette, ShoppingBag } from "lucide-react";
+import { Check, Frame as FrameIcon, Layers, Palette, ShoppingBag } from "lucide-react";
 import { api, type ShopItemView } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
@@ -9,7 +9,7 @@ import { Avatar } from "@/components/avatar";
 
 const KINDS = [
   { key: "frame", label: "FRAMES", icon: FrameIcon },
-  { key: "skin", label: "MAP SKINS", icon: Layers },
+  { key: "skin",  label: "MAP SKINS", icon: Layers },
   { key: "badge", label: "TITLES", icon: Palette },
 ] as const;
 
@@ -38,7 +38,7 @@ export default function ShopPage() {
     try {
       const res = await api.purchase(item.id);
       if (user) setUser({ ...user, balance: res.balanceAfter });
-      setFlash(`"${item.name}" is yours. It auto-equipped — go flex.`);
+      setFlash(`"${item.name}" is yours. It auto-equipped.`);
       load();
       await refresh();
     } catch (e) {
@@ -53,21 +53,23 @@ export default function ShopPage() {
   const visible = items.filter((i) => i.kind === kind);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="hud-label mb-1 inline-flex items-center gap-2"><ShoppingBag className="w-3.5 h-3.5" /> AMMU-NOTES · GEAR</div>
-          <h1 className="font-display uppercase text-4xl">The shop</h1>
+          <div className="label inline-flex items-center gap-2"><ShoppingBag className="w-3.5 h-3.5" /> AMMU-NOTES · GEAR</div>
+          <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">The shop.</h1>
         </div>
-        <div className="border border-volt/30 bg-volt/5 clip-hud-sm px-4 py-2">
-          <span className="hud-label mr-3">WALLET</span>
+        <div className="hairline px-5 py-3">
+          <span className="label mr-3">WALLET</span>
           <PTS value={user.balance} size="lg" />
         </div>
       </div>
 
+      <div className="rule" />
+
       {flash && (
-        <div className="border border-volt/40 bg-volt/5 clip-hud px-4 py-2.5 text-sm inline-flex items-center gap-2">
-          <Check className="w-4 h-4 text-volt" /> {flash}
+        <div className="hairline border-ink px-4 py-2.5 text-[13px] inline-flex items-center gap-2">
+          <Check className="w-4 h-4" /> {flash}
         </div>
       )}
       {error && <ErrorPanel message={error} onRetry={load} />}
@@ -77,8 +79,8 @@ export default function ShopPage() {
           <button
             key={k.key}
             onClick={() => setKind(k.key)}
-            className={`inline-flex items-center gap-2 font-display uppercase tracking-wider text-xs px-4 py-2 border clip-hud-sm transition-colors ${
-              kind === k.key ? "border-volt text-volt bg-volt/10" : "border-line text-mute hover:text-ink"
+            className={`inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-label px-4 py-2 border transition-colors ${
+              kind === k.key ? "border-ink bg-ink text-paper" : "border-ruleSoft text-mute hover:border-ink hover:text-ink"
             }`}
           >
             <k.icon className="w-3.5 h-3.5" /> {k.label}
@@ -86,13 +88,13 @@ export default function ShopPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {visible.map((item) => (
           <ItemCard key={item.id} item={item} busy={busyId === item.id} balance={user.balance} onBuy={() => void buy(item)} />
         ))}
       </div>
 
-      {visible.length === 0 && <p className="text-mute text-sm py-8 text-center">Nothing stocked in this aisle yet.</p>}
+      {visible.length === 0 && <p className="text-mute text-[13px] py-8 text-center">Nothing stocked in this aisle yet.</p>}
     </div>
   );
 }
@@ -108,7 +110,7 @@ function ItemCard({
   balance: number;
   onBuy: () => void;
 }) {
-  const color = (item.config?.color as string) ?? "#A6FF3F";
+  const color = (item.config?.color as string) ?? "#0A0A0A";
   const afford = balance >= item.pricePoints;
 
   let preview: React.ReactNode;
@@ -117,39 +119,41 @@ function ItemCard({
   } else if (item.kind === "skin") {
     preview = (
       <div className="relative w-24 h-14 border overflow-hidden" style={{ borderColor: color }}>
-        <div className="absolute inset-0 bg-[#0A0E14]" style={{ backgroundImage: "linear-gradient(to right,#151C28 1px,transparent 1px),linear-gradient(to bottom,#151C28 1px,transparent 1px)", backgroundSize: "12px 12px" }} />
+        <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(to right,#D8D8D4 1px,transparent 1px),linear-gradient(to bottom,#D8D8D4 1px,transparent 1px)", backgroundSize: "12px 12px" }} />
         <div className="absolute bottom-1 left-2 right-6 h-px" style={{ background: color }} />
-        <div className="absolute top-1 right-2 w-2 h-2 rotate-45" style={{ background: color, boxShadow: `0 0 8px ${color}` }} />
+        <div className="absolute top-1 right-2 w-2 h-2 rotate-45" style={{ background: color }} />
       </div>
     );
   } else {
     preview = (
       <span
-        className="inline-flex items-center gap-2 font-mono text-xs tracking-hud uppercase px-3 py-1.5 border"
-        style={{ color, borderColor: `${color}66`, background: `${color}11` }}
+        className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-label px-3 py-1.5 border"
+        style={{ color, borderColor: color }}
       >
-        <BadgeCheck className="w-4 h-4" /> {item.name}
+        <Palette className="w-3.5 h-3.5" /> {item.name}
       </span>
     );
   }
 
   return (
-    <div className={`panel p-5 flex flex-col gap-3 ${item.equipped ? "border-volt/50 shadow-glow-volt" : ""}`}>
+    <div className={`panel p-5 flex flex-col gap-3 ${item.equipped ? "border-mark" : ""}`}>
       <div className="h-16 flex items-center">{preview}</div>
       <div>
-        <div className="font-display uppercase tracking-wider">{item.name}</div>
-        <p className="text-mute text-xs mt-1 leading-relaxed">{item.description}</p>
+        <div className="font-medium">{item.name}</div>
+        <p className="text-mute text-[12px] mt-1 leading-relaxed">{item.description}</p>
       </div>
       <div className="mt-auto pt-2 flex items-center justify-between gap-2">
-        <PTS value={item.pricePoints} tone={item.kind === "skin" ? "gold" : "volt"} />
+        <PTS value={item.pricePoints} />
         {item.owned ? (
           item.equipped ? (
-            <span className="chip border-volt/50 text-volt"><Check className="w-3 h-3" /> EQUIPPED</span>
+            <span className="font-mono text-[10px] uppercase tracking-label border border-mark text-mark px-2 py-0.5 inline-flex items-center gap-1">
+              <Check className="w-3 h-3" /> EQUIPPED
+            </span>
           ) : (
-            <span className="chip">OWNED · INVENTORY</span>
+            <span className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft text-mute px-2 py-0.5">OWNED</span>
           )
         ) : (
-          <button onClick={onBuy} disabled={busy || !afford} className={`${afford ? "btn-gold" : "btn-ghost"} !py-1.5 text-[10px]`}>
+          <button onClick={onBuy} disabled={busy || !afford} className={afford ? "btn-solid" : "btn-ghost"}>
             {!afford ? `NEED ${item.pricePoints - balance} MORE` : busy ? "…" : "BUY"}
           </button>
         )}

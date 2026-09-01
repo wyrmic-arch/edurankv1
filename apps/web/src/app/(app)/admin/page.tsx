@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, FileText, ShieldAlert, X } from "lucide-react";
 import { api, type AdminPendingNote, type AdminStats } from "@/lib/api";
 import { useAuth } from "@/lib/store";
-import { ErrorPanel, PTS, Spinner } from "@/components/hud";
+import { ErrorPanel, Spinner } from "@/components/hud";
 import { fileSize, timeAgo } from "@/lib/format";
 
 export default function AdminPage() {
@@ -27,7 +27,6 @@ export default function AdminPage() {
 
   useEffect(load, [load]);
 
-  // Revoke any pending blob URL when the page unmounts to avoid leaking it.
   useEffect(() => {
     return () => {
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
@@ -47,7 +46,6 @@ export default function AdminPage() {
     }
   }
 
-  // Admins pass the gate on /notes/:id/file — fetch with auth, open as blob.
   async function previewFile(note: AdminPendingNote) {
     try {
       const res = await fetch(api.fileUrl(note.id), {
@@ -55,7 +53,6 @@ export default function AdminPage() {
       });
       if (!res.ok) throw new Error(`Preview failed (${res.status})`);
       const blob = await res.blob();
-      // Revoke any previous preview URL before allocating a new one.
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
       const url = URL.createObjectURL(blob);
       previewUrlRef.current = url;
@@ -69,9 +66,9 @@ export default function AdminPage() {
   if (user.role !== "admin") {
     return (
       <div className="max-w-md mx-auto text-center py-20">
-        <ShieldAlert className="w-10 h-10 mx-auto text-blood mb-4" />
-        <h1 className="font-display uppercase text-3xl">Restricted area</h1>
-        <p className="text-mute mt-2 text-sm">This wing of the city is staff-only. Your file doesn&apos;t clear the gate.</p>
+        <ShieldAlert className="w-10 h-10 mx-auto text-mark mb-4" />
+        <h1 className="font-serif text-3xl font-medium">Restricted area.</h1>
+        <p className="text-mute mt-2 text-[13px]">This wing of the city is staff-only.</p>
       </div>
     );
   }
@@ -80,17 +77,16 @@ export default function AdminPage() {
   if (pending === null) return <Spinner label="OPENING THE REVIEW DESK…" />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <div className="hud-label mb-1 inline-flex items-center gap-2"><ShieldAlert className="w-3.5 h-3.5 text-blood" /> STAFF ONLY</div>
-        <h1 className="font-display uppercase text-4xl">Review desk</h1>
+        <div className="label inline-flex items-center gap-2"><ShieldAlert className="w-3.5 h-3.5 text-mark" /> STAFF ONLY</div>
+        <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">Review desk.</h1>
       </div>
 
-      {/* stats */}
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          <Stat label="PENDING" value={String(stats.pending)} tone="gold" />
-          <Stat label="APPROVED" value={String(stats.approved)} tone="volt" />
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <Stat label="PENDING" value={String(stats.pending)} />
+          <Stat label="APPROVED" value={String(stats.approved)} />
           <Stat label="REJECTED" value={String(stats.rejected)} />
           <Stat label="PLAYERS" value={String(stats.players)} />
           <Stat label="PTS EARNED (ALL)" value={stats.pointsEarnedAllTime.toLocaleString("en-ZA")} />
@@ -99,37 +95,39 @@ export default function AdminPage() {
 
       {error && <ErrorPanel message={error} />}
 
+      <div className="rule" />
+
       {pending.length === 0 ? (
-        <p className="text-mute text-sm py-10 text-center border border-dashed border-line clip-hud">
+        <p className="text-mute text-[13px] py-10 text-center border border-dashed border-ruleSoft">
           Queue clear. The city is fully moderated.
         </p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-4">
           {pending.map((n) => (
             <li key={n.id} className="panel p-5">
               <div className="flex flex-wrap items-start gap-4">
-                <span className="w-11 h-11 shrink-0 flex items-center justify-center border border-line bg-surface-2 clip-hud-sm">
+                <span className="w-11 h-11 shrink-0 flex items-center justify-center border border-ink">
                   <FileText className="w-5 h-5 text-mute" />
                 </span>
                 <div className="flex-1 min-w-[240px]">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{n.title}</h3>
-                    <span className="chip">{n.subjectName.toUpperCase()}</span>
-                    <span className="chip">GR {n.grade}</span>
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <h3 className="font-medium">{n.title}</h3>
+                    <span className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{n.subjectName.toUpperCase()}</span>
+                    <span className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {n.grade}</span>
                   </div>
-                  <p className="text-mute text-sm mt-1 line-clamp-2">{n.description}</p>
-                  <div className="hud-label mt-2 !text-[9px]">
+                  <p className="text-mute text-[13px] mt-1 line-clamp-2">{n.description}</p>
+                  <div className="label !text-[9px] mt-2">
                     BY {n.uploaderName.toUpperCase()} · {timeAgo(n.createdAt)} · {n.fileName} ({fileSize(n.fileSize)})
                   </div>
                 </div>
 
                 <div className="flex flex-col items-stretch gap-2 ml-auto w-full sm:w-auto">
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => void previewFile(n)} className="btn-ghost !py-2 text-xs">PREVIEW</button>
-                    <button onClick={() => void act(n, "approve")} className="btn-volt !py-2 text-xs flex-1 sm:flex-none">
+                    <button onClick={() => void previewFile(n)} className="btn-ghost">PREVIEW</button>
+                    <button onClick={() => void act(n, "approve")} className="btn-solid">
                       <Check className="w-4 h-4" /> APPROVE
                     </button>
-                    <button onClick={() => setRejecting(rejecting === n.id ? null : n.id)} className="btn-ghost !py-2 text-xs !border-blood/40 !text-blood">
+                    <button onClick={() => setRejecting(rejecting === n.id ? null : n.id)} className="btn-ghost">
                       <X className="w-4 h-4" /> REJECT
                     </button>
                   </div>
@@ -139,9 +137,9 @@ export default function AdminPage() {
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         placeholder="Reason (sent to uploader)"
-                        className="flex-1 px-3 py-2 clip-hud-sm text-xs"
+                        className="flex-1 px-3 py-2 text-[12px]"
                       />
-                      <button onClick={() => void act(n, "reject")} className="btn !bg-blood !border-blood !text-void !py-2 text-xs">
+                      <button onClick={() => void act(n, "reject")} className="btn-mark">
                         CONFIRM
                       </button>
                     </div>
@@ -156,11 +154,11 @@ export default function AdminPage() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "volt" | "gold" }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="panel p-3">
-      <div className="hud-label !text-[9px]">{label}</div>
-      <div className={`font-mono text-xl font-bold mt-1 ${tone === "gold" ? "text-gold" : tone === "volt" ? "text-volt" : "text-ink"}`}>{value}</div>
+    <div>
+      <div className="label">{label}</div>
+      <div className="font-mono text-2xl tabular-nums mt-1">{value}</div>
     </div>
   );
 }

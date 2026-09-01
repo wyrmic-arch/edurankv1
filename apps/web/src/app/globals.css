@@ -3,114 +3,91 @@
 @tailwind utilities;
 
 @layer base {
-  /* Self-hosted display fonts (OFL licensed — see public/fonts/) */
-  @font-face {
-    font-family: "Anton";
-    src: url("/fonts/Anton.ttf") format("truetype");
-    font-weight: 400;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Barlow";
-    src: url("/fonts/Barlow-Regular.ttf") format("truetype");
-    font-weight: 400;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Barlow";
-    src: url("/fonts/Barlow-Medium.ttf") format("truetype");
-    font-weight: 500;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Barlow";
-    src: url("/fonts/Barlow-SemiBold.ttf") format("truetype");
-    font-weight: 600;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "Barlow";
-    src: url("/fonts/Barlow-Bold.ttf") format("truetype");
-    font-weight: 700;
-    font-display: swap;
-  }
-  @font-face {
-    font-family: "JetBrains Mono";
-    src: url("/fonts/JetBrainsMono.ttf") format("truetype");
-    font-weight: 100 800;
-    font-display: swap;
-  }
-
-  :root {
-    --font-display: "Anton", Impact, sans-serif;
-    --font-sans: "Barlow", system-ui, sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  }
+  /* Fonts are wired via next/font/google in src/app/layout.tsx (Inter, JetBrains Mono, EB Garamond). */
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
   body {
-    @apply bg-void text-ink font-sans antialiased;
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: "ss01", "cv11";
   }
   ::selection {
-    @apply bg-volt/30 text-ink;
+    @apply bg-ink text-paper;
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #232b38 transparent;
+    scrollbar-color: #0A0A0A transparent;
   }
   input, textarea, select {
-    @apply bg-surface-2 border border-line text-ink placeholder:text-dim outline-none focus:border-volt/60 transition-colors;
+    @apply bg-paper border border-ink text-ink placeholder:text-dim outline-none focus:border-mark transition-colors;
+  }
+  a {
+    @apply underline-offset-4;
   }
 }
 
 @layer components {
-  /* HUD panel with clipped corners — the core surface of the design language */
-  .clip-hud {
-    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  .hairline {
+    @apply border border-ink;
   }
-  .clip-hud-sm {
-    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  .hairline-soft {
+    @apply border border-ruleSoft;
   }
   .panel {
-    @apply bg-surface-1/90 border border-line clip-hud;
+    @apply bg-paper border border-ink;
   }
-  .hud-label {
-    @apply font-mono text-[10px] tracking-hud uppercase text-mute;
+  .label {
+    @apply font-mono text-[10px] uppercase tracking-label text-mute;
   }
-  .stroke-title {
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(234, 240, 246, 0.22);
+  .label-ink {
+    @apply font-mono text-[10px] uppercase tracking-label text-ink;
+  }
+  .measure {
+    max-width: 68ch;
+  }
+  .rule {
+    @apply border-t border-ink;
+  }
+  .rule-soft {
+    @apply border-t border-ruleSoft;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-display uppercase tracking-wider text-sm px-5 py-2.5 clip-hud-sm border transition-all duration-150 select-none cursor-pointer disabled:opacity-40 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-label px-4 py-2 border border-ink transition-colors select-none cursor-pointer disabled:opacity-30 disabled:pointer-events-none;
   }
-  .btn-volt {
-    @apply btn bg-volt text-void border-volt hover:shadow-glow-volt active:translate-y-px;
+  .btn-solid {
+    @apply btn bg-ink text-paper hover:bg-paper hover:text-ink;
   }
   .btn-ghost {
-    @apply btn bg-transparent text-ink border-line hover:border-ink/50 hover:bg-surface-2;
+    @apply btn bg-paper text-ink hover:bg-ink hover:text-paper;
   }
-  .btn-gold {
-    @apply btn bg-gold text-void border-gold hover:shadow-glow-gold active:translate-y-px;
+  .btn-mark {
+    @apply btn bg-mark text-paper border-mark hover:bg-paper hover:text-mark;
   }
-  .chip {
-    @apply inline-flex items-center gap-1 font-mono text-[11px] px-2 py-0.5 border border-line bg-surface-2 text-mute;
+  .stat {
+    @apply flex flex-col gap-1;
+  }
+  .stat-label {
+    @apply label;
+  }
+  .stat-value {
+    @apply font-mono text-2xl tabular-nums;
+  }
+  .link-row {
+    @apply flex items-baseline justify-between gap-4 py-2 border-b border-ruleSoft hover:border-ink transition-colors;
+  }
+  .kbd {
+    @apply font-mono text-[10px] border border-ink px-1.5 py-0.5;
   }
 }
 
 @layer utilities {
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgba(35, 43, 56, 0.28) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(35, 43, 56, 0.28) 1px, transparent 1px);
-    background-size: 44px 44px;
-  }
-  .bg-noise {
-    background-image: radial-gradient(rgba(138, 151, 168, 0.05) 1px, transparent 1px);
-    background-size: 3px 3px;
-  }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
+  .ascii {
+    font-family: var(--font-mono);
+    white-space: pre;
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
 }

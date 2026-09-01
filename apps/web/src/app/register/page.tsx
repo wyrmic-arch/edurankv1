@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Gift } from "lucide-react";
 import { useAuth } from "@/lib/store";
 import { api, type School } from "@/lib/api";
 import { GRADES } from "@edurank/shared";
@@ -51,71 +50,66 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-void bg-grid flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/" className="font-display text-2xl tracking-wider block mb-8 text-center">
-          EDU<span className="text-volt">RANK</span>
+        <Link href="/" className="font-mono text-[15px] font-bold tracking-tight block mb-10 text-center no-underline">
+          EDURANK
         </Link>
-        <div className="panel p-7">
-          <div className="hud-label mb-1">NEW PLAYER REGISTRATION</div>
-          <h1 className="font-display text-3xl uppercase mb-6">Enlist free</h1>
 
-          <form onSubmit={submit} className="space-y-4">
+        <div className="panel p-8">
+          <div className="label mb-2">NEW PLAYER REGISTRATION</div>
+          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Enlist free.</h1>
+
+          <form onSubmit={submit} className="space-y-5">
             <F label="Player name" hint="3–24 characters. This is what the city sees.">
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required minLength={3} maxLength={24} className="w-full px-3 py-2.5 clip-hud-sm" autoFocus />
+              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required minLength={3} maxLength={24} className="w-full px-3 py-2.5 text-body" autoFocus />
             </F>
             <F label="Email">
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-3 py-2.5 clip-hud-sm" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-3 py-2.5 text-body" />
             </F>
             <F label="Password" hint="8+ characters.">
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="w-full px-3 py-2.5 clip-hud-sm" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="w-full px-3 py-2.5 text-body" />
             </F>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <F label="Grade">
-                <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 clip-hud-sm">
+                <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
                   <option value="">—</option>
                   {GRADES.map((g) => (
-                    <option key={g} value={g}>
-                      Grade {g}
-                    </option>
+                    <option key={g} value={g}>Grade {g}</option>
                   ))}
                 </select>
               </F>
               <F label="School">
-                <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="w-full px-3 py-2.5 clip-hud-sm">
+                <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="w-full px-3 py-2.5 text-body">
                   <option value="">—</option>
                   {schools.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
+                    <option key={s.id} value={s.id}>{s.name}</option>
                   ))}
                 </select>
               </F>
             </div>
 
             <F label="Referral code (optional)" hint="+100 PTS for you and your recruiter.">
-              <div className="relative">
-                <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dim" />
-                <input
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                  maxLength={6}
-                  placeholder="ABC123"
-                  className="w-full pl-9 pr-3 py-2.5 clip-hud-sm font-mono uppercase"
-                />
-              </div>
+              <input
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                placeholder="ABC123"
+                className="w-full px-3 py-2.5 font-mono uppercase text-body"
+              />
             </F>
 
-            {error && <p className="text-blood text-sm border border-blood/40 bg-blood/5 px-3 py-2 clip-hud-sm">{error}</p>}
-            <button disabled={busy} className="btn-volt w-full py-3">
-              {busy ? "CREATING FILE…" : "ENLIST & ENTER THE MAP"}
+            {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
+
+            <button disabled={busy} type="submit" className="btn-solid w-full">
+              {busy ? "CREATING FILE…" : "ENLIST & ENTER"}
             </button>
           </form>
 
-          <p className="text-mute text-sm mt-6 text-center">
+          <p className="text-mute text-[13px] mt-8 text-center">
             Already enlisted?{" "}
-            <Link href="/login" className="text-volt hover:underline font-medium">
+            <Link href="/login" className="text-ink no-underline hover:underline font-medium">
               Log in
             </Link>
           </p>
@@ -128,9 +122,9 @@ export default function RegisterPage() {
 function F({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="hud-label block mb-1.5">{label}</span>
+      <span className="label block mb-2">{label}</span>
       {children}
-      {hint && <span className="text-dim text-xs mt-1 block">{hint}</span>}
+      {hint && <span className="text-dim text-[11px] mt-1.5 block">{hint}</span>}
     </label>
   );
 }

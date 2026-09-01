@@ -44,14 +44,15 @@ export default function LeaderboardPage() {
   const rest = rows?.slice(3) ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <div className="hud-label mb-1">NATIONAL STANDINGS</div>
-        <h1 className="font-display uppercase text-4xl">The board</h1>
+        <div className="label">NATIONAL STANDINGS</div>
+        <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">The board.</h1>
       </div>
 
-      {/* controls */}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="rule" />
+
+      <div className="flex flex-wrap items-center gap-4">
         <div className="flex gap-1">
           {(["global", "subject", "school"] as Scope[]).map((s) => (
             <Tab key={s} active={scope === s} onClick={() => setScope(s)}>
@@ -59,7 +60,7 @@ export default function LeaderboardPage() {
             </Tab>
           ))}
         </div>
-        <div className="mx-2 h-5 w-px bg-line hidden sm:block" />
+        <div className="text-ruleSoft">·</div>
         <div className="flex gap-1">
           {(["weekly", "all-time"] as Range[]).map((r) => (
             <Tab key={r} active={range === r} onClick={() => setRange(r)}>
@@ -69,7 +70,7 @@ export default function LeaderboardPage() {
         </div>
 
         {scope === "subject" && (
-          <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="ml-auto px-3 py-2 clip-hud-sm text-sm">
+          <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="ml-auto px-3 py-2 text-[13px]">
             <option value="">Pick a subject…</option>
             {subjects.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
@@ -77,7 +78,7 @@ export default function LeaderboardPage() {
           </select>
         )}
         {scope === "school" && (
-          <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="ml-auto px-3 py-2 clip-hud-sm text-sm">
+          <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="ml-auto px-3 py-2 text-[13px]">
             <option value="">Pick a school…</option>
             {schools.map((s) => (
               <option key={s.id} value={s.id}>{s.name}</option>
@@ -91,49 +92,44 @@ export default function LeaderboardPage() {
       ) : rows === null ? (
         <Spinner label="TALLYING THE BOARD…" />
       ) : (scope === "subject" && !subjectId) || (scope === "school" && !schoolId) ? (
-        <p className="text-mute py-10 text-center text-sm">Select a {scope} above to load its board.</p>
+        <p className="text-mute py-10 text-center text-[13px]">Select a {scope} above to load its board.</p>
       ) : rows.length === 0 ? (
-        <p className="text-mute py-10 text-center text-sm">No ranked players here yet — be the first on the board.</p>
+        <p className="text-mute py-10 text-center text-[13px]">No ranked players here yet.</p>
       ) : (
         <>
-          {/* podium */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[1, 0, 2].map((slot) => {
               const row = podium[slot];
               if (!row) return null;
-              const colors = ["#FFC24B", "#C9D4E2", "#D4A373"];
               return (
                 <Link
                   key={row.userId}
                   href={`/profile/${row.userId}`}
-                  className={`panel p-5 flex flex-col items-center text-center gap-2 hover:border-ink/30 transition-all relative overflow-hidden ${
-                    slot === 0 ? "sm:-mt-4 sm:pb-8 border-gold/40 shadow-glow-gold" : ""
-                  }`}
+                  className={`panel p-6 flex flex-col items-start text-left gap-2 no-underline hover:bg-ink hover:text-paper transition-colors ${slot === 0 ? "border-mark" : ""}`}
                 >
-                  <span className="absolute top-2 right-3 font-display text-4xl opacity-20" style={{ color: colors[slot] }}>
-                    #{row.rank}
-                  </span>
-                  {slot === 0 && <Crown className="w-5 h-5 text-gold" />}
-                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} frameColor={colors[slot]} size={56} />
-                  <div className="font-semibold truncate max-w-full">{row.displayName}</div>
+                  <div className="flex items-baseline justify-between w-full">
+                    <span className="label">#{String(row.rank).padStart(2, "0")}</span>
+                    {slot === 0 && <Crown className="w-4 h-4 text-mark" />}
+                  </div>
+                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={48} />
+                  <div className="font-medium truncate max-w-full">{row.displayName}</div>
                   <TierChip totalEarned={row.points} />
-                  <PTS value={row.points} tone={slot === 0 ? "gold" : "volt"} size="lg" />
-                  <span className="hud-label !text-[9px]">{row.schoolName ?? "NO SCHOOL"}</span>
+                  <PTS value={row.points} size="lg" />
+                  <span className="label !text-[9px]">{row.schoolName ?? "NO SCHOOL"}</span>
                 </Link>
               );
             })}
           </div>
 
-          {/* table */}
-          <ol className="panel divide-y divide-line/70">
+          <ol className="panel divide-y divide-ruleSoft">
             {rest.map((row) => (
               <li key={row.userId}>
-                <Link href={`/profile/${row.userId}`} className="flex items-center gap-3 px-4 py-3 hover:bg-surface-2/60 transition-colors">
-                  <span className="font-mono text-sm text-dim w-10 shrink-0">#{row.rank}</span>
-                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={32} />
+                <Link href={`/profile/${row.userId}`} className="flex items-baseline gap-4 px-5 py-3 hover:bg-ink hover:text-paper no-underline transition-colors">
+                  <span className="font-mono text-[12px] text-mute w-10 shrink-0">#{String(row.rank).padStart(2, "0")}</span>
+                  <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={28} />
                   <span className="flex-1 min-w-0">
                     <span className="block font-medium truncate">{row.displayName}</span>
-                    <span className="block hud-label !text-[9px] truncate">
+                    <span className="block label !text-[9px] truncate">
                       {row.schoolName ?? "no school"}{row.grade ? ` · GR ${row.grade}` : ""}
                     </span>
                   </span>
@@ -152,8 +148,8 @@ function Tab({ active, onClick, children }: { active: boolean; onClick: () => vo
   return (
     <button
       onClick={onClick}
-      className={`font-display uppercase tracking-wider text-xs px-4 py-2 border clip-hud-sm transition-colors ${
-        active ? "border-volt text-volt bg-volt/10 shadow-glow-volt" : "border-line text-mute hover:text-ink"
+      className={`font-mono text-[11px] uppercase tracking-label px-3 py-1.5 border transition-colors ${
+        active ? "border-ink bg-ink text-paper" : "border-ruleSoft text-mute hover:border-ink hover:text-ink"
       }`}
     >
       {children}
