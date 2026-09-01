@@ -110,7 +110,7 @@ app.get("/stats", async (c) => {
        (SELECT COUNT(*) FROM notes WHERE status='pending') AS pending,
        (SELECT COUNT(*) FROM notes WHERE status='approved') AS approved,
        (SELECT COUNT(*) FROM notes WHERE status='rejected') AS rejected,
-       (SELECT COUNT(*) FROM users WHERE role != 'x') AS players,
+       (SELECT COUNT(*) FROM users WHERE role IN ('user','admin')) AS players,
        (SELECT IFNULL(SUM(delta),0) FROM points_ledger WHERE delta > 0) AS points_earned_all_time`,
   ).all<Record<string, number>>();
   const r = res.results?.[0] ?? {};
