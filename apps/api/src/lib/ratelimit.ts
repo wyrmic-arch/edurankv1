@@ -38,6 +38,8 @@ interface RateLimitOptions {
  */
 export function rateLimit(opts: RateLimitOptions) {
   return async (c: Context<AppEnv>, next: () => Promise<unknown>) => {
+    // CORS preflights are cheap and not abuse vectors — never count them.
+    if (c.req.method === "OPTIONS") return next();
     const ip = clientIp(c);
     const now = Date.now();
     const bucket = buckets.get(ip) ?? [];

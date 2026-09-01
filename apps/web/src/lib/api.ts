@@ -39,14 +39,23 @@ async function request<T>(path: string, opts: { method?: string; body?: unknown;
     body = JSON.stringify(opts.body);
   }
   const res = await fetch(`${API_BASE}${path}`, { method: opts.method ?? "GET", headers, body }).catch(
-    () => null,
+    (e) => {
+      // Network-level failure (DNS, TLS, CORS preflight, offline, etc.).
+      // Browsers swallow the real reason for CORS preflight failures, so
+      // give the user something actionable.
+      throw new ApiClientError(
+        0,
+        `Can't reach the API at ${API_BASE}. ` +
+          `Open the browser dev tools (Network tab) and look at the failing request — ` +
+          `if it's red and says "CORS" or "(blocked)", the API needs ${API_BASE} 's origin in its ALLOWED_ORIGINS. ` +
+          `Otherwise make sure the worker is deployed (it is at: ${API_BASE}).`,
+      );
+    },
   );
   if (res === null) {
     throw new ApiClientError(
       0,
-      `Can't reach the API at ${API_BASE}. ` +
-        `If you're on a preview deployment, confirm the origin is listed in apps/api/wrangler.toml ALLOWED_ORIGINS. ` +
-        `Otherwise make sure the worker is running (npm run dev:api).`,
+      `No response from ${API_BASE}. Worker may be offline.`,
     );
   }
   let data: unknown = null;

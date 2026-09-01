@@ -14,17 +14,36 @@ import { rateLimit } from "./lib/ratelimit";
 
 const app = new Hono<AppEnv>();
 
-const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string[] =>
-  (c.env.ALLOWED_ORIGINS ?? "*").split(",").map((o) => o.trim()).filter(Boolean);
+const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string | string[] => {
+  const raw = c.env.ALLOWED_ORIGINS ?? "*";
+  if (raw.trim() === "*") return "*";
+  return raw.split(",").map((o) => o.trim()).filter(Boolean);
+};
 
+// CORS — applied to every request, including OPTIONS preflights.
 app.use("*", async (c, next) => {
-  const origins = allowedOrigins(c);
+  const origin = allowedOrigins(c);
   return cors({
-    origin: origins.includes("*") ? "*" : origins,
+    origin,
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     maxAge: 86400,
   })(c, next);
+});
+
+// Explicit preflight handler — Hono's cors() short-circuits OPTIONS in
+// most cases, but defining an explicit 204 here makes browsers happy
+// even if a downstream middleware short-circuits before cors() can.
+app.options("*", (c) => {
+  const origin = allowedOrigins(c);
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Origin": origin === "*" ? "*" : (c.req.header("Origin") ?? "*"),
+    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+  };
+  if (origin !== "*") headers["Vary"] = "Origin";
+  return new Response(null, { status: 204, headers });
 });
 
 app.onError((err, c) => {
