@@ -71,9 +71,6 @@ export default function MapPage() {
           <div className="font-display uppercase text-3xl leading-none" style={{ textShadow: "0 2px 12px rgba(0,0,0,.8)" }}>
             Choose your ground
           </div>
-          <p className="text-mute text-sm mt-2 max-w-sm">
-            Ten districts. One per subject. Click a zone to raid its notes archive.
-          </p>
         </div>
       </div>
 
