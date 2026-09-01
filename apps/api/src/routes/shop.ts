@@ -43,13 +43,27 @@ app.post("/:id/purchase", async (c) => {
   const db = drizzle(c.env.DB);
   const item = (await db.select().from(shopItems).where(eq(shopItems.id, itemId)).limit(1))[0] as ShopRow | undefined;
   if (!item) err(404, "That item isn't stocked.");
-
-  // precise ownership check (user+item unique)
-  const mine = await c.env.DB.prepare("SELECT id FROM purchases WHERE user_id = ?1 AND item_id = ?2")
-    .bind(user.id, itemId)
-    .first<{ id: string }>();
-  if (mine) err(409, "Already in your inventory.");
   if (user.balance < item.pricePoints) err(402, `Not enough PTS — you need ${item.pricePoints - user.balance} more.`);
+
+  // Atomic guard: insert the purchase first. UNIQUE(user_id, item_id) means
+  // a second concurrent buy hits the constraint and we return 409 before any
+  // points are deducted. Closes the previous double-charge race.
+  const purchaseId = crypto.randomUUID();
+  try {
+    await db.insert(purchases).values({
+      id: purchaseId,
+      userId: user.id,
+      itemId,
+      pricePaid: item.pricePoints,
+      createdAt: Date.now(),
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("UNIQUE") || msg.includes("constraint")) {
+      err(409, "Already in your inventory.");
+    }
+    throw e;
+  }
 
   const { balanceAfter } = await awardPoints(c.env, {
     userId: user.id,
@@ -57,13 +71,7 @@ app.post("/:id/purchase", async (c) => {
     reason: "cosmetic_purchase",
     description: `Bought "${item.name}" (${item.kind})`,
   });
-  await db.insert(purchases).values({
-    id: crypto.randomUUID(),
-    userId: user.id,
-    itemId,
-    pricePaid: item.pricePoints,
-    createdAt: Date.now(),
-  });
+
   // Auto-equip frames/skins on purchase.
   if (item.kind === "frame") await db.update(users).set({ equippedFrameId: itemId }).where(eq(users.id, user.id));
   if (item.kind === "skin") await db.update(users).set({ equippedSkinId: itemId }).where(eq(users.id, user.id));

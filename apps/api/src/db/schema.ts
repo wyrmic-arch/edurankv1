@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, index } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 // Timestamps are stored as INTEGER unix epoch milliseconds (UTC) so that
 // range filtering and sorting are simple and timezone-safe.
@@ -211,7 +211,8 @@ export const purchases = sqliteTable(
     createdAt: integer("created_at").notNull(),
   },
   (t) => ({
-    uniq: index("idx_purchases_user_item").on(t.userId, t.itemId),
+    // UNIQUE(user_id, item_id) prevents the same shop item being purchased twice.
+    uniq: uniqueIndex("uq_purchases_user_item").on(t.userId, t.itemId),
   }),
 );
 
