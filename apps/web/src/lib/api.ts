@@ -40,7 +40,9 @@ async function request<T>(path: string, opts: { method?: string; body?: unknown;
   if (res === null) {
     throw new ApiClientError(
       0,
-      `Can't reach the arena API at ${API_BASE}. Make sure it's running (npm run dev:api), then reload.`,
+      `Can't reach the API at ${API_BASE}. ` +
+        `If you're on a preview deployment, confirm the origin is listed in apps/api/wrangler.toml ALLOWED_ORIGINS. ` +
+        `Otherwise make sure the worker is running (npm run dev:api).`,
     );
   }
   let data: unknown = null;

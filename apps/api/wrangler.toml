@@ -16,4 +16,8 @@ bucket_name = "edurank-notes"
 binding = "AI"
 
 [vars]
-ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,https://edurank.pages.dev"
+# Production Pages origin + every preview/branch deployment under the same
+# Pages project (one per git branch). Each preview URL is on its own
+# subdomain, so we list the production one and the exact preview we're
+# shipping to today. Add new previews here as needed.
+ALLOWED_ORIGINS = "http://localhost:3000,http://127.0.0.1:3000,https://edurank.pages.dev,https://58e3323d.edurank.pages.dev"
