@@ -287,16 +287,9 @@ app.post("/:id/unlock", async (c) => {
   const db = drizzle(c.env.DB);
   const note = (await db.select().from(notes).where(eq(notes.id, id)).limit(1))[0] as NoteRow | undefined;
   if (!note || note.status !== "approved") err(404, "That note isn't available.");
-  if (note.uploaderId === user.id || user.role === "admin") return c.json({ unlocked: true, free: true, balanceAfter: user.balance });
-
-  const existing = await db
-    .select({ noteId: noteUnlocks.noteId })
-    .from(noteUnlocks)
-    .where(and(eq(noteUnlocks.noteId, id), eq(noteUnlocks.userId, user.id)))
-    .limit(1);
-  if (existing.length > 0) {
+  if (note.uploaderId === user.id || user.role === "admin") {
     const fresh = (await db.select({ b: users.balance }).from(users).where(eq(users.id, user.id)).limit(1))[0];
-    return c.json({ unlocked: true, alreadyOwned: true, balanceAfter: fresh?.b ?? user.balance });
+    return c.json({ unlocked: true, free: true, balanceAfter: fresh?.b ?? user.balance });
   }
 
   const price = note.isFree === 1 ? 0 : note.pricePoints;
@@ -307,6 +300,28 @@ app.post("/:id/unlock", async (c) => {
   const cut = price > 0 ? Math.round(price * POINTS_RULES.SELLER_CUT) : 0;
   const now = Date.now();
 
+  // Atomic guard: insert the unlock row first. The PK on (note_id, user_id)
+  // means concurrent requests from the same buyer are deduplicated by the
+  // database — the second one hits UNIQUE and we return "alreadyOwned".
+  // By inserting first and only running the awards on success, we close the
+  // double-spend race that previously charged the buyer twice.
+  try {
+    await db.insert(noteUnlocks).values({
+      noteId: id,
+      userId: user.id,
+      pricePaid: price,
+      uploaderCut: cut,
+      createdAt: now,
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    if (msg.includes("UNIQUE") || msg.includes("constraint")) {
+      const fresh = (await db.select({ b: users.balance }).from(users).where(eq(users.id, user.id)).limit(1))[0];
+      return c.json({ unlocked: true, alreadyOwned: true, balanceAfter: fresh?.b ?? user.balance });
+    }
+    throw e;
+  }
+
   const buyerRes = await awardPoints(c.env, {
     userId: user.id,
     delta: -price,
@@ -315,20 +330,17 @@ app.post("/:id/unlock", async (c) => {
     noteId: note.id,
     subjectId: note.subjectId,
   });
-  const sellerBalance =
-    price > 0
-      ? (
-          await awardPoints(c.env, {
-            userId: note.uploaderId,
-            delta: cut,
-            reason: "unlock_revenue",
-            description: `${user.displayName} bought your "${note.title}" — 50% cut`,
-            noteId: note.id,
-            subjectId: note.subjectId,
-          })
-        ).balanceAfter
-      : undefined;
-  void sellerBalance;
+
+  if (price > 0) {
+    await awardPoints(c.env, {
+      userId: note.uploaderId,
+      delta: cut,
+      reason: "unlock_revenue",
+      description: `${user.displayName} bought your "${note.title}" — 50% cut`,
+      noteId: note.id,
+      subjectId: note.subjectId,
+    });
+  }
 
   // Every download event pays the uploader a flat bonus.
   await awardPoints(c.env, {
@@ -340,13 +352,6 @@ app.post("/:id/unlock", async (c) => {
     subjectId: note.subjectId,
   });
 
-  await db.insert(noteUnlocks).values({
-    noteId: id,
-    userId: user.id,
-    pricePaid: price,
-    uploaderCut: cut,
-    createdAt: now,
-  });
   await db
     .update(notes)
     .set({ downloadCount: sql`${notes.downloadCount} + 1` })
