@@ -20,6 +20,22 @@ const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string | string[] => {
   return raw.split(",").map((o) => o.trim()).filter(Boolean);
 };
 
+// True if `origin` is explicitly listed or matches a `*.suffix` wildcard entry
+// (e.g. `https://*.edurank.pages.dev` matches https://<hash>.edurank.pages.dev).
+function originAllowed(configured: string | string[], origin: string | null | undefined): boolean {
+  if (configured === "*") return true;
+  if (!origin || typeof configured === "string") return false;
+  if (configured.includes(origin)) return true;
+  const host = origin.replace(/^https?:\/\//, "");
+  for (const entry of configured) {
+    if (entry.includes("*")) {
+      const suffix = entry.split("*").pop()!.replace(/^https?:\/\//, "");
+      if (host.endsWith(suffix)) return true;
+    }
+  }
+  return false;
+}
+
 // Security headers — set on every response.
 app.use("*", async (c, next) => {
   await next();
@@ -36,9 +52,9 @@ app.use("*", async (c, next) => {
 
 // CORS — applied to every request, including OPTIONS preflights.
 app.use("*", async (c, next) => {
-  const origin = allowedOrigins(c);
+  const configured = allowedOrigins(c);
   return cors({
-    origin,
+    origin: (origin) => (originAllowed(configured, origin) ? origin : null),
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     maxAge: 86400,
@@ -51,10 +67,7 @@ app.use("*", async (c, next) => {
 app.options("*", (c) => {
   const configured = allowedOrigins(c);
   const requestOrigin = c.req.header("Origin");
-  const allow =
-    configured === "*" ||
-    (typeof configured !== "string" && requestOrigin != null && configured.includes(requestOrigin));
-  if (!allow) return new Response(null, { status: 204 });
+  if (!originAllowed(configured, requestOrigin)) return new Response(null, { status: 204 });
   const headers: Record<string, string> = {
     "Access-Control-Allow-Origin": configured === "*" ? "*" : (requestOrigin ?? "*"),
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",

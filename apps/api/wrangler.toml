@@ -23,6 +23,7 @@ bucket_name = "edurank-notes"
 binding = "AI"
 
 [vars]
-# Origins allowed to call the API (browser CORS). Production domains plus
-# local dev. Do not add a bare wildcard in production.
-ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,http://localhost:3000,http://localhost:8787"
+# Origins allowed to call the API (browser CORS). Pages serves the app at both
+# edurank.co.za and edurank.pages.dev (production alias), plus preview branches
+# (<hash>.edurank.pages.dev) and local dev. Do not add a bare wildcard.
+ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,http://edurank.pages.dev,https://edurank.pages.dev,https://*.edurank.pages.dev,http://localhost:3000,http://localhost:8787"
