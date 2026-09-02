@@ -45,7 +45,7 @@ export function Navbar() {
             href={l.href}
             onClick={onNavigate}
             className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-              active ? "text-ink underline" : "text-mute hover:text-ink"
+              active ? "text-ash underline" : "text-ghost hover:text-ash"
             }`}
           >
             {l.label}
@@ -56,7 +56,7 @@ export function Navbar() {
         href="/upload"
         onClick={onNavigate}
         className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-          pathname.startsWith("/upload") ? "text-mark underline" : "text-mute hover:text-ink"
+          pathname.startsWith("/upload") ? "text-mark underline" : "text-ghost hover:text-ash"
         }`}
       >
         UPLOAD
@@ -65,7 +65,7 @@ export function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-50 bg-paper border-b border-ink">
+    <header className="sticky top-0 z-50 bg-oil border-b border-cinder">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
         <Link href="/leaderboard" className="flex items-center shrink-0 no-underline">
           <img src="/logo.png" alt="EduRank" className="h-9 w-auto inverted-logo" />
@@ -123,7 +123,7 @@ export function Navbar() {
                   )}
                   <button
                     onClick={() => void logout()}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-mark hover:bg-ink hover:text-paper transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-mark hover:bg-smoke transition-colors"
                   >
                     <LogOut className="w-4 h-4" /> Log out
                   </button>
@@ -133,7 +133,7 @@ export function Navbar() {
           </div>
         ) : (
           <div className="flex items-center gap-4">
-            <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-mute hover:text-ink no-underline">
+            <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline">
               Log in
             </Link>
             <Link href="/register" className="btn-solid">
@@ -168,7 +168,7 @@ function MenuLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="flex items-center px-3 py-2 text-[13px] hover:bg-ink hover:text-paper transition-colors no-underline"
+      className="flex items-center px-3 py-2 text-[13px] hover:bg-smoke transition-colors no-underline"
     >
       {label}
     </Link>

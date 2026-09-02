@@ -67,7 +67,7 @@ export default function ShopPage() {
       <div className="rule" />
 
       {flash && (
-        <div className="hairline border-ink px-4 py-2.5 text-[13px] inline-flex items-center gap-2">
+        <div className="hairline border-cinder px-4 py-2.5 text-[13px] inline-flex items-center gap-2">
           <Check className="w-4 h-4" /> {flash}
         </div>
       )}
@@ -79,7 +79,7 @@ export default function ShopPage() {
             key={k.key}
             onClick={() => setKind(k.key)}
             className={`inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-label px-4 py-2 border transition-colors ${
-              kind === k.key ? "border-ink bg-ink text-paper" : "border-ruleSoft text-mute hover:border-ink hover:text-ink"
+              kind === k.key ? "border-ash bg-ash text-night" : "border-cinder text-ghost hover:border-ash hover:text-ash"
             }`}
           >
             <k.icon className="w-3.5 h-3.5" /> {k.label}

@@ -22,9 +22,9 @@ export function NoteCard({ note }: { note: Note }) {
             className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-90 transition-opacity"
           />
         )}
-        <div className="absolute inset-0 bg-paper/40" />
+        <div className="absolute inset-0 bg-night/30" />
         <span
-          className="absolute top-2 left-2 font-mono text-[10px] uppercase tracking-label px-2 py-0.5 border border-ink bg-paper"
+          className="absolute top-2 left-2 font-mono text-[10px] uppercase tracking-label px-2 py-0.5 border border-cinder bg-oil text-ash"
         >
           GR {note.grade} · {note.subjectId.toUpperCase()}
         </span>

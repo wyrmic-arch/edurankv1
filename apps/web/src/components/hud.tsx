@@ -29,7 +29,7 @@ export function SectionTitle({
 
 export function PTS({ value, tone = "ink", size = "md" }: { value: number; tone?: "ink" | "mark" | "ok"; size?: "sm" | "md" | "lg" }) {
   const tones = {
-    ink: "text-ink",
+    ink: "text-ash",
     mark: "text-mark",
     ok: "text-ok",
   } as const;
@@ -88,9 +88,9 @@ export function EmptyState({ title, hint, action }: { title: string; hint?: stri
 export function Progress({ value, target }: { value: number; target: number }) {
   const pct = Math.min(100, Math.round((value / Math.max(1, target)) * 100));
   return (
-    <div className="h-px bg-ruleSoft relative">
+    <div className="h-px bg-smoke relative">
       <div
-        className="absolute inset-y-0 left-0 bg-ink transition-all duration-500"
+        className="absolute inset-y-0 left-0 bg-ash transition-all duration-500"
         style={{ width: `${pct}%` }}
       />
     </div>

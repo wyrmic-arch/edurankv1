@@ -68,7 +68,7 @@ export default function UploadPage() {
       </p>
 
       <form onSubmit={submit} className="space-y-6">
-        <label className={`block border border-dashed p-8 text-center cursor-pointer transition-colors ${file ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ink"}`}>
+        <label className={`block border border-dashed p-8 text-center cursor-pointer transition-colors ${file ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ash"}`}>
           <input
             type="file"
             className="hidden"
@@ -131,7 +131,7 @@ export default function UploadPage() {
             <button
               type="button"
               onClick={() => setPricing("free")}
-              className={`border px-4 py-4 text-left transition-colors ${pricing === "free" ? "border-ink bg-ink text-paper" : "border-ruleSoft hover:border-ink"}`}
+              className={`border px-4 py-4 text-left transition-colors ${pricing === "free" ? "border-ash bg-ash text-night" : "border-ruleSoft hover:border-ash"}`}
             >
               <div className="font-medium">Free</div>
               <div className="label !text-[9px] mt-1">MAX REACH · +10 PTS PER DOWNLOAD</div>
@@ -139,7 +139,7 @@ export default function UploadPage() {
             <button
               type="button"
               onClick={() => setPricing("paid")}
-              className={`border px-4 py-4 text-left transition-colors ${pricing === "paid" ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ink"}`}
+              className={`border px-4 py-4 text-left transition-colors ${pricing === "paid" ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ash"}`}
             >
               <div className="font-medium">Premium</div>
               <div className="label !text-[9px] mt-1">SET A PTS PRICE · YOU KEEP 50%</div>

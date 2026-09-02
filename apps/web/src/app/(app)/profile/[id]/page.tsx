@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
       <div className="grid lg:grid-cols-[7fr_5fr] gap-8">
         <section className="panel">
-          <header className="px-5 py-3 border-b border-ink flex items-baseline justify-between">
+          <header className="px-5 py-3 border-b border-cinder flex items-baseline justify-between">
             <h2 className="font-mono text-[13px] uppercase tracking-label">Points ledger</h2>
             <span className="label">FULL HISTORY · REAL ROWS</span>
           </header>
@@ -83,10 +83,10 @@ export default function ProfilePage() {
             {data.badges.map((b) => (
               <li
                 key={b.id}
-                className={`border p-3 ${b.awardedAt ? "border-ink" : "border-ruleSoft opacity-50"}`}
+                className={`border p-3 ${b.awardedAt ? "border-cinder" : "border-ruleSoft opacity-50"}`}
                 title={b.description}
               >
-                <div className={`font-mono text-[10px] uppercase tracking-label ${b.awardedAt ? "text-ink" : "text-dim"}`}>
+                <div className={`font-mono text-[10px] uppercase tracking-label ${b.awardedAt ? "text-ash" : "text-dim"}`}>
                   {b.name}
                 </div>
                 <p className="text-dim text-[11px] mt-1 leading-snug line-clamp-2">{b.description}</p>
@@ -216,7 +216,7 @@ function SchoolEditor({
     return (
       <button
         onClick={() => setEditing(true)}
-        className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft hover:border-ink px-2 py-0.5 inline-flex items-center gap-1.5"
+        className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft hover:border-ash px-2 py-0.5 inline-flex items-center gap-1.5"
         title="Change school"
       >
         {currentName ?? "NO SCHOOL"}

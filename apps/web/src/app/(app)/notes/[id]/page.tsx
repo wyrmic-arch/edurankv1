@@ -70,8 +70,8 @@ export default function NoteDetailPage() {
             // eslint-disable-next-line @next/next/no-img-element
             <img src={art} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" loading="lazy" />
           )}
-          <div className="absolute inset-0 bg-paper/30" />
-          <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-label px-2 py-0.5 border border-ink bg-paper">
+          <div className="absolute inset-0 bg-night/30" />
+          <span className="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-label px-2 py-0.5 border border-cinder bg-oil text-ash">
             GR {note.grade} · {note.subjectId.toUpperCase()}
           </span>
         </div>
@@ -94,7 +94,7 @@ export default function NoteDetailPage() {
         </div>
 
         {flash && (
-          <div className="hairline border-ink px-4 py-2.5 text-[13px]">{flash}</div>
+          <div className="hairline border-cinder px-4 py-2.5 text-[13px]">{flash}</div>
         )}
       </div>
 
@@ -109,10 +109,10 @@ export default function NoteDetailPage() {
         <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight leading-tight">{note.title}</h1>
 
         <div className="flex flex-wrap items-center gap-2 mt-4">
-          <Link href={`/profile/${note.uploaderId}`} className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5 no-underline hover:border-ink">
+          <Link href={`/profile/${note.uploaderId}`} className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5 no-underline hover:border-ash">
             <User className="w-3 h-3 inline-block mr-1" />{note.uploaderName}
           </Link>
-          <Link href={`/district/${note.subjectId}`} className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5 no-underline hover:border-ink">
+          <Link href={`/district/${note.subjectId}`} className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5 no-underline hover:border-ash">
             {note.subjectId.toUpperCase()}
           </Link>
           <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {note.grade}</span>
@@ -125,7 +125,7 @@ export default function NoteDetailPage() {
           <button
             onClick={upvote}
             disabled={note.ownedByMe}
-            className={`btn ${note.upvotedByMe ? "border-ink bg-ink text-paper" : ""}`}
+            className={`btn ${note.upvotedByMe ? "border-ash bg-ash text-night" : ""}`}
           >
             <ThumbsUp className="w-4 h-4" />
             <span className="font-mono">{note.upvoteCount}</span>

@@ -123,7 +123,7 @@ function FilterPill({ active, onClick, children }: { active: boolean; onClick: (
     <button
       onClick={onClick}
       className={`font-mono text-[10px] uppercase tracking-label px-3 py-1.5 border transition-colors ${
-        active ? "border-ink bg-ink text-paper" : "border-ruleSoft text-mute hover:border-ink hover:text-ink"
+        active ? "border-ash bg-ash text-night" : "border-cinder text-ghost hover:border-ash hover:text-ash"
       }`}
     >
       {children}

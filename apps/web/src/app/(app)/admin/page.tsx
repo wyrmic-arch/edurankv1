@@ -106,7 +106,7 @@ export default function AdminPage() {
           {pending.map((n) => (
             <li key={n.id} className="panel p-5">
               <div className="flex flex-wrap items-start gap-4">
-                <span className="w-11 h-11 shrink-0 flex items-center justify-center border border-ink">
+                <span className="w-11 h-11 shrink-0 flex items-center justify-center border border-cinder">
                   <FileText className="w-5 h-5 text-mute" />
                 </span>
                 <div className="flex-1 min-w-[240px]">

@@ -26,14 +26,14 @@ export function Avatar({ name, avatarUrl, frameColor, size = 40 }: AvatarProps) 
   const ring = frameColor ? { boxShadow: `inset 0 0 0 2px ${frameColor}` } : undefined;
   return (
     <div
-      className="relative flex items-center justify-center bg-paper border border-ink overflow-hidden shrink-0"
+      className="relative flex items-center justify-center bg-oil border border-cinder overflow-hidden shrink-0"
       style={{ width: size, height: size, ...ring }}
     >
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={avatarUrl} alt={name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       ) : (
-        <span className="font-mono text-ink" style={{ fontSize: size * 0.34 }}>
+        <span className="font-mono text-ash" style={{ fontSize: size * 0.34 }}>
           {initials}
         </span>
       )}
