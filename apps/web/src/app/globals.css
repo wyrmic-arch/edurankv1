@@ -6,21 +6,21 @@
   /* Fonts are wired via next/font/google in src/app/layout.tsx (Inter, JetBrains Mono, EB Garamond). */
 
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
   body {
-    @apply bg-paper text-ink font-sans antialiased;
+    @apply bg-night text-ash font-sans antialiased;
     font-feature-settings: "ss01", "cv11";
   }
   ::selection {
-    @apply bg-ink text-paper;
+    @apply bg-mark text-paper;
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #0A0A0A transparent;
+    scrollbar-color: #C83A2A transparent;
   }
   input, textarea, select {
-    @apply bg-paper border border-ink text-ink placeholder:text-dim outline-none focus:border-mark transition-colors;
+    @apply bg-oil border border-cinder text-ash placeholder:text-ghost outline-none focus:border-mark transition-colors;
   }
   a {
     @apply underline-offset-4;
@@ -29,40 +29,43 @@
 
 @layer components {
   .hairline {
-    @apply border border-ink;
+    @apply border border-cinder;
   }
   .hairline-soft {
-    @apply border border-ruleSoft;
+    @apply border border-smoke;
   }
   .panel {
-    @apply bg-paper border border-ink;
+    @apply bg-oil border border-cinder;
+  }
+  .panel-night {
+    @apply bg-oil border border-cinder;
   }
   .label {
-    @apply font-mono text-[10px] uppercase tracking-label text-mute;
+    @apply font-mono text-[10px] uppercase tracking-label text-ghost;
   }
   .label-ink {
-    @apply font-mono text-[10px] uppercase tracking-label text-ink;
+    @apply font-mono text-[10px] uppercase tracking-label text-ash;
   }
   .measure {
     max-width: 68ch;
   }
   .rule {
-    @apply border-t border-ink;
+    @apply border-t border-cinder;
   }
   .rule-soft {
-    @apply border-t border-ruleSoft;
+    @apply border-t border-smoke;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-label px-4 py-2 border border-ink transition-colors select-none cursor-pointer disabled:opacity-30 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 font-mono text-[11px] uppercase tracking-label px-4 py-2 border border-cinder text-ash transition-colors select-none cursor-pointer disabled:opacity-30 disabled:pointer-events-none;
   }
   .btn-solid {
-    @apply btn bg-ink text-paper hover:bg-paper hover:text-ink;
+    @apply btn bg-ash text-night hover:bg-mark hover:text-paper border-ash hover:border-mark;
   }
   .btn-ghost {
-    @apply btn bg-paper text-ink hover:bg-ink hover:text-paper;
+    @apply btn bg-oil text-ash hover:bg-ash hover:text-night;
   }
   .btn-mark {
-    @apply btn bg-mark text-paper border-mark hover:bg-paper hover:text-mark;
+    @apply btn bg-mark text-paper border-mark hover:bg-markBright hover:border-markBright shadow-emberSm;
   }
   .stat {
     @apply flex flex-col gap-1;
@@ -71,13 +74,13 @@
     @apply label;
   }
   .stat-value {
-    @apply font-mono text-2xl tabular-nums;
+    @apply font-mono text-2xl tabular-nums text-ash;
   }
   .link-row {
-    @apply flex items-baseline justify-between gap-4 py-2 border-b border-ruleSoft hover:border-ink transition-colors;
+    @apply flex items-baseline justify-between gap-4 py-2 border-b border-smoke hover:border-mark transition-colors;
   }
   .kbd {
-    @apply font-mono text-[10px] border border-ink px-1.5 py-0.5;
+    @apply font-mono text-[10px] border border-cinder px-1.5 py-0.5;
   }
 }
 
@@ -89,5 +92,45 @@
     white-space: pre;
     line-height: 1.05;
     letter-spacing: 0;
+  }
+  .ascii-embers {
+    color: var(--color-ash, #9AA0A8);
+    text-shadow: 0 0 18px rgba(200,58,42,0.16);
+  }
+  .ascii-dim {
+    opacity: 0.5;
+  }
+  /* subtle film grain over dark backgrounds */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .scanline {
+    position: relative;
+  }
+  .scanline::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2px,
+      rgba(0,0,0,0.14) 3px
+    );
+    mix-blend-mode: multiply;
+  }
+  .glow-mark {
+    filter: drop-shadow(0 0 12px rgba(232,73,47,0.45));
+  }
+  /* Logo has dark ink characters baked in — lighten them for the dark bg */
+  .inverted-logo {
+    filter: invert(1) hue-rotate(180deg) brightness(1.15);
   }
 }

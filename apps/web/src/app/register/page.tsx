@@ -66,7 +66,7 @@ export default function RegisterPage() {
               <PasswordField value={password} onChange={setPassword} />
             </F>
 
-            <F label="Grade" hint="You can pick your school from your profile after you're in.">
+            <F label="Grade" hint="You can pick your school from your profile after you&rsquo;re in.">
               <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
                 <option value="">—</option>
                 {GRADES.map((g) => (

@@ -25,7 +25,7 @@ const serif = EB_Garamond({
 export const metadata: Metadata = {
   title: "EduRank — Climb the ranks.",
   description:
-    "South Africa's study notes arena. Upload notes, earn PTS, unlock the best study packs and climb the leaderboard from your school to the national board.",
+    "The study notes arena for the kids school gave up on. Upload notes, earn PTS, unlock the best study packs and climb the national board.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${mono.variable} ${serif.variable}`}>
-      <body className="bg-paper text-ink font-sans antialiased">
+      <body className="bg-night text-ash font-sans antialiased grain">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
