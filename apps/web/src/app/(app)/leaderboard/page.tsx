@@ -7,7 +7,6 @@ import { Crown } from "lucide-react";
 import { api, type LeaderRow, type Subject, type School } from "@/lib/api";
 import { Avatar, TierChip } from "@/components/avatar";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
-import { Prompt } from "@/components/ascii";
 
 type Scope = "global" | "subject" | "school";
 type Range = "weekly" | "all-time";
@@ -49,7 +48,7 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <Prompt>national standings</Prompt>
+        <div className="label">NATIONAL STANDINGS</div>
         <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">The board.</h1>
       </div>
 

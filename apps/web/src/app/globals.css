@@ -90,14 +90,4 @@
     line-height: 1.05;
     letter-spacing: 0;
   }
-  .ascii-glow {
-    text-shadow: 0 0 14px rgba(10,10,10,0.18);
-  }
-  .ascii-dim {
-    color: var(--mute);
-  }
-  .sql-prompt {
-    font-family: var(--font-mono);
-    font-weight: 700;
-  }
 }

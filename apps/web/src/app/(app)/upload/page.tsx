@@ -7,7 +7,6 @@ import { api, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Spinner } from "@/components/hud";
 import { GRADES, POINTS_RULES } from "@edurank/shared";
-import { Prompt } from "@/components/ascii";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -60,7 +59,7 @@ export default function UploadPage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="label"><Prompt>submit a note</Prompt></div>
+      <div className="label">UPLOAD</div>
       <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1 mb-3">Submit a note.</h1>
       <p className="text-mute text-[14px] mb-10">
         Approved uploads earn <PTS value={POINTS_RULES.UPLOAD_APPROVED} size="sm" /> instantly — plus{" "}

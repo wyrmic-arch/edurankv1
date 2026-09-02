@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Upload, Download, Trophy } from "lucide-react";
 import { api, type LeaderRow, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
-import { AsciiArt, ART_WAVE, ART_HORIZON, ART_PROMPT } from "@/components/ascii";
 
 export default function Landing() {
   const { user, loading } = useAuth();
@@ -49,27 +48,10 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="max-w-[1400px] w-full mx-auto px-6 grid lg:grid-cols-[7fr_5fr] gap-12 items-start pt-14 pb-24 flex-1">
+      <section className="max-w-[1400px] w-full mx-auto px-6 grid lg:grid-cols-[7fr_5fr] gap-12 items-start pt-20 pb-24 flex-1">
         <div>
-          {/* ASCII logotype */}
-          <div className="mb-8">
-            <AsciiArt
-              art={[
-                "##### ####  #   # ####   ###  #   # #   # ",
-                "#     #   # #   # #   # #   # ##  # #  #  ",
-                "####  #   # #   # ####  ##### # # # ###   ",
-                "#     #   # #   # #  #  #   # #  ## #  #  ",
-                "##### ####   ###  #   # #   # #   # #   # ",
-              ].join("\n")}
-              size="clamp(7px, 1.4vw, 16px)"
-              className="ascii-glow text-ink"
-            />
-          </div>
-
-          <div className="label mb-6 flex items-center gap-2">
-            <span className="text-mark">›</span>
+          <div className="label mb-6">
             A study-notes arena — <span className="text-mark">one place to buy, sell, and share.</span>
-            <span className="animate-caret text-ink">█</span>
           </div>
           <h1 className="font-serif text-display font-medium tracking-display leading-none mb-8">
             Climb
@@ -131,42 +113,16 @@ export default function Landing() {
         </aside>
       </section>
 
-      {/* How it works — ASCII */}
+      {/* How it works */}
       <section className="max-w-[1400px] w-full mx-auto px-6 pb-24">
-        <div className="flex items-baseline gap-3 mb-10">
-          <span className="sql-prompt text-mark">$</span>
-          <span className="label">how it works</span>
-          <span className="flex-1 h-px bg-ink/20" />
+        <div className="rule mb-10 pt-0 flex items-baseline justify-between">
+          <span className="label">HOW IT WORKS</span>
         </div>
 
         <div className="grid md:grid-cols-3 gap-4">
           <Step n="01" icon={<Upload className="w-4 h-4" />} title="Drop a note" body="Upload CAPS-aligned notes, summaries and past papers. Review clears them onto the board." />
           <Step n="02" icon={<Download className="w-4 h-4" />} title="Earn PTS" body="Every approval pays instantly; every download, upvote and referral keeps the wallet growing." />
           <Step n="03" icon={<Trophy className="w-4 h-4" />} title="Climb the ranks" body="Trade PTS for premium packs and climb from your school to the national board." />
-        </div>
-
-        {/* The Great Wave — feature piece */}
-        <div className="hairline mt-16 p-6">
-          <div className="label mb-4 flex items-center gap-2">
-            <span className="text-mark">▸</span> THE CURVE · RENDERED IN ASCII
-          </div>
-          <div className="overflow-x-auto">
-            <AsciiArt art={ART_WAVE} size="clamp(4px, 0.68vw, 8.5px)" className="min-w-[720px] text-ink" />
-          </div>
-          <p className="label mt-4">HOKUSAI · THE GREAT WAVE OFF KANAGAWA</p>
-        </div>
-      </section>
-
-      {/* ASCII banner strip */}
-      <section className="max-w-[1400px] w-full mx-auto px-6 pb-24">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 hairline p-8">
-          <AsciiArt art={ART_HORIZON} size="clamp(5px, 0.8vw, 9px)" className="text-ink" />
-          <div className="max-w-sm">
-            <div className="label mb-1">JOIN THE ARENA</div>
-            <div className="font-serif text-3xl font-medium tracking-tight mb-3">The board is waiting.</div>
-            <Link href="/register" className="btn-solid">Enlist free <ArrowRight className="w-3.5 h-3.5" /></Link>
-          </div>
-          <AsciiArt art={ART_PROMPT} size="clamp(5px, 0.8vw, 9px)" className="text-mute" />
         </div>
       </section>
 

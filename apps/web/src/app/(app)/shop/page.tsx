@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Frame as FrameIcon, Palette } from "lucide-react";
+import { Check, Frame as FrameIcon, Palette, ShoppingBag } from "lucide-react";
 import { api, type ShopItemView } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { Avatar } from "@/components/avatar";
-import { Prompt } from "@/components/ascii";
 
 const KINDS = [
   { key: "frame", label: "FRAMES", icon: FrameIcon },
@@ -56,7 +55,7 @@ export default function ShopPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="label inline-flex items-center gap-2"><Prompt>gear & cosmetics</Prompt></div>
+          <div className="label inline-flex items-center gap-2"><ShoppingBag className="w-3.5 h-3.5" /> THE SHOP · GEAR</div>
           <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">The shop.</h1>
         </div>
         <div className="hairline px-5 py-3">

@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { api, type Subject } from "@/lib/api";
 import { Spinner } from "@/components/hud";
-import { Prompt } from "@/components/ascii";
 
 export default function BrowsePage() {
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
@@ -22,7 +21,7 @@ export default function BrowsePage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <Prompt>subjects & archives</Prompt>
+          <div className="label">SUBJECTS & ARCHIVES</div>
           <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">Browse.</h1>
         </div>
         <div className="text-right">
