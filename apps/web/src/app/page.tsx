@@ -54,6 +54,7 @@ export default function Landing() {
           <div className="label mb-6 flex items-center gap-2">
             <span className="text-ash animate-flicker">●</span>
             FOR THE KIDS THEY GAVE UP ON
+            <span className="font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-0.5 text-ash">EARLY ACCESS</span>
           </div>
           <h1 className="font-serif text-display font-medium tracking-display leading-none mb-8">
             They said

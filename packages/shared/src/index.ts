@@ -12,6 +12,7 @@ export const POINTS_RULES = {
   DOWNLOAD_RECEIVED: 10,
   UPVOTE_RECEIVED: 5,
   REFERRAL_BONUS: 100,
+  FOUNDER_BONUS: 150,
   PROFILE_COMPLETE: 30,
   STREAK_BASE: 5,
   STREAK_STEP: 2,
@@ -28,6 +29,7 @@ export type LedgerReason =
   | "unlock_revenue"
   | "streak_bonus"
   | "referral_bonus"
+  | "founder_bonus"
   | "profile_bonus"
   | "daily_challenge"
   | "cosmetic_purchase"
@@ -44,6 +46,7 @@ export const LEDGER_REASON_LABELS: Record<LedgerReason, string> = {
   unlock_revenue: "Unlock revenue (50% cut)",
   streak_bonus: "Daily login streak",
   referral_bonus: "Referral bonus",
+  founder_bonus: "Founder bonus",
   profile_bonus: "Profile completed",
   daily_challenge: "Daily challenge cleared",
   cosmetic_purchase: "Shop purchase",

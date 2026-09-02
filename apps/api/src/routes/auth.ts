@@ -3,7 +3,7 @@ import { eq, sql, and, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
 import { POINTS_RULES } from "@edurank/shared";
-import { schools, users, sessions } from "../db/schema";
+import { schools, users, sessions, userBadges, badges } from "../db/schema";
 import { hashPassword, verifyPassword, sha256Hex } from "../lib/password";
 import { createSession, destroySession, requireUser, currentUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, processStreak, rankOf } from "../lib/points";
@@ -14,6 +14,16 @@ import { sendEmail, appUrl } from "../lib/email";
 import type { AppEnv, UserRow } from "../types";
 
 const app = new Hono<AppEnv>();
+
+// Early-access cutoff (unix ms). Signups on or before this are FOUNDERs.
+// Defaults to 180 days after the platform's reference launch so the window
+// stays open unless a specific date is set. Set EARLY_ACCESS_UNTIL=0 to close it.
+const DEFAULT_EARLY_ACCESS_UNTIL = Date.parse("2027-03-01T00:00:00Z");
+function envEarlyAccessUntil(env: AppEnv["Bindings"]): number {
+  const raw = env.EARLY_ACCESS_UNTIL;
+  if (raw == null || raw === "") return DEFAULT_EARLY_ACCESS_UNTIL;
+  return Number(raw) || DEFAULT_EARLY_ACCESS_UNTIL;
+}
 
 async function schoolName(env: { DB: D1Database }, schoolId: string | null): Promise<string | null> {
   if (!schoolId) return null;
@@ -119,6 +129,26 @@ app.post("/register", async (c) => {
       reason: "referral_bonus",
       description: `Joined with ${referrer.displayName}'s referral code`,
     });
+  }
+
+  // Early-access founder reward. New signups before the cutoff are permanent
+  // FOUNDERs: they get a points bonus plus the founder badge. Windows set how
+  // the launch is framed — a clean "join now, you're an OG" moment.
+  const EARLY_ACCESS_UNTIL = envEarlyAccessUntil(c.env);
+  if (now <= EARLY_ACCESS_UNTIL) {
+    const hasFounder = await db.select({ id: badges.id }).from(badges).where(eq(badges.id, "founder")).limit(1);
+    if (hasFounder.length > 0) {
+      await db
+        .insert(userBadges)
+        .values({ userId, badgeId: "founder", awardedAt: now })
+        .onConflictDoNothing();
+      await awardPoints(c.env, {
+        userId,
+        delta: POINTS_RULES.FOUNDER_BONUS,
+        reason: "founder_bonus",
+        description: "Founder bonus — you joined during early access",
+      });
+    }
   }
 
   const token = await createSession(c, userId);

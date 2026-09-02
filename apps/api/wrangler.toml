@@ -34,3 +34,7 @@ ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://*.pag
 
 # Canonical app origin used to build email verification / reset links.
 APP_URL = "https://edurank.co.za"
+
+# Unix-ms cutoff for the FOUNDER early-access reward. Set 0 to close the window.
+# Leave unset to use the default (2027-03-01).
+# EARLY_ACCESS_UNTIL = ""

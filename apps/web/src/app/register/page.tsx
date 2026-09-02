@@ -53,8 +53,15 @@ export default function RegisterPage() {
         </Link>
 
         <div className="panel p-8">
-          <div className="label mb-2">NEW PLAYER REGISTRATION</div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Join the arena.</h1>
+          <div className="label mb-2">EARLY ACCESS · NEW PLAYER</div>
+          <h1 className="font-serif text-3xl font-medium tracking-tight mb-3">Join the arena.</h1>
+          <div className="hairline border-cinder bg-oil px-3 py-2.5 mb-8 flex items-center gap-3">
+            <span className="font-mono text-[11px] uppercase tracking-label text-ash border border-cinder px-2 py-0.5">FOUNDER</span>
+            <p className="text-ghost text-[12px] leading-snug">
+              Early-access signups are FOUNDERs for life — a permanent badge and{" "}
+              <span className="font-mono text-ash font-bold">+150 PTS</span> on the house.
+            </p>
+          </div>
 
           <form onSubmit={submit} className="space-y-5">
             <F label="Player name" hint="3–24 characters. This is what other players see.">

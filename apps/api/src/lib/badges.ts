@@ -9,6 +9,7 @@ export const BADGE_CRITERIA = [
   "streak",
   "total_earned",
   "purchases",
+  "founder",
 ] as const;
 export type BadgeCriteria = (typeof BADGE_CRITERIA)[number];
 
@@ -57,6 +58,7 @@ export async function evalBadges(env: { DB: D1Database }, userId: string): Promi
     streak: Number(userStats?.bestStreak ?? 0),
     total_earned: Number(userStats?.totalEarned ?? 0),
     purchases: Number(purchasesRow?.n ?? 0),
+    founder: 0, // awarded directly at signup, never computed from stats
   };
 
   const catalogRes = await env.DB.prepare(
