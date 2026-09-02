@@ -47,8 +47,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/" className="font-mono text-[15px] font-bold tracking-tight block mb-10 text-center no-underline">
-          EDURANK
+        <Link href="/" className="block mb-10 no-underline">
+          <img src="/logo.png" alt="EduRank" className="h-10 w-auto mx-auto" />
         </Link>
 
         <div className="panel p-8">

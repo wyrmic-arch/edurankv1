@@ -27,7 +27,11 @@ export const metadata: Metadata = {
   description:
     "South Africa's study notes arena. Upload notes, earn PTS, unlock the best study packs and climb the leaderboard from your school to the national board.",
   icons: {
-    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
 };

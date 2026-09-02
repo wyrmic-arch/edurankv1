@@ -67,8 +67,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-paper border-b border-ink">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
-        <Link href="/leaderboard" className="flex items-baseline gap-2 shrink-0 no-underline">
-          <span className="font-mono text-[15px] tracking-tight font-bold">EDURANK</span>
+        <Link href="/leaderboard" className="flex items-center shrink-0 no-underline">
+          <img src="/logo.png" alt="EduRank" className="h-7 w-auto" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-5 flex-1">

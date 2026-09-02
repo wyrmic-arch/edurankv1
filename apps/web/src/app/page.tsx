@@ -32,8 +32,8 @@ export default function Landing() {
     <div className="min-h-screen bg-paper flex flex-col">
       <header className="border-b border-ink">
         <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="font-mono text-[15px] font-bold tracking-tight no-underline">
-            EDURANK
+          <Link href="/" className="flex items-center gap-3 no-underline">
+            <img src="/logo.png" alt="EduRank" className="h-9 w-auto" />
           </Link>
           <div className="flex items-center gap-5">
             <span className="label hidden sm:inline">SOUTH AFRICA · GRADES 8–12 · CAPS ALIGNED</span>
