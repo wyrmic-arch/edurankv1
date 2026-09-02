@@ -38,8 +38,33 @@ async function request<T>(path: string, opts: { method?: string; body?: unknown;
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(opts.body);
   }
-  const res = await fetch(`${API_BASE}${path}`, { method: opts.method ?? "GET", headers, body }).catch(
-    (e) => {
+
+  // Hard request timeout. Some networks resolve Cloudflare hostnames to IPv6
+  // first but have no IPv6 route; without a timeout the fetch can hang for a
+  // long time waiting on Happy Eyeballs. We abort fast and retry once, which
+  // lets the second attempt land on the (working) IPv4 address.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+
+  let res: Response | null;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      method: opts.method ?? "GET",
+      headers,
+      body,
+      signal: controller.signal,
+    });
+  } catch {
+    // Aborted / network failure — retry once before surfacing the error.
+    try {
+      res = await fetch(`${API_BASE}${path}`, {
+        method: opts.method ?? "GET",
+        headers,
+        body,
+        signal: AbortSignal.timeout(8_000),
+      });
+    } catch (e) {
+      clearTimeout(timer);
       // Network-level failure (DNS, TLS, CORS preflight, offline, etc.).
       // Browsers swallow the real reason for CORS preflight failures, so
       // give the user something actionable.
@@ -50,8 +75,11 @@ async function request<T>(path: string, opts: { method?: string; body?: unknown;
           `if it's red and says "CORS" or "(blocked)", the API needs ${API_BASE} 's origin in its ALLOWED_ORIGINS. ` +
           `Otherwise make sure the worker is deployed (it is at: ${API_BASE}).`,
       );
-    },
-  );
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+
   if (res === null) {
     throw new ApiClientError(
       0,
