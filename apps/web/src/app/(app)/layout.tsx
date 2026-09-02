@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/store";
 import { Navbar } from "@/components/navbar";
-import { MiniMap } from "@/components/minimap";
 import { Spinner } from "@/components/hud";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -13,16 +12,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <RequireAuth>
         <Navbar />
         <main className="max-w-[1400px] mx-auto px-6 py-10 pb-32">{children}</main>
-        <ActiveMiniMap />
       </RequireAuth>
     </AuthProvider>
   );
-}
-
-function ActiveMiniMap() {
-  const pathname = usePathname();
-  const match = pathname.match(/^\/district\/([\w-]+)/);
-  return <MiniMap active={match?.[1]} />;
 }
 
 function RequireAuth({ children }: { children: React.ReactNode }) {

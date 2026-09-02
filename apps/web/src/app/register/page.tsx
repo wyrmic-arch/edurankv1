@@ -36,7 +36,7 @@ export default function RegisterPage() {
         grade: grade ? Number(grade) : null,
         referralCode: referralCode.trim() ? referralCode.trim().toUpperCase() : null,
       });
-      router.replace("/map");
+      router.replace("/leaderboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -66,7 +66,7 @@ export default function RegisterPage() {
               <PasswordField value={password} onChange={setPassword} />
             </F>
 
-            <F label="Grade" hint="You can pick your school on the map after you're in.">
+            <F label="Grade" hint="You can pick your school from your profile after you're in.">
               <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
                 <option value="">—</option>
                 {GRADES.map((g) => (

@@ -49,7 +49,7 @@ export default function DistrictPage() {
       <EmptyState
         title="Unknown district."
         hint="That part of the map isn't zoned yet."
-        action={<Link href="/map" className="btn-solid">Back to the map</Link>}
+        action={<Link href="/" className="btn-solid">Back to the board</Link>}
       />
     );
   }

@@ -9,7 +9,6 @@ import { Avatar } from "./avatar";
 import { PTS } from "./hud";
 
 const LINKS = [
-  { href: "/map",         label: "MAP" },
   { href: "/leaderboard", label: "RANKS" },
   { href: "/challenges",  label: "DAILY" },
   { href: "/shop",        label: "SHOP" },
@@ -67,7 +66,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-paper border-b border-ink">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
-        <Link href="/map" className="flex items-baseline gap-2 shrink-0 no-underline">
+        <Link href="/leaderboard" className="flex items-baseline gap-2 shrink-0 no-underline">
           <span className="font-mono text-[15px] tracking-tight font-bold">EDURANK</span>
         </Link>
 
@@ -115,7 +114,7 @@ export function Navbar() {
                 <div className="absolute right-0 top-full mt-2 w-60 panel p-1.5 z-50">
                   <MenuLink href={`/profile/${user.id}`} label="Profile" />
                   <MenuLink href="/shop" label="Shop" />
-                  <MenuLink href="/map" label="School Map" />
+                  <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
                   {user.role === "admin" && (

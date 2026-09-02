@@ -14,8 +14,8 @@ export default function NotFound() {
           <Link href="/" className="btn-solid">
             BACK TO BASE
           </Link>
-          <Link href="/map" className="btn-ghost">
-            VIEW THE MAP
+          <Link href="/leaderboard" className="btn-ghost">
+            VIEW THE BOARD
           </Link>
         </div>
       </div>

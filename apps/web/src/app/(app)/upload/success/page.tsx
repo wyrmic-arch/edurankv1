@@ -16,7 +16,7 @@ export default function UploadSuccess() {
         download after that keeps paying.
       </p>
       <div className="flex justify-center gap-3 mt-8">
-        <Link href="/map" className="btn-ghost">Back to the map</Link>
+        <Link href="/leaderboard" className="btn-ghost">View the board</Link>
         <Link href="/upload" className="btn-solid">Upload another</Link>
       </div>
     </div>

@@ -18,7 +18,7 @@ function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/map";
+  const next = params.get("next") ?? "/leaderboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,7 +107,7 @@ function LoginForm() {
     setBusy(true);
     try {
       await login(demoEmail, demoPassword);
-      router.replace(demoEmail === ADMIN_EMAIL ? "/admin" : "/map");
+      router.replace(demoEmail === ADMIN_EMAIL ? "/admin" : "/leaderboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

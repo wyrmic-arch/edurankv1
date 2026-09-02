@@ -16,7 +16,7 @@ export default function Landing() {
   const [now, setNow] = useState<string>("");
 
   useEffect(() => {
-    if (!loading && user) router.replace("/map");
+    if (!loading && user) router.replace("/leaderboard");
   }, [loading, user, router]);
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function Landing() {
       <footer className="border-t border-ink">
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <span className="label">© EduRank · 2026 · {process.env.NEXT_PUBLIC_API_URL?.replace(/^https?:\/\//, "") ?? "—"}</span>
-          <span className="label">Points-only economy · real-money payouts teased for launch · district art via Unsplash</span>
+          <span className="label">Points-only economy · real-money payouts teased for launch · grades 8–12</span>
         </div>
       </footer>
     </div>

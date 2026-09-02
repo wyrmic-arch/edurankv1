@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Award, Download, ThumbsUp, UploadCloud } from "lucide-react";
-import { api, imgUrl, type ProfileResponse } from "@/lib/api";
+import { Award, Check, Download, ThumbsUp, UploadCloud } from "lucide-react";
+import { api, imgUrl, type ProfileResponse, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { Avatar, TierChip } from "@/components/avatar";
@@ -40,7 +40,11 @@ export default function ProfilePage() {
             <TierChip totalEarned={data.user.totalEarned} />
             <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">RANK #{data.user.rank}</span>
             {data.user.grade && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {data.user.grade}</span>}
-            {data.user.schoolName && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{data.user.schoolName}</span>}
+            {isMe ? (
+              <SchoolEditor currentId={data.user.schoolId ?? null} currentName={data.user.schoolName ?? null} onSaved={(n) => setData((d) => d ? { ...d, user: { ...d.user, schoolName: n } } : d)} />
+            ) : (
+              data.user.schoolName && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{data.user.schoolName}</span>
+            )}
           </div>
         </div>
         <div className="text-right">
@@ -168,4 +172,79 @@ function frameColor(frameId: string | null): string | null {
     case "frame-sky": return "#43D9FF";
     default: return null;
   }
+}
+
+function SchoolEditor({
+  currentId,
+  currentName,
+  onSaved,
+}: {
+  currentId: string | null;
+  currentName: string | null;
+  onSaved: (name: string | null) => void;
+}) {
+  const { setUser, refresh } = useAuth();
+  const [editing, setEditing] = useState(!currentId);
+  const [schools, setSchools] = useState<School[]>([]);
+  const [value, setValue] = useState<string>(currentId ?? "");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.schools().then((r) => setSchools(r.items)).catch(() => {});
+  }, []);
+
+  async function save() {
+    setBusy(true);
+    setMsg(null);
+    try {
+      const school = schools.find((s) => s.id === value);
+      const { user: u } = await api.updateMe({ schoolId: value || null });
+      if (u) setUser(u);
+      onSaved(school?.name ?? null);
+      setMsg("Saved.");
+      await refresh();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Could not save.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // not editing: show the chip + a small edit button
+  if (!editing) {
+    return (
+      <button
+        onClick={() => setEditing(true)}
+        className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft hover:border-ink px-2 py-0.5 inline-flex items-center gap-1.5"
+        title="Change school"
+      >
+        {currentName ?? "NO SCHOOL"}
+        <span className="text-dim">EDIT</span>
+      </button>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-2 flex-wrap">
+      <select
+        value={value}
+        onChange={(e) => { setValue(e.target.value); setMsg(null); }}
+        className="px-2 py-1 text-[12px] max-w-[240px]"
+        aria-label="Choose your school"
+      >
+        <option value="">— no school —</option>
+        {schools.map((s) => (
+          <option key={s.id} value={s.id}>{s.name}</option>
+        ))}
+      </select>
+      <button onClick={() => void save()} disabled={busy} className="btn-solid !text-[10px]" title="Save school">
+        <Check className="w-3 h-3" /> {busy ? "…" : "SAVE"}
+      </button>
+      {!currentId && currentName === null && (
+        <button onClick={() => { setEditing(false); setMsg(null); }} className="font-mono text-[10px] uppercase tracking-label text-mute hover:text-ink">CANCEL</button>
+      )}
+      {msg && <span className="label !text-[10px]">{msg}</span>}
+    </span>
+  );
 }
