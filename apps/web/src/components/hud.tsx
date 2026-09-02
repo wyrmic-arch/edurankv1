@@ -146,13 +146,13 @@ export function FormField({
           onChange={(e) => onChange(e.target.value)}
           required={required}
           autoFocus={autoFocus}
-          className="w-full px-3 py-2.5 bg-paper text-body pr-12"
+          className="w-full px-3 py-2.5 bg-oil text-ash text-body pr-12"
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-ink hover:text-ink text-mute bg-paper"
+            className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-1 hover:border-ash hover:text-ash text-ghost bg-oil"
             aria-label={show ? "Hide password" : "Show password"}
             tabIndex={-1}
           >

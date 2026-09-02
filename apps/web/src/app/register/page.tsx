@@ -45,10 +45,10 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
         <Link href="/" className="block mb-10 no-underline">
-          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto" />
+          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto inverted-logo" />
         </Link>
 
         <div className="panel p-8">
@@ -94,7 +94,7 @@ export default function RegisterPage() {
 
           <p className="text-mute text-[13px] mt-8 text-center">
             Already have an account?{" "}
-            <Link href="/login" className="text-ink no-underline hover:underline font-medium">
+            <Link href="/login" className="text-ash no-underline hover:underline font-medium">
               Log in
             </Link>
           </p>
@@ -124,12 +124,12 @@ function PasswordField({ value, onChange }: { value: string; onChange: (v: strin
         onChange={(e) => onChange(e.target.value)}
         required
         minLength={8}
-        className="w-full px-3 py-2.5 text-body pr-12"
+        className="w-full px-3 py-2.5 bg-oil text-ash text-body pr-12"
       />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-ink hover:text-ink text-mute bg-paper"
+        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-1 hover:border-ash hover:text-ash text-ghost bg-oil"
         aria-label={show ? "Hide password" : "Show password"}
         tabIndex={-1}
       >

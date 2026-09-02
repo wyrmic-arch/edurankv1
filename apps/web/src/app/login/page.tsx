@@ -44,10 +44,10 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-paper flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
         <Link href="/" className="block mb-10 no-underline">
-          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto" />
+          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto inverted-logo" />
         </Link>
 
         <div className="panel p-8">
@@ -59,7 +59,7 @@ function LoginForm() {
             <FormField label="Password" type="password" value={password} onChange={setPassword} required />
 
             {error && (
-              <p className={`text-[13px] border px-3 py-2 ${error.toLowerCase().includes("reach") ? "border-ink bg-ink/5" : "border-mark text-mark bg-mark/5"}`}>
+              <p className="text-[13px] border px-3 py-2 border-mark text-mark bg-mark/5">
                 {error}
               </p>
             )}
@@ -93,7 +93,7 @@ function LoginForm() {
 
           <p className="text-mute text-[13px] mt-8 text-center">
             New here?{" "}
-            <Link href="/register" className="text-ink no-underline hover:underline font-medium">
+            <Link href="/register" className="text-ash no-underline hover:underline font-medium">
               Enlist free
             </Link>
           </p>
