@@ -106,6 +106,9 @@ app.route("/", metaRoutes); // /subjects, /schools
 // password-guessing is the highest-value abuse vector.
 app.use("/auth/register", rateLimit({ max: 3, windowMs: 60_000 }));
 app.use("/auth/login", rateLimit({ max: 5, windowMs: 60_000 }));
+app.use("/auth/forgot-password", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/reset-password", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/resend-verification", rateLimit({ max: 3, windowMs: 60_000 }));
 app.use("/notes/*/unlock", rateLimit({ max: 10, windowMs: 60_000 }));
 app.use("/notes/*/upvote", rateLimit({ max: 30, windowMs: 60_000 }));
 app.use("/shop/*/purchase", rateLimit({ max: 5, windowMs: 60_000 }));

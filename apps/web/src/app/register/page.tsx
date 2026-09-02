@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/store";
 import { GRADES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
+import { PasswordField } from "@/components/password-field";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -111,30 +112,5 @@ function F({ label, hint, children }: { label: string; hint?: string; children: 
       {children}
       {hint && <span className="text-dim text-[11px] mt-1.5 block">{hint}</span>}
     </label>
-  );
-}
-
-function PasswordField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const [show, setShow] = useState(false);
-  return (
-    <span className="relative block">
-      <input
-        type={show ? "text" : "password"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required
-        minLength={8}
-        className="w-full px-3 py-2.5 bg-oil text-ash text-body pr-12"
-      />
-      <button
-        type="button"
-        onClick={() => setShow((s) => !s)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-1 hover:border-ash hover:text-ash text-ghost bg-oil"
-        aria-label={show ? "Hide password" : "Show password"}
-        tabIndex={-1}
-      >
-        {show ? "HIDE" : "SHOW"}
-      </button>
-    </span>
   );
 }

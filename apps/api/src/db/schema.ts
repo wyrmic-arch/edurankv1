@@ -34,6 +34,11 @@ export const users = sqliteTable(
     grade: integer("grade"), // 8..12 (CAPS FET/GET)
     schoolId: text("school_id").references(() => schools.id),
     role: text("role").notNull().default("user"), // 'user' | 'admin'
+    emailVerifiedAt: integer("email_verified_at"), // null = unverified
+    verifyToken: text("verify_token"), // hashed one-time verify token
+    verifyTokenAt: integer("verify_token_at"),
+    resetToken: text("reset_token"), // hashed one-time password-reset token
+    resetTokenAt: integer("reset_token_at"),
     balance: integer("balance").notNull().default(0),
     totalEarned: integer("total_earned").notNull().default(0),
     totalSpent: integer("total_spent").notNull().default(0),

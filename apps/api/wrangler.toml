@@ -31,3 +31,10 @@ binding = "AI"
 # The CORS matcher honors the `https://*.pages.dev` wildcard, so this never
 # needs to change when Pages spins up new preview URLs. Do not use a bare `*`.
 ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://*.pages.dev,http://*.pages.dev,http://localhost:3000,http://localhost:8787"
+
+# Canonical app origin used to build email verification / reset links.
+APP_URL = "https://edurank.co.za"
+
+# Optional: set to start actually delivering verification / reset emails.
+# Until set, emails are logged by the worker instead of sent.
+RESEND_API_KEY = ""

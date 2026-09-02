@@ -149,6 +149,7 @@ export interface PublicUser {
   schoolId: string | null;
   schoolName?: string | null;
   role: UserRole;
+  emailVerified: boolean;
   balance: number;
   totalEarned: number;
   totalSpent: number;

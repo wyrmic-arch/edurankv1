@@ -4,6 +4,8 @@ export interface Bindings {
   DB: D1Database;
   NOTES_BUCKET: R2Bucket;
   ALLOWED_ORIGINS: string;
+  APP_URL?: string;
+  RESEND_API_KEY?: string;
   UNSPLASH_ACCESS_KEY?: string;
   DEV_SEED_SECRET?: string;
   AI?: Ai;
@@ -35,6 +37,11 @@ export interface UserRow {
   grade: number | null;
   schoolId: string | null;
   role: UserRole;
+  emailVerifiedAt: number | null;
+  verifyToken: string | null;
+  verifyTokenAt: number | null;
+  resetToken: string | null;
+  resetTokenAt: number | null;
   balance: number;
   totalEarned: number;
   totalSpent: number;

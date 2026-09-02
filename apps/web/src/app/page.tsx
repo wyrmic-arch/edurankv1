@@ -169,9 +169,14 @@ export default function Landing() {
       </section>
 
       <footer className="relative z-10 border-t border-cinder">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="max-w-[1400px] mx-auto px-6 py-6 flex flex-wrap items-center justify-between gap-4">
           <span className="label">© EduRank · 2026</span>
-          <span className="label">GRADES 8–12 · THE BOARD IS WAITING</span>
+          <div className="flex items-center gap-6">
+            <Link href="/about" className="label no-underline hover:text-ash">ABOUT</Link>
+            <Link href="/terms" className="label no-underline hover:text-ash">TERMS</Link>
+            <Link href="/privacy" className="label no-underline hover:text-ash">PRIVACY</Link>
+          </div>
+          <span className="label hidden sm:inline">GRADES 8–12</span>
         </div>
       </footer>
     </div>

@@ -115,6 +115,14 @@ export const api = {
     request("/auth/login", { method: "POST", body: { email, password } }),
   logout: (): Promise<{ ok: boolean }> => request("/auth/logout", { method: "POST" }),
   me: (): Promise<{ user: PublicUser }> => request("/auth/me"),
+  verifyEmail: (token: string, email: string): Promise<{ ok: boolean }> =>
+    request(`/auth/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`),
+  resendVerification: (): Promise<{ ok: boolean }> =>
+    request("/auth/resend-verification", { method: "POST", body: {} }),
+  forgotPassword: (email: string): Promise<{ ok: boolean }> =>
+    request("/auth/forgot-password", { method: "POST", body: { email } }),
+  resetPassword: (token: string, email: string, password: string): Promise<{ ok: boolean }> =>
+    request("/auth/reset-password", { method: "POST", body: { token, email, password } }),
   updateMe: (patch: Partial<{ displayName: string; bio: string; grade: number | null; schoolId: string | null; equippedFrameId: string | null; equippedSkinId: string | null }>): Promise<{ user: PublicUser }> =>
     request("/me", { method: "PATCH", body: patch }),
   ledger: (page = 1, flow = "all"): Promise<Paginatedish<LedgerItem>> =>

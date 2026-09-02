@@ -51,7 +51,7 @@ function LoginForm() {
         </Link>
 
         <div className="panel p-8">
-          <div className="label mb-2">IDENTIFY YOURSELF</div>
+          <div className="label mb-2">SIGN IN</div>
           <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Welcome back.</h1>
 
           <form onSubmit={submit} className="space-y-5">
@@ -65,57 +65,20 @@ function LoginForm() {
             )}
 
             <button disabled={busy} type="submit" className="btn-solid w-full">
-              {busy ? "CHECKING…" : "LOG IN"}
+              {busy ? "SIGNING IN…" : "SIGN IN"}
             </button>
           </form>
 
-          <div className="rule mt-8 pt-6">
-            <div className="label mb-3">DEMO ACCOUNTS (SEEDED)</div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => void submitWith("player1@edurank.co.za", PLAYER_PASSWORD)}
-                disabled={busy}
-                className="btn-ghost !text-[10px]"
-              >
-                PLAYER · 1,435 PTS
-              </button>
-              <button
-                type="button"
-                onClick={() => void submitWith(ADMIN_EMAIL, ADMIN_PASSWORD)}
-                disabled={busy}
-                className="btn-ghost !text-[10px]"
-              >
-                ADMIN / MODERATOR
-              </button>
-            </div>
-          </div>
-
-          <p className="text-mute text-[13px] mt-8 text-center">
-            New here?{" "}
-            <Link href="/register" className="text-ash no-underline hover:underline font-medium">
-              Enlist free
+          <div className="flex items-center justify-between mt-5">
+            <Link href="/forgot-password" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline">
+              Forgot password?
             </Link>
-          </p>
+            <Link href="/register" className="font-mono text-[11px] uppercase tracking-label text-ash no-underline hover:underline">
+              Create account
+            </Link>
+          </div>
         </div>
       </div>
     </div>
   );
-
-  async function submitWith(demoEmail: string, demoPassword: string) {
-    setError(null);
-    setBusy(true);
-    try {
-      await login(demoEmail, demoPassword);
-      router.replace(demoEmail === ADMIN_EMAIL ? "/admin" : "/leaderboard");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
-    } finally {
-      setBusy(false);
-    }
-  }
 }
-
-const PLAYER_PASSWORD = "Password#2026";
-const ADMIN_PASSWORD = "Admin#2026";
-const ADMIN_EMAIL = "admin@edurank.co.za";

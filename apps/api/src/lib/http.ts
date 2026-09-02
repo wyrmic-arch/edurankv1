@@ -40,6 +40,7 @@ export function publicUser(u: UserRow, schoolName: string | null, rank: number) 
     schoolId: u.schoolId,
     schoolName,
     role: u.role as UserRole,
+    emailVerified: u.emailVerifiedAt != null,
     balance: u.balance,
     totalEarned: u.totalEarned,
     totalSpent: u.totalSpent,
