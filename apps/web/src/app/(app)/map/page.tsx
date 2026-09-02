@@ -22,7 +22,7 @@ export default function MapPage() {
 
   return (
     <div className="-mx-6 -my-6 px-6 py-6">
-      <div className="flex items-baseline justify-between gap-6 mb-6">
+      <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-4 mb-6">
         <div>
           <div className="label">SOUTH AFRICA · SCHOOL DIRECTORY</div>
           <h1 className="font-serif text-4xl font-medium tracking-tight leading-none mt-1">
@@ -30,18 +30,18 @@ export default function MapPage() {
           </h1>
         </div>
         {user && (
-          <div className="flex items-center gap-8 text-right">
+          <div className="flex items-center gap-6 md:gap-8 md:text-right">
             <div>
               <div className="label">WALLET</div>
-              <div className="font-mono text-2xl tabular-nums">{user.balance.toLocaleString("en-ZA")} PTS</div>
+              <div className="font-mono text-xl md:text-2xl tabular-nums">{user.balance.toLocaleString("en-ZA")} PTS</div>
             </div>
             <div>
               <div className="label">RANK</div>
-              <div className="font-mono text-2xl tabular-nums">#{user.rank}</div>
+              <div className="font-mono text-xl md:text-2xl tabular-nums">#{user.rank}</div>
             </div>
             <div>
               <div className="label">TIER</div>
-              <div className="font-mono text-2xl tabular-nums" style={{ color: tier?.color }}>{tier?.label}</div>
+              <div className="font-mono text-xl md:text-2xl tabular-nums" style={{ color: tier?.color }}>{tier?.label}</div>
             </div>
           </div>
         )}
@@ -51,11 +51,11 @@ export default function MapPage() {
         <SchoolMap schools={schools} />
       </div>
 
-      <div className="rule mt-6 pt-4 flex items-baseline justify-between gap-4">
+      <div className="rule mt-6 pt-4 flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 sm:gap-4">
         <p className="text-mute text-[13px]">
           {schools.length} SA high schools · search, then click a dot to claim yours.
         </p>
-        <div className="flex gap-4">
+        <div className="flex gap-4 shrink-0">
           <Link href="/leaderboard" className="font-mono text-[11px] uppercase tracking-label no-underline hover:underline">
             Ranks →
           </Link>

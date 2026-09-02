@@ -62,9 +62,9 @@ export default function Landing() {
           </h1>
           <p className="measure text-[17px] text-ink leading-relaxed">
             Upload your notes, earn <span className="font-mono font-bold">PTS</span>, unlock exam
-            packs from the sharpest students in the country — and take your district on the map.
-            Built by a 20-year-old who watched classmates buy and sell notes in school, so
-            they have one place to do it.
+            packs from the sharpest students in the country — and climb from your school to the
+            national board. Built by a 20-year-old who watched classmates buy and sell notes in
+            school, so they have one place to do it.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-8">
@@ -78,7 +78,7 @@ export default function Landing() {
 
           <div className="rule mt-12 pt-6 grid grid-cols-3 gap-6">
             <Stat label="Notes circulating" value={totalNotes.toLocaleString("en-ZA")} />
-            <Stat label="Subject districts" value={subjects.length.toString().padStart(2, "0")} />
+            <Stat label="Subjects" value={subjects.length.toString().padStart(2, "0")} />
             <Stat label="PTS by #1 player" value={(top[0]?.points ?? 0).toLocaleString("en-ZA")} />
           </div>
         </div>

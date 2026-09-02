@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/store";
-import { api, type School } from "@/lib/api";
 import { GRADES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
 
@@ -16,14 +15,11 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [grade, setGrade] = useState<string>("");
-  const [schoolId, setSchoolId] = useState<string>("");
   const [referralCode, setReferralCode] = useState("");
-  const [schools, setSchools] = useState<School[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    api.schools().then((r) => setSchools(r.items)).catch(() => {});
     const ref = new URLSearchParams(window.location.search).get("ref");
     if (ref) setReferralCode(ref.toUpperCase());
   }, []);
@@ -38,7 +34,6 @@ export default function RegisterPage() {
         password,
         displayName: displayName.trim(),
         grade: grade ? Number(grade) : null,
-        schoolId: schoolId || null,
         referralCode: referralCode.trim() ? referralCode.trim().toUpperCase() : null,
       });
       router.replace("/map");
@@ -71,24 +66,14 @@ export default function RegisterPage() {
               <PasswordField value={password} onChange={setPassword} />
             </F>
 
-            <div className="grid grid-cols-2 gap-4">
-              <F label="Grade">
-                <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
-                  <option value="">—</option>
-                  {GRADES.map((g) => (
-                    <option key={g} value={g}>Grade {g}</option>
-                  ))}
-                </select>
-              </F>
-              <F label="School">
-                <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="w-full px-3 py-2.5 text-body">
-                  <option value="">—</option>
-                  {schools.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-                </select>
-              </F>
-            </div>
+            <F label="Grade" hint="You can pick your school on the map after you're in.">
+              <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
+                <option value="">—</option>
+                {GRADES.map((g) => (
+                  <option key={g} value={g}>Grade {g}</option>
+                ))}
+              </select>
+            </F>
 
             <F label="Referral code (optional)" hint="+100 PTS for you and your recruiter.">
               <input

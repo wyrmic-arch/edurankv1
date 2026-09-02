@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, Menu, User } from "lucide-react";
+import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/store";
 import { Avatar } from "./avatar";
 import { PTS } from "./hud";
@@ -19,6 +19,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,40 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
 
+  // Close the mobile drawer on navigation.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
+    <>
+      {LINKS.map((l) => {
+        const active = pathname.startsWith(l.href);
+        return (
+          <Link
+            key={l.href}
+            href={l.href}
+            onClick={onNavigate}
+            className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+              active ? "text-ink underline" : "text-mute hover:text-ink"
+            }`}
+          >
+            {l.label}
+          </Link>
+        );
+      })}
+      <Link
+        href="/upload"
+        onClick={onNavigate}
+        className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+          pathname.startsWith("/upload") ? "text-mark underline" : "text-mute hover:text-ink"
+        }`}
+      >
+        UPLOAD
+      </Link>
+    </>
+  );
+
   return (
     <header className="sticky top-0 z-50 bg-paper border-b border-ink">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
@@ -36,30 +71,20 @@ export function Navbar() {
           <span className="font-mono text-[15px] tracking-tight font-bold">EDURANK</span>
         </Link>
 
-        <nav className="flex items-center gap-5 flex-1">
-          {LINKS.map((l) => {
-            const active = pathname.startsWith(l.href);
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-                  active ? "text-ink underline" : "text-mute hover:text-ink"
-                }`}
-              >
-                {l.label}
-              </Link>
-            );
-          })}
-          <Link
-            href="/upload"
-            className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-              pathname.startsWith("/upload") ? "text-mark underline" : "text-mute hover:text-ink"
-            }`}
-          >
-            UPLOAD
-          </Link>
+        <nav className="hidden lg:flex items-center gap-5 flex-1">
+          <NavLinks />
         </nav>
+
+        <div className="lg:hidden">
+          <button
+            onClick={() => setMobileOpen((v) => !v)}
+            className="p-2 -m-2 hover:text-mark"
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
 
         {user ? (
           <div className="flex items-center gap-4 shrink-0">
@@ -90,7 +115,7 @@ export function Navbar() {
                 <div className="absolute right-0 top-full mt-2 w-60 panel p-1.5 z-50">
                   <MenuLink href={`/profile/${user.id}`} label="Profile" />
                   <MenuLink href="/shop" label="Shop" />
-                  <MenuLink href="/map" label="City Map" />
+                  <MenuLink href="/map" label="School Map" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
                   {user.role === "admin" && (
@@ -117,6 +142,14 @@ export function Navbar() {
           </div>
         )}
       </div>
+
+      {mobileOpen && (
+        <div className="lg:hidden border-t border-ruleSoft">
+          <div className="max-w-[1400px] mx-auto px-6 py-4 flex flex-col gap-4">
+            <NavLinks onNavigate={() => setMobileOpen(false)} />
+          </div>
+        </div>
+      )}
     </header>
   );
 }

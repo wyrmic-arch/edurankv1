@@ -35,9 +35,14 @@ const config: Config = {
           "0%, 50%": { opacity: "1" },
           "51%, 100%": { opacity: "0" },
         },
+        "ping-slow": {
+          "0%": { transform: "scale(0.8)", opacity: "0.8" },
+          "70%, 100%": { transform: "scale(1.6)", opacity: "0" },
+        },
       },
       animation: {
         caret: "caret 1s steps(1) infinite",
+        "ping-slow": "ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite",
       },
     },
   },
