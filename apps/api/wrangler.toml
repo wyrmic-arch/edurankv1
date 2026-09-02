@@ -2,6 +2,13 @@ name = "edurank-api"
 main = "src/index.ts"
 compatibility_date = "2024-09-23"
 
+# Custom domain — the worker also responds at api.edurank.co.za (in addition
+# to the default edurank-api.jacquesd264160.workers.dev URL). This is the URL
+# the browser uses, because some networks can't resolve *.workers.dev.
+routes = [
+  { pattern = "api.edurank.co.za", custom_domain = true }
+]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "edurank-app-db"
@@ -16,7 +23,7 @@ bucket_name = "edurank-notes"
 binding = "AI"
 
 [vars]
-# Permissive CORS for now — we'll lock it down once the Vercel domain is known.
-# Origins that hit the API are: the web app on Vercel (any preview or prod URL
-# under *.vercel.app / edurank.co.za), plus local dev.
-ALLOWED_ORIGINS = "*"
+# Origins that hit the API. Update this list when new deploy previews
+# appear. The default is permissive; once the live URLs are stable we
+# can lock this down to just edurank.co.za.
+ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://edurank.pages.dev,https://*.edurank.pages.dev,http://localhost:3000"

@@ -4,7 +4,7 @@ import type { PublicUser } from "@edurank/shared";
 // always talks to the worker even if NEXT_PUBLIC_API_URL isn't set.
 // Override locally by setting NEXT_PUBLIC_API_URL=http://127.0.0.1:8787
 // in apps/web/.env.local.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://edurank-api.jacquesd264160.workers.dev";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.edurank.co.za";
 
 export const TOKEN_KEY = "edurank_token";
 
