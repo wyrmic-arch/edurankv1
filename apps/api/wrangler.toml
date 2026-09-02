@@ -34,7 +34,3 @@ ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://*.pag
 
 # Canonical app origin used to build email verification / reset links.
 APP_URL = "https://edurank.co.za"
-
-# Optional: set to start actually delivering verification / reset emails.
-# Until set, emails are logged by the worker instead of sent.
-RESEND_API_KEY = ""
