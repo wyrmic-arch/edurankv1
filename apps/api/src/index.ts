@@ -21,17 +21,20 @@ const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string | string[] => {
 };
 
 // True if `origin` is explicitly listed or matches a `*.suffix` wildcard entry
-// (e.g. `https://*.edurank.pages.dev` matches https://<hash>.edurank.pages.dev).
+// (e.g. `https://*.pages.dev` matches https://<anything>.pages.dev). Handles
+// origins with or without a scheme, and wildcards that appear after a prefix.
 function originAllowed(configured: string | string[], origin: string | null | undefined): boolean {
   if (configured === "*") return true;
   if (!origin || typeof configured === "string") return false;
   if (configured.includes(origin)) return true;
-  const host = origin.replace(/^https?:\/\//, "");
+  const originHost = origin.replace(/^https?:\/\//, "");
   for (const entry of configured) {
-    if (entry.includes("*")) {
-      const suffix = entry.split("*").pop()!.replace(/^https?:\/\//, "");
-      if (host.endsWith(suffix)) return true;
-    }
+    if (!entry.includes("*")) continue;
+    const entryHost = entry.replace(/^https?:\/\//, "");
+    const [prefix, suffix] = entryHost.split("*");
+    const startMatch = !prefix || originHost.startsWith(prefix);
+    const endMatch = !suffix || originHost.endsWith(suffix);
+    if (startMatch && endMatch) return true;
   }
   return false;
 }
