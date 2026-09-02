@@ -53,10 +53,10 @@ export default function RegisterPage() {
 
         <div className="panel p-8">
           <div className="label mb-2">NEW PLAYER REGISTRATION</div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Enlist free.</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Join the arena.</h1>
 
           <form onSubmit={submit} className="space-y-5">
-            <F label="Player name" hint="3–24 characters. This is what the city sees.">
+            <F label="Player name" hint="3–24 characters. This is what other players see.">
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required minLength={3} maxLength={24} className="w-full px-3 py-2.5 text-body" autoFocus />
             </F>
             <F label="Email">
@@ -88,12 +88,12 @@ export default function RegisterPage() {
             {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
 
             <button disabled={busy} type="submit" className="btn-solid w-full">
-              {busy ? "CREATING FILE…" : "ENLIST & ENTER"}
+              {busy ? "CREATING PROFILE…" : "JOIN & ENTER"}
             </button>
           </form>
 
           <p className="text-mute text-[13px] mt-8 text-center">
-            Already enlisted?{" "}
+            Already have an account?{" "}
             <Link href="/login" className="text-ink no-underline hover:underline font-medium">
               Log in
             </Link>

@@ -25,7 +25,7 @@ const serif = EB_Garamond({
 export const metadata: Metadata = {
   title: "EduRank — Climb the ranks.",
   description:
-    "South Africa's study notes arena. Upload notes, earn PTS, unlock the best study packs and climb the leaderboard from your district to the national board.",
+    "South Africa's study notes arena. Upload notes, earn PTS, unlock the best study packs and climb the leaderboard from your school to the national board.",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },

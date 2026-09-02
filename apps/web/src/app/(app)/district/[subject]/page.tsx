@@ -47,19 +47,19 @@ export default function DistrictPage() {
   if (subjects && !subject) {
     return (
       <EmptyState
-        title="Unknown district."
-        hint="That part of the map isn't zoned yet."
+        title="Unknown subject."
+        hint="That subject isn't open yet."
         action={<Link href="/" className="btn-solid">Back to the board</Link>}
       />
     );
   }
-  if (!subject || (notes === null && !error)) return <Spinner label="ENTERING DISTRICT…" />;
+  if (!subject || (notes === null && !error)) return <Spinner label="OPENING SUBJECT…" />;
 
   return (
     <div className="space-y-6">
       <div className="flex items-baseline justify-between gap-4">
         <div>
-          <div className="label">DISTRICT · {subject.id.toUpperCase()}</div>
+          <div className="label">SUBJECT · {subject.id.toUpperCase()}</div>
           <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">{subject.name}</h1>
           <p className="text-mute text-[14px] mt-3 max-w-xl">{subject.blurb}</p>
         </div>
@@ -83,7 +83,7 @@ export default function DistrictPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search this district…"
+            placeholder="Search this subject…"
             className="px-3 py-2 text-[13px] w-64"
           />
         </div>
@@ -104,7 +104,7 @@ export default function DistrictPage() {
       ) : notes.length === 0 ? (
         <EmptyState
           title="No notes on this block yet."
-          hint="Be the first supplier in this district — approved uploads earn PTS every time someone downloads."
+          hint="Be the first supplier in this subject — approved uploads earn PTS every time someone downloads."
           action={<Link href="/upload" className="btn-solid">Upload a note</Link>}
         />
       ) : (

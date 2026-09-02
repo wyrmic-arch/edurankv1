@@ -68,7 +68,7 @@ export default function AdminPage() {
       <div className="max-w-md mx-auto text-center py-20">
         <ShieldAlert className="w-10 h-10 mx-auto text-mark mb-4" />
         <h1 className="font-serif text-3xl font-medium">Restricted area.</h1>
-        <p className="text-mute mt-2 text-[13px]">This wing of the city is staff-only.</p>
+        <p className="text-mute mt-2 text-[13px]">This area is staff-only.</p>
       </div>
     );
   }

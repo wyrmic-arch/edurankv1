@@ -7,6 +7,7 @@ import { api, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Spinner } from "@/components/hud";
 import { GRADES, POINTS_RULES } from "@edurank/shared";
+import { Prompt } from "@/components/ascii";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -55,11 +56,11 @@ export default function UploadPage() {
     }
   }
 
-  if (!user || subjects === null) return <Spinner label="OPENING THE DROP ZONE…" />;
+  if (!user || subjects === null) return <Spinner label="OPENING THE UPLOAD DESK…" />;
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="label">DROP ZONE</div>
+      <div className="label"><Prompt>submit a note</Prompt></div>
       <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1 mb-3">Submit a note.</h1>
       <p className="text-mute text-[14px] mb-10">
         Approved uploads earn <PTS value={POINTS_RULES.UPLOAD_APPROVED} size="sm" /> instantly — plus{" "}
@@ -98,7 +99,7 @@ export default function UploadPage() {
         </Field>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Field label="District (subject)">
+          <Field label="Subject">
             <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} required className="w-full px-3 py-2.5">
               <option value="">—</option>
               {subjects.map((s) => (

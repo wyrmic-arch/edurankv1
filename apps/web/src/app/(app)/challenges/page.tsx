@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { CalendarClock, Download, Flame, ThumbsUp, Trophy, UploadCloud } from "lucide-react";
+import { CalendarClock, Download, Flame, ThumbsUp, UploadCloud } from "lucide-react";
 import { api, type ChallengesResponse } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Progress, ErrorPanel, Spinner, useMidnightCountdown } from "@/components/hud";
 import { CHALLENGE_CATALOG } from "@edurank/shared";
+import { Prompt } from "@/components/ascii";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Download,
@@ -38,13 +39,13 @@ export default function ChallengesPage() {
   }, [load]);
 
   if (error) return <ErrorPanel message={error} onRetry={load} />;
-  if (!data) return <Spinner label="BRIEFING TODAY'S HEISTS…" />;
+  if (!data) return <Spinner label="BRIEFING TODAY'S CHALLENGES…" />;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="flex items-end justify-between gap-6">
         <div>
-          <div className="label inline-flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> DAILY HEISTS</div>
+          <div className="label inline-flex items-center gap-2"><Prompt>daily challenges</Prompt></div>
           <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">Today&rsquo;s board.</h1>
         </div>
         <div className="text-right">
@@ -85,7 +86,7 @@ export default function ChallengesPage() {
       </ul>
 
       <p className="label text-center">
-        FULL CATALOGUE ROTATES DAILY · {CHALLENGE_CATALOG.length} HEIST TYPES · PROGRESS COUNTS LIVE FROM REAL ACTIVITY
+        FULL CATALOGUE ROTATES DAILY · {CHALLENGE_CATALOG.length} CHALLENGE TYPES · PROGRESS COUNTS LIVE FROM REAL ACTIVITY
       </p>
     </div>
   );

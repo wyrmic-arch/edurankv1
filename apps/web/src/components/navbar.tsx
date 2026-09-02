@@ -9,6 +9,7 @@ import { Avatar } from "./avatar";
 import { PTS } from "./hud";
 
 const LINKS = [
+  { href: "/browse",     label: "BROWSE" },
   { href: "/leaderboard", label: "RANKS" },
   { href: "/challenges",  label: "DAILY" },
   { href: "/shop",        label: "SHOP" },

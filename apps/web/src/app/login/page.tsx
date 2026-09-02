@@ -52,7 +52,7 @@ function LoginForm() {
 
         <div className="panel p-8">
           <div className="label mb-2">IDENTIFY YOURSELF</div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Enter the city.</h1>
+          <h1 className="font-serif text-3xl font-medium tracking-tight mb-8">Welcome back.</h1>
 
           <form onSubmit={submit} className="space-y-5">
             <FormField label="Email" type="email" value={email} onChange={setEmail} required autoFocus />
