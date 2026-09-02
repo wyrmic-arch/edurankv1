@@ -11,7 +11,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <RequireAuth>
         <Navbar />
-        <main className="max-w-[1400px] mx-auto px-6 py-10 pb-32">{children}</main>
+        <main className="relative z-10 max-w-[1400px] mx-auto px-6 py-10 pb-32">{children}</main>
       </RequireAuth>
     </AuthProvider>
   );

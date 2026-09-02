@@ -1,6 +1,14 @@
+@import "./fonts.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-serif: "EB Garamond", Georgia, serif;
+}
 
 @layer base {
   /* Fonts are wired via next/font/google in src/app/layout.tsx (Inter, JetBrains Mono, EB Garamond). */
@@ -94,8 +102,8 @@
     letter-spacing: 0;
   }
   .ascii-embers {
-    color: var(--color-ash, #9AA0A8);
-    text-shadow: 0 0 18px rgba(200,58,42,0.16);
+    color: var(--color-ash, #E4E4E4);
+    text-shadow: 0 0 18px rgba(255,255,255,0.12);
   }
   .ascii-dim {
     opacity: 0.5;
@@ -127,7 +135,7 @@
     mix-blend-mode: multiply;
   }
   .glow-mark {
-    filter: drop-shadow(0 0 12px rgba(232,73,47,0.45));
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.35));
   }
   /* Logo has dark ink characters baked in — lighten them for the dark bg */
   .inverted-logo {

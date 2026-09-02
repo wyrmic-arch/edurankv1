@@ -11,23 +11,23 @@ const config: Config = {
         mute: "#8A8D93",
         dim: "#6B6E74",
         ruleSoft: "#D8D8D4",
-        // Night base (dark-first)
-        night: "#08090A",
-        oil: "#0F1113",
-        smoke: "#17191C",
-        cinder: "#232629",
-        ash: "#9AA0A8",
-        ghost: "#6B7178",
-        // Accents
-        mark: "#C83A2A",
-        markBright: "#E8492F",
-        ember: "#8A2315",
-        ok: "#1B5E20",
-        okBright: "#2FA84F",
+        // Monochrome night base — black & white, no accent hue.
+        night: "#0A0A0A",
+        oil: "#101010",
+        smoke: "#1A1A1A",
+        cinder: "#262626",
+        ash: "#E4E4E4",
+        ghost: "#8C8C8C",
+        // Accents are greyscale only.
+        mark: "#FFFFFF",
+        markBright: "#FFFFFF",
+        ember: "#333333",
+        ok: "#FFFFFF",
+        okBright: "#FFFFFF",
       },
       boxShadow: {
-        ember: "0 0 24px rgba(200,58,42,0.35)",
-        emberSm: "0 0 12px rgba(200,58,42,0.30)",
+        ember: "0 0 24px rgba(255,255,255,0.14)",
+        emberSm: "0 0 12px rgba(255,255,255,0.10)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
@@ -67,8 +67,8 @@ const config: Config = {
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "ember": {
-          "0%, 100%": { boxShadow: "0 0 18px rgba(200,58,42,0.28)" },
-          "50%": { boxShadow: "0 0 32px rgba(232,73,47,0.5)" },
+          "0%, 100%": { boxShadow: "0 0 18px rgba(255,255,255,0.14)" },
+          "50%": { boxShadow: "0 0 32px rgba(255,255,255,0.26)" },
         },
         "floaty": {
           "0%, 100%": { transform: "translateY(0)" },

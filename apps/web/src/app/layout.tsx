@@ -1,26 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, EB_Garamond } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/store";
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-sans",
-  display: "swap",
-});
-const mono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-mono",
-  display: "swap",
-});
-const serif = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-serif",
-  display: "swap",
-});
+import { AsciiBackdrop } from "@/components/ascii-backdrop";
 
 export const metadata: Metadata = {
   title: "EduRank — Climb the ranks.",
@@ -38,8 +19,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${mono.variable} ${serif.variable}`}>
-      <body className="bg-night text-ash font-sans antialiased grain">
+    <html lang="en" data-theme="night">
+      <body className="bg-night text-ash font-sans antialiased">
+        <AsciiBackdrop />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
