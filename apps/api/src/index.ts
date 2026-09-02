@@ -20,6 +20,20 @@ const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string | string[] => {
   return raw.split(",").map((o) => o.trim()).filter(Boolean);
 };
 
+// Security headers — set on every response.
+app.use("*", async (c, next) => {
+  await next();
+  c.header("X-Content-Type-Options", "nosniff");
+  c.header("X-Frame-Options", "DENY");
+  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+  c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  c.header("X-Robots-Tag", "noindex");
+  c.header(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
+});
+
 // CORS — applied to every request, including OPTIONS preflights.
 app.use("*", async (c, next) => {
   const origin = allowedOrigins(c);
@@ -35,14 +49,19 @@ app.use("*", async (c, next) => {
 // most cases, but defining an explicit 204 here makes browsers happy
 // even if a downstream middleware short-circuits before cors() can.
 app.options("*", (c) => {
-  const origin = allowedOrigins(c);
+  const configured = allowedOrigins(c);
+  const requestOrigin = c.req.header("Origin");
+  const allow =
+    configured === "*" ||
+    (typeof configured !== "string" && requestOrigin != null && configured.includes(requestOrigin));
+  if (!allow) return new Response(null, { status: 204 });
   const headers: Record<string, string> = {
-    "Access-Control-Allow-Origin": origin === "*" ? "*" : (c.req.header("Origin") ?? "*"),
+    "Access-Control-Allow-Origin": configured === "*" ? "*" : (requestOrigin ?? "*"),
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
   };
-  if (origin !== "*") headers["Vary"] = "Origin";
+  if (configured !== "*") headers["Vary"] = "Origin";
   return new Response(null, { status: 204, headers });
 });
 

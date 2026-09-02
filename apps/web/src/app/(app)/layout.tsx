@@ -34,7 +34,7 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
     if (!loading && !user) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
   }, [loading, user, router, pathname]);
 
-  if (loading) return <Spinner label="ENTERING MZANSI CITY…" />;
+  if (loading) return <Spinner label="LOADING…" />;
   if (!user) return <Spinner label="REDIRECTING…" />;
   return <>{children}</>;
 }

@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   title: "EduRank — Climb the ranks.",
   description:
     "South Africa's study notes arena. Upload notes, earn PTS, unlock the best study packs and climb the leaderboard from your district to the national board.",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

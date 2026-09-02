@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#EFEFEC"/>
+  <rect x="0.5" y="0.5" width="63" height="63" fill="none" stroke="#0A0A0A" stroke-width="1"/>
+  <!-- rising arrow -->
+  <path d="M14 50 L30 34 L40 40 L52 24" fill="none" stroke="#C83A2A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="52,14 60,22 44,24" fill="#C83A2A"/>
+  <!-- E -->
+  <path d="M12 12 H36 M12 30 H32 M12 48 H36" fill="none" stroke="#0A0A0A" stroke-width="5" stroke-linecap="square"/>
+</svg>

@@ -47,9 +47,9 @@ Notable setup and design decisions made while building EduRank against the spec.
 
 ## Map / frontend
 
-- **The city map is hand-built SVG geometry** (polygon districts on a fictional "Mzansi City"),
-  not a static image with hotspots: hover zoom/glow, parallax on mouse move, HUD-style tooltips,
-  keyboard-accessible link roles, and a minimap component docked bottom-left on app pages (active
+- **The subject map is hand-built SVG topography** (contour-ring districts on a cream field),
+  not a static image with hotspots: hover focus rings, a soft central lens, click-to-enter districts,
+  instrument-cluster corner annotations, and a minimap component docked bottom-left on app pages (active
   district highlighted). Mobile collapses to a vertical district list with the same visual language.
 - **Design system:** Anton (display) / Barlow (UI) / JetBrains Mono (data) — self-hosted TTFs in
   `public/fonts/` (OFL-licensed) rather than `next/font/google`, so builds don't depend on Google's

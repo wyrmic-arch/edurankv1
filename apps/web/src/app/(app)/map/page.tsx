@@ -1,38 +1,32 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { api, type Subject } from "@/lib/api";
-import { CityMap } from "@/components/city-map";
+import { api, type School } from "@/lib/api";
+import { SchoolMap } from "@/components/city-map";
 import { Spinner } from "@/components/hud";
 import { useAuth } from "@/lib/store";
 import { tierFor } from "@edurank/shared";
 
 export default function MapPage() {
   const { user } = useAuth();
-  const [subjects, setSubjects] = useState<Subject[] | null>(null);
+  const [schools, setSchools] = useState<School[] | null>(null);
 
   useEffect(() => {
-    api.subjects().then((r) => setSubjects(r.items)).catch(() => setSubjects([]));
+    api.schools().then((r) => setSchools(r.items)).catch(() => setSchools([]));
   }, []);
-
-  const noteCounts = useMemo(() => {
-    const map: Record<string, number> = {};
-    subjects?.forEach((s) => (map[s.id] = s.noteCount));
-    return map;
-  }, [subjects]);
 
   const tier = user ? tierFor(user.totalEarned) : null;
 
-  if (!user || subjects === null) return <Spinner label="DRAFTING THE CITY…" />;
+  if (!user || schools === null) return <Spinner label="DRAFTING THE MAP…" />;
 
   return (
     <div className="-mx-6 -my-6 px-6 py-6">
       <div className="flex items-baseline justify-between gap-6 mb-6">
         <div>
-          <div className="label">MZANSI CITY · DISTRICT SELECT</div>
+          <div className="label">SOUTH AFRICA · SCHOOL DIRECTORY</div>
           <h1 className="font-serif text-4xl font-medium tracking-tight leading-none mt-1">
-            Choose your ground.
+            Find your ground.
           </h1>
         </div>
         {user && (
@@ -54,12 +48,12 @@ export default function MapPage() {
       </div>
 
       <div className="relative hairline">
-        <CityMap noteCounts={noteCounts} />
+        <SchoolMap schools={schools} />
       </div>
 
       <div className="rule mt-6 pt-4 flex items-baseline justify-between gap-4">
         <p className="text-mute text-[13px]">
-          {subjects.length} subject districts · click a district to enter its archive.
+          {schools.length} SA high schools · search, then click a dot to claim yours.
         </p>
         <div className="flex gap-4">
           <Link href="/leaderboard" className="font-mono text-[11px] uppercase tracking-label no-underline hover:underline">

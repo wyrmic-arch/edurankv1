@@ -33,7 +33,7 @@ export default function Landing() {
       <header className="border-b border-ink">
         <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
           <Link href="/" className="font-mono text-[15px] font-bold tracking-tight no-underline">
-            EDURANK <span className="label !text-[9px] ml-1">MZANSI CITY</span>
+            EDURANK
           </Link>
           <div className="flex items-center gap-5">
             <span className="label hidden sm:inline">SOUTH AFRICA · GRADES 8–12 · CAPS ALIGNED</span>

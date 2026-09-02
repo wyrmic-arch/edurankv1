@@ -23,7 +23,6 @@ bucket_name = "edurank-notes"
 binding = "AI"
 
 [vars]
-# Origins that hit the API. Update this list when new deploy previews
-# appear. The default is permissive; once the live URLs are stable we
-# can lock this down to just edurank.co.za.
-ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://edurank.pages.dev,https://*.edurank.pages.dev,http://localhost:3000"
+# Origins allowed to call the API (browser CORS). Production domains plus
+# local dev. Do not add a bare wildcard in production.
+ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,http://localhost:3000,http://localhost:8787"

@@ -1,0 +1,16 @@
+{
+  "name": "EduRank",
+  "short_name": "EduRank",
+  "description": "South Africa's study notes arena.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#EFEFEC",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

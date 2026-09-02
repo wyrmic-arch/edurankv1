@@ -134,17 +134,32 @@ export function FormField({
   required?: boolean;
   autoFocus?: boolean;
 }) {
+  const [show, setShow] = useState(false);
+  const isPassword = type === "password";
   return (
     <label className="block">
       <span className="label block mb-2">{label}</span>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        autoFocus={autoFocus}
-        className="w-full px-3 py-2.5 bg-paper text-body"
-      />
+      <span className="relative block">
+        <input
+          type={isPassword && show ? "text" : type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          required={required}
+          autoFocus={autoFocus}
+          className="w-full px-3 py-2.5 bg-paper text-body pr-12"
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShow((s) => !s)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-ink hover:text-ink text-mute bg-paper"
+            aria-label={show ? "Hide password" : "Show password"}
+            tabIndex={-1}
+          >
+            {show ? "HIDE" : "SHOW"}
+          </button>
+        )}
+      </span>
     </label>
   );
 }

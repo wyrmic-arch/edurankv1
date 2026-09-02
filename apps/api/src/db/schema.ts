@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, primaryKey, index, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, primaryKey, index, uniqueIndex, real } from "drizzle-orm/sqlite-core";
 
 // Timestamps are stored as INTEGER unix epoch milliseconds (UTC) so that
 // range filtering and sorting are simple and timezone-safe.
@@ -7,6 +7,9 @@ export const schools = sqliteTable("schools", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   province: text("province").notNull(),
+  city: text("city"),
+  lat: real("lat"),
+  lng: real("lng"),
 });
 
 export const subjects = sqliteTable("subjects", {

@@ -1,8 +1,8 @@
-# EDURANK — Mzansi City
+# EDURANK
 
 **South Africa's study notes arena.** Students upload CAPS-aligned study notes, earn **PTS** for
 contributing, spend PTS to unlock premium packs, and climb leaderboards from their district to the
-national board — all wrapped in a GTA-style city map where every district is a subject.
+national board — all wrapped in a map where every district is a subject.
 
 I built this when I was still in school, after watching classmates buy and sell notes on WhatsApp
 and at break time. This is the one place to do it.

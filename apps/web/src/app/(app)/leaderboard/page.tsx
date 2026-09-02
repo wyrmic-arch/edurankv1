@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Crown } from "lucide-react";
 import { api, type LeaderRow, type Subject, type School } from "@/lib/api";
 import { Avatar, TierChip } from "@/components/avatar";
@@ -11,10 +12,11 @@ type Scope = "global" | "subject" | "school";
 type Range = "weekly" | "all-time";
 
 export default function LeaderboardPage() {
-  const [scope, setScope] = useState<Scope>("global");
+  const params = useSearchParams();
+  const [scope, setScope] = useState<Scope>((params.get("scope") as Scope) ?? "global");
   const [range, setRange] = useState<Range>("weekly");
-  const [subjectId, setSubjectId] = useState("");
-  const [schoolId, setSchoolId] = useState("");
+  const [subjectId, setSubjectId] = useState(params.get("subjectId") ?? "");
+  const [schoolId, setSchoolId] = useState(params.get("schoolId") ?? "");
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
   const [rows, setRows] = useState<LeaderRow[] | null>(null);

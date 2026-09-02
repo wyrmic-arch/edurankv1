@@ -68,7 +68,7 @@ export default function RegisterPage() {
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-3 py-2.5 text-body" />
             </F>
             <F label="Password" hint="8+ characters.">
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="w-full px-3 py-2.5 text-body" />
+              <PasswordField value={password} onChange={setPassword} />
             </F>
 
             <div className="grid grid-cols-2 gap-4">
@@ -126,5 +126,30 @@ function F({ label, hint, children }: { label: string; hint?: string; children: 
       {children}
       {hint && <span className="text-dim text-[11px] mt-1.5 block">{hint}</span>}
     </label>
+  );
+}
+
+function PasswordField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [show, setShow] = useState(false);
+  return (
+    <span className="relative block">
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required
+        minLength={8}
+        className="w-full px-3 py-2.5 text-body pr-12"
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-ink hover:text-ink text-mute bg-paper"
+        aria-label={show ? "Hide password" : "Show password"}
+        tabIndex={-1}
+      >
+        {show ? "HIDE" : "SHOW"}
+      </button>
+    </span>
   );
 }

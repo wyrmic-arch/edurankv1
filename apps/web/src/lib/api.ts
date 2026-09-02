@@ -146,6 +146,9 @@ export interface School {
   id: string;
   name: string;
   province: string;
+  city: string | null;
+  lat: number | null;
+  lng: number | null;
   playerCount: number;
 }
 export interface LeaderRow {

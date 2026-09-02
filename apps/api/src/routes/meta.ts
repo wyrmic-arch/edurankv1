@@ -24,15 +24,18 @@ app.get("/subjects", async (c) => {
 
 app.get("/schools", async (c) => {
   const res = await c.env.DB.prepare(
-    `SELECT sc.id, sc.name, sc.province,
+    `SELECT sc.id, sc.name, sc.province, sc.city, sc.lat, sc.lng,
             (SELECT COUNT(*) FROM users u WHERE u.school_id = sc.id) AS player_count
      FROM schools sc ORDER BY sc.name ASC`,
-  ).all<{ id: string; name: string; province: string; player_count: number }>();
+  ).all<{ id: string; name: string; province: string; city: string | null; lat: number | null; lng: number | null; player_count: number }>();
   return c.json({
     items: (res.results ?? []).map((r) => ({
       id: r.id,
       name: r.name,
       province: r.province,
+      city: r.city,
+      lat: r.lat,
+      lng: r.lng,
       playerCount: Number(r.player_count),
     })),
   });

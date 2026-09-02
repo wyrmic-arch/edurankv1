@@ -34,7 +34,6 @@ export function Navbar() {
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
         <Link href="/map" className="flex items-baseline gap-2 shrink-0 no-underline">
           <span className="font-mono text-[15px] tracking-tight font-bold">EDURANK</span>
-          <span className="label !text-[9px] hidden lg:inline">MZANSI CITY</span>
         </Link>
 
         <nav className="flex items-center gap-5 flex-1">
