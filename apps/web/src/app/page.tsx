@@ -7,6 +7,7 @@ import { ArrowRight, Upload, Download, Trophy } from "lucide-react";
 import { api, type LeaderRow, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ASCIIBlob } from "@/components/ascii-blob";
+import { AsciiLogo } from "@/components/ascii-logo";
 
 export default function Landing() {
   const { user, loading } = useAuth();
@@ -34,7 +35,7 @@ export default function Landing() {
       <header className="relative z-10 border-b border-cinder">
         <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 no-underline">
-            <img src="/logo.png" alt="EduRank" className="h-12 w-auto inverted-logo" />
+            <AsciiLogo size="md" />
           </Link>
           <div className="flex items-center gap-5">
             <span className="label hidden sm:inline">SOUTH AFRICA · GRADES 8–12</span>

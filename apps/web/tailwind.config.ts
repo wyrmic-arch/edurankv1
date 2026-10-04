@@ -18,16 +18,20 @@ const config: Config = {
         cinder: "#2A2A2A",
         ash: "#E4E4E4",
         ghost: "#A4A9B0",
-        // Accents are greyscale only.
+        // Accents: an ember accent used sparingly (CTAs, focus, live states)
+        // plus the greyscale base. Rank/tier colours stay in shared/.
         mark: "#FFFFFF",
         markBright: "#FFFFFF",
         ember: "#333333",
         ok: "#FFFFFF",
         okBright: "#FFFFFF",
+        accent: "#F0532D",
+        accentBright: "#FF6A42",
+        accentDim: "#2A140E",
       },
       boxShadow: {
-        ember: "0 0 24px rgba(255,255,255,0.14)",
-        emberSm: "0 0 12px rgba(255,255,255,0.10)",
+        ember: "0 0 28px rgba(240,83,45,0.24)",
+        emberSm: "0 0 14px rgba(240,83,45,0.18)",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],

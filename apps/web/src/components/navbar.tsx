@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/store";
 import { Avatar } from "./avatar";
+import { AsciiLogo } from "./ascii-logo";
 import { PTS } from "./hud";
 
 const LINKS = [
@@ -45,7 +46,7 @@ export function Navbar() {
             href={l.href}
             onClick={onNavigate}
             className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-              active ? "text-ash underline" : "text-ghost hover:text-ash"
+              active ? "text-accent underline" : "text-ghost hover:text-ash"
             }`}
           >
             {l.label}
@@ -56,7 +57,7 @@ export function Navbar() {
         href="/upload"
         onClick={onNavigate}
         className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-          pathname.startsWith("/upload") ? "text-mark underline" : "text-ghost hover:text-ash"
+          pathname.startsWith("/upload") ? "text-accent underline" : "text-ghost hover:text-ash"
         }`}
       >
         UPLOAD
@@ -68,7 +69,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 bg-oil border-b border-cinder">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
         <Link href="/leaderboard" className="flex items-center shrink-0 no-underline">
-          <img src="/logo.png" alt="EduRank" className="h-9 w-auto inverted-logo" />
+          <AsciiLogo size="sm" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-5 flex-1">

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useAuth } from "@/lib/store";
 import { Spinner, FormField } from "@/components/hud";
+import { AsciiLogo } from "@/components/ascii-logo";
 
 export default function LoginPage() {
   return (
@@ -49,8 +50,8 @@ function LoginForm() {
   return (
     <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/" className="block mb-10 no-underline">
-          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto inverted-logo" />
+        <Link href="/" className="flex justify-center mb-10 no-underline">
+          <AsciiLogo size="lg" />
         </Link>
 
         <div className="panel p-8">

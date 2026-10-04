@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/store";
 import { GRADES, POINTS_RULES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
 import { PasswordField } from "@/components/password-field";
+import { AsciiLogo } from "@/components/ascii-logo";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -48,8 +49,8 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-md">
-        <Link href="/" className="block mb-10 no-underline">
-          <img src="/logo.png" alt="EduRank" className="h-14 w-auto mx-auto inverted-logo" />
+        <Link href="/" className="flex justify-center mb-10 no-underline">
+          <AsciiLogo size="lg" />
         </Link>
 
         <div className="panel p-8">
