@@ -11,3 +11,7 @@ DEV_SEED_SECRET=local-dev-seed
 # Optional. Signs note ownership certificates (HMAC-SHA256). Generate a random
 # value in prod. Without it, certificates render but are marked "unsigned".
 CERT_SECRET=
+
+# Optional. Replies to app emails and operational alerts are routed here.
+REPLY_TO=
+ALERT_EMAIL=

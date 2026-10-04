@@ -43,7 +43,7 @@ export default function AboutPage() {
             <Mail className="w-5 h-5 text-ash mb-3" />
             <div className="label mb-1">CONTACT</div>
             <p className="text-ghost text-[14px] leading-relaxed break-all">
-              questions@edurank.co.za
+              jacquesdup90@gmail.com
             </p>
           </div>
         </div>

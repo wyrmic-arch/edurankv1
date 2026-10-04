@@ -14,4 +14,4 @@ EduRank is a points-only study marketplace for South African high-school student
 - Copyright & takedown: https://edurank.co.za/copyright
 - Accessibility: https://edurank.co.za/accessibility
 - Security: https://edurank.co.za/security
-- Contact: questions@edurank.co.za
+- Contact: jacquesdup90@gmail.com

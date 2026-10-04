@@ -24,7 +24,7 @@ export default function CopyrightPage() {
       <Section title="3. Report stolen content">
         <p>
           If your work has been copied onto EduRank, open the note and use <b>Report stolen</b>, or email{" "}
-          <a href="mailto:copyright@edurank.co.za" className="text-ash no-underline hover:underline">copyright@edurank.co.za</a>{" "}
+          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>{" "}
           with: (a) the note link, (b) what is infringed, (c) proof you own it, and (d) your contact details.
         </p>
       </Section>

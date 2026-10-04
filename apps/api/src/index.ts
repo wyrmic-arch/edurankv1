@@ -14,8 +14,12 @@ import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
 import { rateLimit } from "./lib/ratelimit";
 import { runDigest } from "./lib/digest";
+import { sendAlert } from "./lib/email";
 
 const app = new Hono<AppEnv>();
+
+// De-dupe operational alert emails so a repeating error can't flood the inbox.
+const alertThrottle = new Map<string, number>();
 
 const allowedOrigins = (c: { env: AppEnv["Bindings"] }): string | string[] => {
   const raw = c.env.ALLOWED_ORIGINS ?? "*";
@@ -93,6 +97,22 @@ app.onError((err, c) => {
     return c.json({ error: apiErr.message }, apiErr.status as 400);
   }
   console.error("Unhandled error:", err);
+
+  // Email the operator (throttled) so problems don't go unnoticed.
+  try {
+    const path = new URL(c.req.url).pathname;
+    const key = `${c.req.method} ${path}: ${String((err as Error)?.message ?? err)}`.slice(0, 160);
+    const now = Date.now();
+    if (c.env.ALERT_EMAIL && now - (alertThrottle.get(key) ?? 0) > 5 * 60_000) {
+      alertThrottle.set(key, now);
+      if (alertThrottle.size > 200) alertThrottle.clear();
+      const details = `${c.req.method} ${path}\n\n${(err as Error)?.stack ?? String(err)}`;
+      c.executionCtx.waitUntil(sendAlert(c.env, `Error: ${c.req.method} ${path}`, details));
+    }
+  } catch {
+    /* never let alerting break the error response */
+  }
+
   return c.json({ error: "Something broke on our side. Try again." }, 500);
 });
 

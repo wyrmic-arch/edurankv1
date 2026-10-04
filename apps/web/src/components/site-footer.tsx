@@ -23,7 +23,7 @@ export function SiteFooter() {
           ))}
         </nav>
         <div className="flex flex-wrap items-center gap-5">
-          <a href="mailto:questions@edurank.co.za" className="label no-underline hover:text-ash">
+          <a href="mailto:jacquesdup90@gmail.com" className="label no-underline hover:text-ash">
             CONTACT
           </a>
           <span className="label">© EDURANK · 2026 · SOUTH AFRICA</span>

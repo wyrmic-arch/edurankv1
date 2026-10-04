@@ -6,6 +6,8 @@ export interface Bindings {
   ALLOWED_ORIGINS: string;
   APP_URL?: string;
   RESEND_API_KEY?: string;
+  REPLY_TO?: string;
+  ALERT_EMAIL?: string;
   EARLY_ACCESS_UNTIL?: string;
   UNSPLASH_ACCESS_KEY?: string;
   CERT_SECRET?: string;

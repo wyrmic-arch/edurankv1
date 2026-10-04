@@ -39,7 +39,7 @@ export function LegalPage({
           ))}
         </nav>
         <p className="text-mute text-[12px] mt-6">
-          Questions? <a href="mailto:questions@edurank.co.za" className="text-ash no-underline hover:underline">questions@edurank.co.za</a>
+          Questions? <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>
         </p>
       </div>
     </div>

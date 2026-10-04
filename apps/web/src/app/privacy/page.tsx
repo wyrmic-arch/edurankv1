@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           <b>Information Officer:</b> Jacques du Plessis ·{" "}
-          <a href="mailto:privacy@edurank.co.za" className="text-ash no-underline hover:underline">privacy@edurank.co.za</a>
+          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>
         </p>
       </Section>
 
@@ -72,7 +72,7 @@ export default function PrivacyPage() {
         <p>
           Under POPIA you may ask us to access, correct or delete your personal information, object to
           processing, and withdraw consent. Email{" "}
-          <a href="mailto:privacy@edurank.co.za" className="text-ash no-underline hover:underline">privacy@edurank.co.za</a>{" "}
+          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>{" "}
           to make a request; we may need to verify your identity first. If you are not satisfied, you may
           complain to the Information Regulator (South Africa) at{" "}
           <a href="https://inforegulator.org.za" className="text-ash no-underline hover:underline">inforegulator.org.za</a>.

@@ -12,6 +12,7 @@ import { sha256HexBytes } from "../lib/password";
 import { err, noteDTO, pagination } from "../lib/http";
 import { moderateNote } from "../lib/moderation";
 import { appUrl } from "../lib/email";
+import { sendAlert } from "../lib/email";
 import { shortId } from "../lib/id";
 import type { AppEnv, NoteRow, UserRow } from "../types";
 
@@ -407,6 +408,13 @@ app.post("/:id/report", async (c) => {
     status: "open",
     createdAt: Date.now(),
   });
+  try {
+    c.executionCtx.waitUntil(
+      sendAlert(c.env, "New content report", `Note: ${id}\nReason: ${reason}\nDetails: ${details}\nReporter: ${user.displayName} (${user.id})`),
+    );
+  } catch {
+    /* alerting is best-effort */
+  }
   return c.json({ ok: true });
 });
 
