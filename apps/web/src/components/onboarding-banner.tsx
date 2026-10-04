@@ -19,7 +19,8 @@ export function OnboardingBanner() {
 
   if (!user) return null;
   // Verification is soft while the flag is off — don't nag users about it.
-  const needEmail = REQUIRE_EMAIL_VERIFICATION && !user.emailVerified;
+  // Staff (owner/admin/principal/teacher) are exempt from the gate entirely.
+  const needEmail = REQUIRE_EMAIL_VERIFICATION && !isStaffRole(user.role) && !user.emailVerified;
   const needGrade = !isStaffRole(user.role) && user.grade == null;
   const needSchool = !isStaffRole(user.role) && !user.schoolId;
 
