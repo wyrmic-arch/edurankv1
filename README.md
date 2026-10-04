@@ -48,9 +48,9 @@ cp apps/api/.dev.vars.example apps/api/.dev.vars
 
 # 3. create schema + reference data (subjects, schools, badges, shop items)
 npm run migrate -w apps/api
-npx wrangler d1 execute edurank-db --local --file scripts/reference-seed.sql -w apps/api
+npx wrangler d1 execute edurank-app-db --local --file scripts/reference-seed.sql -w apps/api
 # ^ run from repo root if the -w shorthand complains:
-#   cd apps/api && npx wrangler d1 execute edurank-db --local --file scripts/reference-seed.sql
+#   cd apps/api && npx wrangler d1 execute edurank-app-db --local --file scripts/reference-seed.sql
 
 # 4. start the API (terminal A)
 npm run dev:api        # http://127.0.0.1:8787
@@ -92,7 +92,7 @@ cd apps/api
 npx wrangler login
 
 # D1 database — put the real id into wrangler.toml
-npx wrangler d1 create edurank-db
+npx wrangler d1 create edurank-app-db
 
 # R2 bucket
 npx wrangler r2 bucket create edurank-notes
@@ -105,7 +105,7 @@ Update `apps/api/wrangler.toml`: set `database_id` from the create output.
 ```bash
 cd apps/api
 npm run migrate:remote                                  # applies migrations to prod D1
-npx wrangler d1 execute edurank-db --remote --file scripts/reference-seed.sql
+npx wrangler d1 execute edurank-app-db --remote --file scripts/reference-seed.sql
 npx wrangler secret put UNSPLASH_ACCESS_KEY             # optional but recommended
 npx wrangler secret put DEV_SEED_SECRET                 # only needed if seeding remote
 npm run deploy                                          # → https://edurank-api.<subdomain>.workers.dev
@@ -158,7 +158,7 @@ real ledger deltas — weekly boards count positive deltas from the last 7 days.
 ## Verification
 
 ```bash
-cd apps/api && npm run smoke     # 25-check end-to-end suite against a running dev API
+cd apps/api && npm run smoke     # 26-check end-to-end suite against a running dev API
 npm run typecheck                # strict TS across all three packages (run at root)
 ```
 
