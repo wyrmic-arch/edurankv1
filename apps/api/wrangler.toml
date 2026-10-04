@@ -38,3 +38,7 @@ APP_URL = "https://edurank.co.za"
 # Unix-ms cutoff for the FOUNDER early-access reward. Set 0 to close the window.
 # Leave unset to use the default (2027-03-01).
 # EARLY_ACCESS_UNTIL = ""
+
+# Daily notification digest at 06:00 UTC (08:00 SAST).
+[triggers]
+crons = ["0 6 * * *"]

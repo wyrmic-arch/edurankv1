@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { notes } from "../db/schema";
 import { awardPoints } from "./points";
 import { evalBadges } from "./badges";
+import { notify } from "./notify";
 import { POINTS_RULES } from "@edurank/shared";
 import type { AppEnv, NoteRow } from "../types";
 
@@ -132,6 +133,12 @@ export async function moderateNote(env: Env, noteId: string): Promise<void> {
         reviewNote: reason.slice(0, 300),
       })
       .where(eq(notes.id, noteId));
+    await notify(env, note.uploaderId, {
+      type: "note_rejected",
+      title: `Note rejected: "${note.title}"`,
+      body: reason.slice(0, 300),
+      link: `/notes/${noteId}`,
+    });
   };
 
   const pass = async (reviewNote: string | null) => {
@@ -153,6 +160,12 @@ export async function moderateNote(env: Env, noteId: string): Promise<void> {
       subjectId: note.subjectId,
     });
     await evalBadges(env, note.uploaderId);
+    await notify(env, note.uploaderId, {
+      type: "note_approved",
+      title: `Note approved: "${note.title}"`,
+      body: `+${POINTS_RULES.UPLOAD_APPROVED} PTS — it's live on the board now.`,
+      link: `/notes/${noteId}`,
+    });
   };
 
   const holdForHuman = async (reason: string) => {

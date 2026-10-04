@@ -1,4 +1,4 @@
-import type { PublicUser, UserRole } from "@edurank/shared";
+import type { PublicUser, UserRole, NotificationDTO } from "@edurank/shared";
 
 // Production API URL is baked in as the fallback so the deployed build
 // always talks to the worker even if NEXT_PUBLIC_API_URL isn't set.
@@ -172,6 +172,15 @@ export const api = {
   certificate: (id: string): Promise<{ certificate: Certificate }> => request(`/notes/${id}/certificate`),
   reportNote: (id: string, reason: string, details = ""): Promise<{ ok: boolean }> =>
     request(`/notes/${id}/report`, { method: "POST", body: { reason, details } }),
+
+  notifications: (page = 1): Promise<{ items: NotificationDTO[]; unread: number; page: number; pageSize: number; total: number }> =>
+    request(`/notifications?page=${page}`),
+  notificationsUnread: (): Promise<{ unread: number }> => request("/notifications/unread-count"),
+  markNotificationsRead: (ids?: string[]): Promise<{ ok: boolean }> =>
+    request("/notifications/read", { method: "POST", body: { ids } }),
+  notificationPrefs: (): Promise<{ email: boolean }> => request("/notifications/prefs"),
+  setNotificationPrefs: (email: boolean): Promise<{ ok: boolean; email: boolean }> =>
+    request("/notifications/prefs", { method: "PATCH", body: { email } }),
 
   // --- admin ---
   adminUsers: (q = "", role = ""): Promise<{ items: AdminUser[] }> =>

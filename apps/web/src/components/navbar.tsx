@@ -7,6 +7,7 @@ import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/store";
 import { Avatar } from "./avatar";
 import { AsciiLogo } from "./ascii-logo";
+import { NotificationBell } from "./notification-bell";
 import { PTS } from "./hud";
 
 const LINKS = [
@@ -111,6 +112,8 @@ export function Navbar() {
                 {user.streakCount}d
               </span>
             </Link>
+
+            <NotificationBell />
 
             <div className="relative" ref={menuRef}>
               <button

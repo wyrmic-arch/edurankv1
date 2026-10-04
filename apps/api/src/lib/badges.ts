@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { notes, noteUpvotes, noteUnlocks, purchases, userBadges, users } from "../db/schema";
+import { notify } from "./notify";
 
 export const BADGE_CRITERIA = [
   "uploads_approved",
@@ -15,6 +16,7 @@ export type BadgeCriteria = (typeof BADGE_CRITERIA)[number];
 
 interface BadgeRow {
   id: string;
+  name: string;
   criteria_type: BadgeCriteria;
   threshold: number;
 }
@@ -62,7 +64,7 @@ export async function evalBadges(env: { DB: D1Database }, userId: string): Promi
   };
 
   const catalogRes = await env.DB.prepare(
-    "SELECT id, criteria_type, threshold FROM badges",
+    "SELECT id, name, criteria_type, threshold FROM badges",
   ).all<BadgeRow>();
   const catalog = catalogRes.results ?? [];
 
@@ -82,6 +84,12 @@ export async function evalBadges(env: { DB: D1Database }, userId: string): Promi
         .values({ userId, badgeId: b.id, awardedAt: now })
         .onConflictDoNothing();
       earnedNow.push(b.id);
+      await notify(env, userId, {
+        type: "badge_earned",
+        title: `Badge unlocked: ${b.name}`,
+        body: "A new badge just landed on your profile.",
+        link: "/profile",
+      });
     }
   }
   return earnedNow;

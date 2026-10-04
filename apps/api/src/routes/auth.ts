@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword, sha256Hex, needsRehash, PBKDF2_ITERATIONS
 import { createSession, destroySession, requireUser, currentUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, processStreak, rankOf } from "../lib/points";
 import { evalBadges } from "../lib/badges";
+import { notify } from "../lib/notify";
 import { referralCode, shortId } from "../lib/id";
 import { err, parseJsonBody, publicUser } from "../lib/http";
 import { sendEmail, appUrl } from "../lib/email";
@@ -203,6 +204,12 @@ app.post("/register", async (c) => {
         delta: POINTS_RULES.REFERRAL_BONUS,
         reason: "referral_bonus",
         description: `Joined with ${referrer.displayName}'s referral code`,
+      });
+      await notify(c.env, referrer.id, {
+        type: "referral_joined",
+        title: `${body.displayName} joined with your code`,
+        body: `+${POINTS_RULES.REFERRAL_BONUS} PTS landed in your wallet.`,
+        link: "/profile",
       });
     }
   }

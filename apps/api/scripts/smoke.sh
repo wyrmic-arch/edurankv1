@@ -206,6 +206,21 @@ RID=$(echo "$RPT" | jq -r '.items[0].id')
 RES=$(curl -s --max-time 15 -X POST $API/admin/reports/$RID/resolve -H "Authorization: Bearer $TADMIN" -H 'Content-Type: application/json' -d '{"action":"dismiss"}')
 check "report dismissed" '.ok == true' "$RES"
 
+say "== notifications =="
+NOTIF=$(curl -s --max-time 15 $API/notifications -H "Authorization: Bearer $TA")
+check "uploader has notifications" '.items | length >= 1' "$NOTIF"
+check "unread count is positive" '.unread >= 1' "$NOTIF"
+RD=$(curl -s --max-time 15 -X POST $API/notifications/read -H "Authorization: Bearer $TA" -H 'Content-Type: application/json' -d '{}')
+check "mark-all-read works" '.ok == true' "$RD"
+UN=$(curl -s --max-time 15 $API/notifications/unread-count -H "Authorization: Bearer $TA")
+check "unread cleared" '.unread == 0' "$UN"
+PRE=$(curl -s --max-time 15 -X PATCH $API/notifications/prefs -H "Authorization: Bearer $TA" -H 'Content-Type: application/json' -d '{"email":false}')
+check "digest preference toggles" '.ok == true' "$PRE"
+PRG=$(curl -s --max-time 15 $API/notifications/prefs -H "Authorization: Bearer $TA")
+check "digest preference persisted" '.email | not' "$PRG"
+DG=$(curl -s --max-time 20 -X POST $API/admin/notifications/run-digest -H "Authorization: Bearer $TADMIN")
+check "digest runs" '.ok == true' "$DG"
+
 say "== rate limiting =="
 # Hammer one IP: the 5/min login limiter must reject the 6th attempt.
 RLIP="smoke-$TS-ratelimit"

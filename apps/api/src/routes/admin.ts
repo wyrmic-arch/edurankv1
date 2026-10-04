@@ -5,6 +5,8 @@ import { notes, noteReports, schools, staffInvites, users } from "../db/schema";
 import { requireAdmin } from "../lib/auth";
 import { awardPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
+import { notify } from "../lib/notify";
+import { runDigest } from "../lib/digest";
 import { err } from "../lib/http";
 import { shortId } from "../lib/id";
 import { POINTS_RULES, USER_ROLES, academicYear, type UserRole } from "@edurank/shared";
@@ -88,6 +90,12 @@ app.post("/notes/:id/approve", async (c) => {
   });
 
   await evalBadges(c.env, note.uploaderId);
+  await notify(c.env, note.uploaderId, {
+    type: "note_approved",
+    title: `Note approved: "${note.title}"`,
+    body: `+${POINTS_RULES.UPLOAD_APPROVED} PTS — it's live on the board now.`,
+    link: `/notes/${id}`,
+  });
   return c.json({ ok: true, status: "approved", uploaderBalanceAfter: balanceAfter });
 });
 
@@ -106,6 +114,12 @@ app.post("/notes/:id/reject", async (c) => {
     .update(notes)
     .set({ status: "rejected", reviewedBy: admin.id, reviewedAt: Date.now(), reviewNote: reason })
     .where(eq(notes.id, id));
+  await notify(c.env, note.uploaderId, {
+    type: "note_rejected",
+    title: `Note rejected: "${note.title}"`,
+    body: reason,
+    link: `/notes/${id}`,
+  });
   return c.json({ ok: true, status: "rejected" });
 });
 
@@ -367,6 +381,13 @@ app.post("/reports/:id/resolve", async (c) => {
       .where(eq(notes.id, rep.noteId));
   }
   return c.json({ ok: true });
+});
+
+// POST /admin/notifications/run-digest — trigger the daily digest manually
+app.post("/notifications/run-digest", async (c) => {
+  await requireAdmin(c);
+  const res = await runDigest(c.env);
+  return c.json({ ok: true, ...res });
 });
 
 export default app;

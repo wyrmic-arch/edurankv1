@@ -7,6 +7,7 @@ import { noteUpvotes, noteUnlocks, notes, noteReports, noteVerifications, points
 import { canAccessNotes, currentUser, requireTeacher, requireUser } from "../lib/auth";
 import { awardPoints, spendPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
+import { notify } from "../lib/notify";
 import { sha256HexBytes } from "../lib/password";
 import { err, noteDTO, pagination } from "../lib/http";
 import { moderateNote } from "../lib/moderation";
@@ -353,6 +354,12 @@ app.post("/:id/verify", async (c) => {
       target: [noteVerifications.noteId, noteVerifications.teacherId],
       set: { verdict, comment, createdAt: Date.now() },
     });
+  await notify(c.env, note.uploaderId, {
+    type: "note_verified",
+    title: `A teacher ${verdict === "correct" ? "verified" : "flagged"} "${note.title}"`,
+    body: comment || (verdict === "correct" ? "Your notes check out." : "A teacher thinks this needs another look."),
+    link: `/notes/${note.id}`,
+  });
   return c.json({ ok: true, verdict });
 });
 
@@ -603,6 +610,13 @@ app.post("/:id/unlock", async (c) => {
     .where(eq(notes.id, id));
 
   await evalBadges(c.env, note.uploaderId);
+
+  await notify(c.env, note.uploaderId, {
+    type: "note_unlocked",
+    title: `${user.displayName} unlocked "${note.title}"`,
+    body: price > 0 ? `You earned ${cut} PTS from the sale.` : "Your note got a new download.",
+    link: `/notes/${note.id}`,
+  });
 
   return c.json({ unlocked: true, pricePaid: price, balanceAfter });
 });

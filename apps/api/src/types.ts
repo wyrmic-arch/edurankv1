@@ -59,6 +59,8 @@ export interface UserRow {
   profileCompletedAt: number | null;
   equippedFrameId: string | null;
   equippedSkinId: string | null;
+  notifyEmail: number;
+  lastDigestAt: number | null;
   createdAt: number;
 }
 

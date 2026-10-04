@@ -55,6 +55,8 @@ export const users = sqliteTable(
     profileCompletedAt: integer("profile_completed_at"),
     equippedFrameId: text("equipped_frame_id"),
     equippedSkinId: text("equipped_skin_id"),
+    notifyEmail: integer("notify_email").notNull().default(1), // daily digest opt-out
+    lastDigestAt: integer("last_digest_at"),
     createdAt: integer("created_at").notNull(),
   },
   (t) => ({
@@ -356,5 +358,28 @@ export const noteReports = sqliteTable(
   (t) => ({
     noteIdx: index("idx_reports_note").on(t.noteId),
     statusIdx: index("idx_reports_status").on(t.status),
+  }),
+);
+
+// --- Notifications ----------------------------------------------------------
+
+export const notifications = sqliteTable(
+  "notifications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull().default(""),
+    link: text("link"),
+    dataJson: text("data_json").notNull().default("{}"),
+    readAt: integer("read_at"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => ({
+    userCreatedIdx: index("idx_notifications_user_created").on(t.userId, t.createdAt),
+    userReadIdx: index("idx_notifications_user_read").on(t.userId, t.readAt),
   }),
 );

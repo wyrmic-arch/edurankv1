@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Award, Download, Lock, ThumbsUp, UploadCloud } from "lucide-react";
+import { Award, Bell, Download, Lock, ThumbsUp, UploadCloud } from "lucide-react";
 import { GRADES } from "@edurank/shared";
 import { api, imgUrl, type ProfileResponse } from "@/lib/api";
 import { useAuth } from "@/lib/store";
@@ -61,6 +61,7 @@ export default function ProfilePage() {
 
       {data.user.bio && <p className="text-mute max-w-2xl text-[15px]">{data.user.bio}</p>}
       {isMe && <PayoutTeaser />}
+      {isMe && <NotificationPrefs />}
 
       <div className="rule" />
 
@@ -178,6 +179,35 @@ function frameColor(frameId: string | null): string | null {
     case "frame-sky": return "#43D9FF";
     default: return null;
   }
+}
+
+function NotificationPrefs() {
+  const [email, setEmail] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    api.notificationPrefs().then((r) => setEmail(r.email)).catch(() => setEmail(null));
+  }, []);
+  if (email === null) return null;
+  async function toggle() {
+    setBusy(true);
+    try {
+      const r = await api.setNotificationPrefs(!email);
+      setEmail(r.email);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button
+      onClick={() => void toggle()}
+      disabled={busy}
+      className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-3 py-1.5 text-ghost hover:border-ash hover:text-ash"
+      title="Daily email summary of your notifications"
+    >
+      <Bell className="w-3 h-3" /> Daily email digest:{" "}
+      <span className={email ? "text-accent" : "text-mute"}>{email ? "ON" : "OFF"}</span>
+    </button>
+  );
 }
 
 function GradeEditor({ currentGrade }: { currentGrade: number | null }) {

@@ -313,3 +313,25 @@ export interface Paginated<T> {
   pageSize: number;
   total: number;
 }
+
+// --- Notifications ----------------------------------------------------------
+
+export type NotificationType =
+  | "note_approved"
+  | "note_rejected"
+  | "note_unlocked"
+  | "note_verified"
+  | "referral_joined"
+  | "badge_earned"
+  | "challenge_cleared"
+  | "system";
+
+export interface NotificationDTO {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}

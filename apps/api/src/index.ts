@@ -9,9 +9,11 @@ import shopRoutes from "./routes/shop";
 import challengeRoutes from "./routes/challenges";
 import adminRoutes from "./routes/admin";
 import schoolRoutes from "./routes/school";
+import notificationRoutes from "./routes/notifications";
 import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
 import { rateLimit } from "./lib/ratelimit";
+import { runDigest } from "./lib/digest";
 
 const app = new Hono<AppEnv>();
 
@@ -119,6 +121,7 @@ app.route("/shop", shopRoutes);
 app.route("/challenges", challengeRoutes);
 app.route("/admin", adminRoutes);
 app.route("/school", schoolRoutes);
+app.route("/notifications", notificationRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
 
@@ -144,4 +147,10 @@ app.get("/r2/*", async (c) => {
 });
 app.notFound((c) => c.json({ error: "Unknown route" }, 404));
 
-export default app;
+// Worker entry: HTTP fetch + daily notification digest via Cron Trigger.
+export default {
+  fetch: (request: Request, env: AppEnv["Bindings"], ctx: ExecutionContext) => app.fetch(request, env, ctx),
+  scheduled: (_event: ScheduledEvent, env: AppEnv["Bindings"], ctx: ExecutionContext) => {
+    ctx.waitUntil(runDigest(env));
+  },
+};
