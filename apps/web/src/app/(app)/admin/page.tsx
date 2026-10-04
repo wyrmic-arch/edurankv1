@@ -6,6 +6,7 @@ import { Check, FileText, GraduationCap, ShieldAlert, Ticket, X } from "lucide-r
 import { api, type AdminPendingNote, type AdminStats, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ErrorPanel, Spinner } from "@/components/hud";
+import { InviteLink, CopyLinkButton } from "@/components/invite-link";
 import { fileSize, timeAgo } from "@/lib/format";
 
 export default function AdminPage() {
@@ -211,6 +212,7 @@ function StaffAdmin() {
   const [invites, setInvites] = useState<StaffInvite[]>([]);
   const [promos, setPromos] = useState<PromotionRow[] | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   function reload() {
@@ -227,7 +229,8 @@ function StaffAdmin() {
     setErr(null);
     try {
       const { code } = await api.adminCreateInvite("principal", schoolId);
-      setFlash(`Principal invite: ${code}`);
+      setCreatedCode(code);
+      setFlash("Principal invite created — send them the link below.");
       reload();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed");
@@ -279,8 +282,15 @@ function StaffAdmin() {
           </select>
           <button onClick={() => void createPrincipal()} disabled={!schoolId} className="btn-solid !text-[11px]">CREATE PRINCIPAL INVITE</button>
         </div>
-        {flash && <p className="text-accent font-mono text-[12px] mt-3">{flash}</p>}
+        {flash && <p className="text-accent text-[12px] mt-3">{flash}</p>}
         {err && <p className="text-mark text-[12px] mt-3">{err}</p>}
+        {createdCode && (
+          <div className="border border-accent bg-oil p-3 space-y-2 mt-3">
+            <div className="label !text-[9px] text-accent">PRINCIPAL INVITE LINK</div>
+            <InviteLink code={createdCode} />
+            <p className="text-mute text-[11px]">Send this link to the principal you&rsquo;re inviting.</p>
+          </div>
+        )}
         <ul className="mt-4 panel divide-y divide-ruleSoft max-h-64 overflow-y-auto">
           {invites.length === 0 ? (
             <li className="p-3 text-mute text-[12px]">No invites yet.</li>
@@ -289,6 +299,7 @@ function StaffAdmin() {
               <li key={i.id} className="flex items-center gap-3 px-4 py-2">
                 <span className="font-mono text-[12px] tracking-widest">{i.code}</span>
                 <span className="label !text-[9px] flex-1 truncate">{i.role.toUpperCase()} · {i.schoolName}</span>
+                {!i.used && <CopyLinkButton code={i.code} />}
                 <span className="label !text-[9px]">{i.used ? "USED" : "OPEN"}</span>
               </li>
             ))

@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
+import { InviteLink, CopyLinkButton } from "@/components/invite-link";
 
 type Tab = "overview" | "students" | "notes" | "staff";
 
@@ -203,6 +204,7 @@ function Staff() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
+  const [createdCode, setCreatedCode] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -219,7 +221,8 @@ function Staff() {
     setFlash(null);
     try {
       const { code } = await api.schoolCreateInvite(picked);
-      setFlash(`Teacher invite created: ${code}`);
+      setCreatedCode(code);
+      setFlash("Teacher invite created — send them the link below.");
       setPicked([]);
       load();
     } catch (e) {
@@ -252,7 +255,14 @@ function Staff() {
         <button onClick={() => void create()} disabled={creating} className="btn-mark !text-[11px]">
           {creating ? "CREATING…" : "CREATE INVITE"}
         </button>
-        {flash && <p className="text-[12px] text-accent font-mono">{flash}</p>}
+        {flash && <p className="text-[12px] text-accent">{flash}</p>}
+        {createdCode && (
+          <div className="border border-accent bg-oil p-3 space-y-2">
+            <div className="label !text-[9px] text-accent">TEACHER INVITE LINK</div>
+            <InviteLink code={createdCode} />
+            <p className="text-mute text-[11px]">Send this link to the teacher you&rsquo;re inviting.</p>
+          </div>
+        )}
       </div>
 
       <div>
@@ -267,6 +277,7 @@ function Staff() {
               <li key={i.id} className="flex items-center gap-3 px-5 py-3">
                 <span className="font-mono text-[13px] tracking-widest">{i.code}</span>
                 <span className="text-mute text-[11px] flex-1 truncate">{i.subjectIds.join(", ") || "all subjects"}</span>
+                {!i.used && <CopyLinkButton code={i.code} />}
                 <span className="label !text-[9px]">{i.used ? "USED" : "OPEN"}</span>
               </li>
             ))
