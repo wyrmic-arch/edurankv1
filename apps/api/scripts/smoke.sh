@@ -45,6 +45,9 @@ check "B got referral bonus (100)" '.user.balance >= 100' "$RB"
 ME=$(curl -s --max-time 15 $API/auth/me -H "Authorization: Bearer $TB")
 check "auth/me works with bearer" '.user.displayName == "Smoke B"' "$ME"
 
+GA=$(curl -s --max-time 15 -X PATCH $API/me -H "Authorization: Bearer $TA" -H 'Content-Type: application/json' -d '{"grade":11}')
+check "A locks their grade (11)" '.user.grade == 11' "$GA"
+
 DUP=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
   -d "{\"email\":\"$A@test.co.za\",\"password\":\"password123\",\"displayName\":\"Dup\"}")
 check "duplicate email rejected (409)" '.error | test("already")' "$DUP"
@@ -58,6 +61,16 @@ PROF=$(curl -s --max-time 15 -X PATCH $API/me -H "Authorization: Bearer $TB" -H 
   -d "{\"grade\":11,\"schoolId\":\"$SCHOOL\",\"bio\":\"Here for the grind.\"}")
 check "profile completion bonus lands (+30)" '.user.totalEarned >= 130' "$PROF"
 
+# Give A the same school so their upload carries a school_id (teacher scoping).
+AS=$(curl -s --max-time 15 -X PATCH $API/me -H "Authorization: Bearer $TA" -H 'Content-Type: application/json' -d "{\"schoolId\":\"$SCHOOL\"}")
+check "A locks their school" '.user.schoolId != null' "$AS"
+
+say "== grade & school locks =="
+SL=$(curl -s --max-time 15 -X PATCH $API/me -H "Authorization: Bearer $TB" -H 'Content-Type: application/json' -d '{"schoolId":"some-other-school"}')
+check "school change refused once locked" '.error != null' "$SL"
+GL=$(curl -s --max-time 15 -X PATCH $API/me -H "Authorization: Bearer $TB" -H 'Content-Type: application/json' -d '{"grade":10}')
+check "grade change refused once locked" '.error != null' "$GL"
+
 say "== admin setup =="
 curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
   -d "{\"email\":\"admin-smoke-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke Admin\"}" > /dev/null
@@ -68,7 +81,7 @@ TADMIN=$(echo "$LA" | jq -r .token)
 check "admin login + role" '.user.role == "admin"' "$LA"
 
 say "== upload -> review -> approve =="
-pdf "Quadratic equations masterclass" > /tmp/opencode/smoke.pdf
+pdf "Quadratic equations masterclass $TS" > /tmp/opencode/smoke.pdf
 UP=$(curl -s --max-time 30 -X POST $API/notes -H "Authorization: Bearer $TA" \
   -F "file=@/tmp/opencode/smoke.pdf;type=application/pdf" \
   -F "title=Quadratics Unlocked" -F "description=Everything factorising, completing the square, formula." \
@@ -82,6 +95,39 @@ check "pending queue lists the upload" '.items | length >= 1' "$PEN"
 
 AP=$(curl -s --max-time 15 -X POST $API/admin/notes/$NOTE_ID/approve -H "Authorization: Bearer $TADMIN")
 check "approve pays uploader +50" '.uploaderBalanceAfter >= 50' "$AP"
+
+say "== staff: principal & teacher =="
+PI=$(curl -s --max-time 15 -X POST $API/admin/invites -H "Authorization: Bearer $TADMIN" -H 'Content-Type: application/json' -d "{\"role\":\"principal\",\"schoolId\":\"$SCHOOL\"}")
+check "admin issues a principal invite" '.code != null' "$PI"
+PCODE=$(echo "$PI" | jq -r .code)
+
+PR=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
+  -d "{\"email\":\"principal-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke Principal\",\"inviteCode\":\"$PCODE\"}")
+check "principal signs up with invite" '.user.role == "principal"' "$PR"
+TPR=$(echo "$PR" | jq -r .token)
+
+TIV=$(curl -s --max-time 15 -X POST $API/school/invites -H "Authorization: Bearer $TPR" -H 'Content-Type: application/json' -d '{"subjectIds":["mathematics"]}')
+check "principal issues a teacher invite" '.code != null' "$TIV"
+TCODE=$(echo "$TIV" | jq -r .code)
+
+TR=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
+  -d "{\"email\":\"teacher-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke Teacher\",\"inviteCode\":\"$TCODE\"}")
+check "teacher signs up with invite" '.user.role == "teacher"' "$TR"
+TT=$(echo "$TR" | jq -r .token)
+
+TF=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 $API/notes/$NOTE_ID/file -H "Authorization: Bearer $TT")
+check "teacher free-views a school note (no unlock) " '.c == "200"' "$(printf '{"c":"%s"}' "$TF")"
+
+TV=$(curl -s --max-time 15 -X POST $API/notes/$NOTE_ID/verify -H "Authorization: Bearer $TT" -H 'Content-Type: application/json' -d '{"verdict":"correct"}')
+check "teacher verifies the note" '.verdict == "correct"' "$TV"
+
+VD=$(curl -s --max-time 15 $API/notes/$NOTE_ID -H "Authorization: Bearer $TB")
+check "note is flagged teacher-verified" '.note.verifiedByTeacher == true' "$VD"
+
+# Invites are single-use.
+RE=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
+  -d "{\"email\":\"reuse-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Reuse\",\"inviteCode\":\"$TCODE\"}")
+check "used invite is rejected" '.error != null' "$RE"
 
 say "== unlock economy =="
 UN=$(curl -s --max-time 15 -X POST $API/notes/$NOTE_ID/unlock -H "Authorization: Bearer $TB")
@@ -109,6 +155,13 @@ check "search finds the note" '.items | length >= 1' "$LIST"
 DET=$(curl -s --max-time 15 "$API/notes/$NOTE_ID" -H "Authorization: Bearer $TB")
 check "detail shows unlockedByMe" '.note.unlockedByMe == true' "$DET"
 
+# A student locked to another grade must not be able to open this note.
+RC=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
+  -d "{\"email\":\"smoke-c-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke C\",\"grade\":10}")
+TC=$(echo "$RC" | jq -r .token)
+DETC=$(curl -s --max-time 15 "$API/notes/$NOTE_ID" -H "Authorization: Bearer $TC")
+check "other grade can't open the note" '.error != null' "$DETC"
+
 say "== challenges =="
 CH=$(curl -s --max-time 15 $API/challenges/daily -H "Authorization: Bearer $TB")
 check "3 daily challenges returned" '.challenges | length == 3' "$CH"
@@ -135,6 +188,23 @@ if [ "${BAL_B:-0}" -ge "${PRICE:-999999}" ]; then
 else
   check "purchase cleanly refused when broke (402)" '.error | test("Not enough PTS")' "$BUY"
 fi
+
+say "== ownership & reports =="
+CERT=$(curl -s --max-time 15 $API/notes/$NOTE_ID/certificate)
+check "certificate exposes the content hash" '.certificate.contentHash != null' "$CERT"
+
+DUPUP=$(curl -s --max-time 30 -X POST $API/notes -H "Authorization: Bearer $TA" \
+  -F "file=@/tmp/opencode/smoke.pdf;type=application/pdf" \
+  -F "title=Duplicate attempt" -F "subjectId=mathematics" -F "grade=11")
+check "duplicate file rejected" '.error != null' "$DUPUP"
+
+REP=$(curl -s --max-time 15 -X POST $API/notes/$NOTE_ID/report -H "Authorization: Bearer $TB" -H 'Content-Type: application/json' -d '{"reason":"test report","details":"smoke"}')
+check "note report accepted" '.ok == true' "$REP"
+RPT=$(curl -s --max-time 15 $API/admin/reports -H "Authorization: Bearer $TADMIN")
+check "report appears in the admin queue" '.items | length >= 1' "$RPT"
+RID=$(echo "$RPT" | jq -r '.items[0].id')
+RES=$(curl -s --max-time 15 -X POST $API/admin/reports/$RID/resolve -H "Authorization: Bearer $TADMIN" -H 'Content-Type: application/json' -d '{"action":"dismiss"}')
+check "report dismissed" '.ok == true' "$RES"
 
 say "== rate limiting =="
 # Hammer one IP: the 5/min login limiter must reject the 6th attempt.

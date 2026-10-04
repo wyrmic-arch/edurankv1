@@ -37,6 +37,9 @@ export function publicUser(u: UserRow, schoolName: string | null, rank: number) 
     bannerUrl: `/img/banner/${u.id}`,
     bio: u.bio,
     grade: u.grade,
+    gradeYear: u.gradeYear,
+    heldBack: u.heldBack === 1,
+    graduated: u.graduatedAt != null,
     schoolId: u.schoolId,
     schoolName,
     role: u.role as UserRole,
@@ -63,6 +66,8 @@ export function noteDTO(
     unlockedByMe?: boolean;
     upvotedByMe?: boolean;
     ownedByMe?: boolean;
+    verifiedByTeacher?: boolean;
+    canViewFile?: boolean;
   },
 ) {
   return {
@@ -79,6 +84,7 @@ export function noteDTO(
     coverUrl: n.coverKey ? `/r2/${n.coverKey}` : null,
     isFree: n.isFree === 1,
     pricePoints: n.pricePoints,
+    license: n.license,
     status: n.status,
     reviewNote: n.reviewNote,
     downloadCount: n.downloadCount,
@@ -87,6 +93,8 @@ export function noteDTO(
     unlockedByMe: extra.unlockedByMe ?? false,
     upvotedByMe: extra.upvotedByMe ?? false,
     ownedByMe: extra.ownedByMe ?? false,
+    verifiedByTeacher: extra.verifiedByTeacher ?? false,
+    canViewFile: extra.canViewFile,
     fileName: n.fileName,
     fileSize: n.fileSize,
     mimeType: n.mimeType,

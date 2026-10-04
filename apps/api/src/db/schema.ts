@@ -32,7 +32,12 @@ export const users = sqliteTable(
     avatarUrl: text("avatar_url"), // nullable -> web renders generated HUD avatar
     bio: text("bio").notNull().default(""),
     grade: integer("grade"), // 8..12 (CAPS FET/GET)
+    gradeYear: integer("grade_year"), // academic year the grade applies to
+    gradeSetAt: integer("grade_set_at"), // when the grade was locked
+    heldBack: integer("held_back").notNull().default(0), // principal marked: repeat next year
+    graduatedAt: integer("graduated_at"), // grade-12 leavers (alumni, read-only)
     schoolId: text("school_id").references(() => schools.id),
+    schoolLockedAt: integer("school_locked_at"), // set once the school is chosen
     role: text("role").notNull().default("user"), // 'user' | 'admin'
     emailVerifiedAt: integer("email_verified_at"), // null = unverified
     verifyToken: text("verify_token"), // hashed one-time verify token
@@ -55,6 +60,8 @@ export const users = sqliteTable(
   (t) => ({
     earnedIdx: index("idx_users_total_earned").on(t.totalEarned),
     schoolIdx: index("idx_users_school").on(t.schoolId),
+    roleIdx: index("idx_users_role").on(t.role),
+    gradeIdx: index("idx_users_grade").on(t.grade),
   }),
 );
 
@@ -92,6 +99,9 @@ export const notes = sqliteTable(
     fileSize: integer("file_size").notNull().default(0),
     mimeType: text("mime_type").notNull().default("application/octet-stream"),
     coverKey: text("cover_key"), // optional R2 key of user-uploaded cover
+    schoolId: text("school_id").references(() => schools.id), // uploader's school at upload time
+    contentHash: text("content_hash"), // SHA-256 of the file — provenance / duplicate detection
+    license: text("license").notNull().default("all-rights-reserved"), // see NOTE_LICENSES
     isFree: integer("is_free").notNull().default(1),
     pricePoints: integer("price_points").notNull().default(0),
     status: text("status").notNull().default("pending"), // pending | approved | rejected
@@ -107,6 +117,9 @@ export const notes = sqliteTable(
     subjectIdx: index("idx_notes_subject").on(t.subjectId),
     statusIdx: index("idx_notes_status").on(t.status),
     createdIdx: index("idx_notes_created").on(t.createdAt),
+    gradeIdx: index("idx_notes_grade").on(t.grade),
+    schoolIdx: index("idx_notes_school").on(t.schoolId),
+    hashIdx: index("idx_notes_content_hash").on(t.contentHash),
   }),
 );
 
@@ -259,5 +272,89 @@ export const streakClaims = sqliteTable(
   },
   (t) => ({
     pk: primaryKey({ columns: [t.userId, t.dateKey] }),
+  }),
+);
+
+// --- Staff: principals & teachers ------------------------------------------
+
+// Invite codes. Admin issues principal invites for a school; a principal issues
+// teacher invites (optionally scoped to subjects). Redemption is atomic and
+// single-use; staff roles are NEVER self-selected.
+export const staffInvites = sqliteTable(
+  "staff_invites",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull().unique(),
+    schoolId: text("school_id")
+      .notNull()
+      .references(() => schools.id),
+    role: text("role").notNull(), // 'principal' | 'teacher'
+    subjectIds: text("subject_ids").notNull().default("[]"), // JSON array (teachers)
+    createdBy: text("created_by").notNull(),
+    createdAt: integer("created_at").notNull(),
+    expiresAt: integer("expires_at").notNull(),
+    usedBy: text("used_by"),
+    usedAt: integer("used_at"),
+  },
+  (t) => ({
+    codeIdx: index("idx_staff_invites_code").on(t.code),
+    schoolIdx: index("idx_staff_invites_school").on(t.schoolId),
+  }),
+);
+
+export const teacherSubjects = sqliteTable(
+  "teacher_subjects",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    subjectId: text("subject_id")
+      .notNull()
+      .references(() => subjects.id),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.userId, t.subjectId] }),
+  }),
+);
+
+export const noteVerifications = sqliteTable(
+  "note_verifications",
+  {
+    noteId: text("note_id")
+      .notNull()
+      .references(() => notes.id),
+    teacherId: text("teacher_id")
+      .notNull()
+      .references(() => users.id),
+    verdict: text("verdict").notNull(), // 'correct' | 'needs_work'
+    comment: text("comment").notNull().default(""),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.noteId, t.teacherId] }),
+  }),
+);
+
+// Stolen-note / abuse reports → admin takedown queue.
+export const noteReports = sqliteTable(
+  "note_reports",
+  {
+    id: text("id").primaryKey(),
+    noteId: text("note_id")
+      .notNull()
+      .references(() => notes.id),
+    reporterId: text("reporter_id")
+      .notNull()
+      .references(() => users.id),
+    reason: text("reason").notNull(),
+    details: text("details").notNull().default(""),
+    status: text("status").notNull().default("open"), // open | dismissed | removed
+    createdAt: integer("created_at").notNull(),
+    resolvedBy: text("resolved_by"),
+    resolvedAt: integer("resolved_at"),
+  },
+  (t) => ({
+    noteIdx: index("idx_reports_note").on(t.noteId),
+    statusIdx: index("idx_reports_status").on(t.status),
   }),
 );

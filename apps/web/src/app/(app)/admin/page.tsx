@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, FileText, ShieldAlert, X } from "lucide-react";
-import { api, type AdminPendingNote, type AdminStats } from "@/lib/api";
+import { Check, FileText, GraduationCap, ShieldAlert, Ticket, X } from "lucide-react";
+import { api, type AdminPendingNote, type AdminStats, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ErrorPanel, Spinner } from "@/components/hud";
 import { fileSize, timeAgo } from "@/lib/format";
@@ -155,6 +156,145 @@ export default function AdminPage() {
           ))}
         </ul>
       )}
+
+      <div className="rule" />
+      <StaffAdmin />
+
+      <div className="rule" />
+      <ReportsAdmin />
+    </div>
+  );
+}
+
+function ReportsAdmin() {
+  const [items, setItems] = useState<ReportRow[]>([]);
+  const [busy, setBusy] = useState<string | null>(null);
+  function load() {
+    api.adminReports().then((r) => setItems(r.items)).catch(() => {});
+  }
+  useEffect(load, []);
+  async function resolve(id: string, action: "dismiss" | "remove") {
+    setBusy(id);
+    try {
+      await api.adminResolveReport(id, action);
+      load();
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <div>
+      <div className="label inline-flex items-center gap-2"><ShieldAlert className="w-3.5 h-3.5" /> CONTENT REPORTS</div>
+      <ul className="mt-4 panel divide-y divide-ruleSoft">
+        {items.length === 0 ? (
+          <li className="p-4 text-mute text-[13px]">No open reports.</li>
+        ) : (
+          items.map((r) => (
+            <li key={r.id} className="p-4 flex flex-wrap items-center gap-3">
+              <div className="flex-1 min-w-[220px]">
+                <Link href={`/notes/${r.noteId}`} className="font-medium no-underline hover:text-accent">{r.noteTitle}</Link>
+                <div className="label !text-[9px] mt-1">{r.reason} · by {r.reporterName}</div>
+              </div>
+              <button onClick={() => void resolve(r.id, "dismiss")} disabled={busy === r.id} className="btn-ghost !text-[10px]">DISMISS</button>
+              <button onClick={() => void resolve(r.id, "remove")} disabled={busy === r.id} className="btn-mark !text-[10px]">REMOVE NOTE</button>
+            </li>
+          ))
+        )}
+      </ul>
+    </div>
+  );
+}
+
+function StaffAdmin() {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [schoolId, setSchoolId] = useState("");
+  const [invites, setInvites] = useState<StaffInvite[]>([]);
+  const [promos, setPromos] = useState<PromotionRow[] | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  function reload() {
+    api.adminInvites().then((r) => setInvites(r.items)).catch(() => {});
+    api.adminPromotions().then((r) => setPromos(r.rows)).catch(() => {});
+  }
+  useEffect(() => {
+    api.schools().then((r) => setSchools(r.items)).catch(() => {});
+    reload();
+  }, []);
+
+  async function createPrincipal() {
+    if (!schoolId) return;
+    setErr(null);
+    try {
+      const { code } = await api.adminCreateInvite("principal", schoolId);
+      setFlash(`Principal invite: ${code}`);
+      reload();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed");
+    }
+  }
+
+  async function runPromotions() {
+    setErr(null);
+    setFlash(null);
+    try {
+      const r = await api.adminRunPromotions();
+      setFlash(`Promotions run — ${r.promoted} promoted, ${r.heldBack} held back, ${r.graduated} graduated.`);
+      reload();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Failed");
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <div className="label inline-flex items-center gap-2"><GraduationCap className="w-3.5 h-3.5" /> PROMOTIONS</div>
+        <p className="text-mute text-[13px] mt-2">
+          End-of-year rollover. Everyone advances a grade unless a principal marked them to repeat; grade 12 becomes alumni.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
+          {(promos ?? []).map((p) => (
+            <div key={p.grade} className="hairline px-3 py-2">
+              <div className="label !text-[9px]">GR {p.grade}</div>
+              <div className="font-mono text-sm mt-1">
+                {p.total} · <span className="text-accent">{p.graduating ? "GRAD" : `→${p.nextGrade}`}</span>
+                {p.heldBack > 0 && <span className="text-mute"> ({p.heldBack} repeat)</span>}
+              </div>
+            </div>
+          ))}
+          {(promos ?? []).length === 0 && <div className="text-mute text-[13px]">No graded students.</div>}
+        </div>
+        <button onClick={() => void runPromotions()} className="btn-mark !text-[11px] mt-4">RUN PROMOTIONS</button>
+      </div>
+
+      <div>
+        <div className="label inline-flex items-center gap-2"><Ticket className="w-3.5 h-3.5" /> PRINCIPAL INVITES</div>
+        <div className="flex flex-wrap items-center gap-3 mt-3">
+          <select value={schoolId} onChange={(e) => setSchoolId(e.target.value)} className="px-3 py-2 text-[13px] max-w-[280px]">
+            <option value="">Pick a school…</option>
+            {schools.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+          <button onClick={() => void createPrincipal()} disabled={!schoolId} className="btn-solid !text-[11px]">CREATE PRINCIPAL INVITE</button>
+        </div>
+        {flash && <p className="text-accent font-mono text-[12px] mt-3">{flash}</p>}
+        {err && <p className="text-mark text-[12px] mt-3">{err}</p>}
+        <ul className="mt-4 panel divide-y divide-ruleSoft max-h-64 overflow-y-auto">
+          {invites.length === 0 ? (
+            <li className="p-3 text-mute text-[12px]">No invites yet.</li>
+          ) : (
+            invites.map((i) => (
+              <li key={i.id} className="flex items-center gap-3 px-4 py-2">
+                <span className="font-mono text-[12px] tracking-widest">{i.code}</span>
+                <span className="label !text-[9px] flex-1 truncate">{i.role.toUpperCase()} · {i.schoolName}</span>
+                <span className="label !text-[9px]">{i.used ? "USED" : "OPEN"}</span>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
     </div>
   );
 }

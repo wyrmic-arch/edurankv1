@@ -2,11 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileUp, X } from "lucide-react";
+import { FileUp, Lock, X } from "lucide-react";
 import { api, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Spinner } from "@/components/hud";
-import { GRADES, POINTS_RULES } from "@edurank/shared";
+import { GRADES, POINTS_RULES, isStaffRole } from "@edurank/shared";
 
 export default function UploadPage() {
   const router = useRouter();
@@ -107,12 +107,18 @@ export default function UploadPage() {
             </select>
           </Field>
           <Field label="Grade">
-            <select value={grade} onChange={(e) => setGrade(e.target.value)} required className="w-full px-3 py-2.5">
-              <option value="">—</option>
-              {GRADES.map((g) => (
-                <option key={g} value={g}>Grade {g}</option>
-              ))}
-            </select>
+            {user && isStaffRole(user.role) ? (
+              <select value={grade} onChange={(e) => setGrade(e.target.value)} required className="w-full px-3 py-2.5">
+                <option value="">—</option>
+                {GRADES.map((g) => (
+                  <option key={g} value={g}>Grade {g}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="w-full px-3 py-2.5 border border-cinder text-ash text-[13px] inline-flex items-center gap-2">
+                <Lock className="w-3.5 h-3.5" /> GR {user?.grade ?? "—"} (locked)
+              </div>
+            )}
           </Field>
           <Field label="Topic">
             <input value={topic} onChange={(e) => setTopic(e.target.value)} maxLength={80}

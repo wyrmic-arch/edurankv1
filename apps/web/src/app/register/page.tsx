@@ -18,12 +18,16 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [grade, setGrade] = useState<string>("");
   const [referralCode, setReferralCode] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const ref = new URLSearchParams(window.location.search).get("ref");
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
     if (ref) setReferralCode(ref.toUpperCase());
+    const invite = params.get("invite");
+    if (invite) setInviteCode(invite.toUpperCase());
   }, []);
 
   async function submit(e: React.FormEvent) {
@@ -35,8 +39,9 @@ export default function RegisterPage() {
         email: email.trim(),
         password,
         displayName: displayName.trim(),
-        grade: grade ? Number(grade) : null,
+        grade: inviteCode ? null : grade ? Number(grade) : null,
         referralCode: referralCode.trim() ? referralCode.trim().toUpperCase() : null,
+        inviteCode: inviteCode.trim() ? inviteCode.trim().toUpperCase() : null,
       });
       router.replace("/leaderboard");
     } catch (err) {
@@ -54,15 +59,30 @@ export default function RegisterPage() {
         </Link>
 
         <div className="panel p-8">
-          <div className="label mb-2">EARLY ACCESS · NEW PLAYER</div>
-          <h1 className="font-serif text-3xl font-medium tracking-tight mb-3">Join the arena.</h1>
-          <div className="hairline border-cinder bg-oil px-3 py-2.5 mb-8 flex items-center gap-3">
-            <span className="font-mono text-[11px] uppercase tracking-label text-ash border border-cinder px-2 py-0.5">FOUNDER</span>
-            <p className="text-ghost text-[12px] leading-snug">
-              Early-access signups are FOUNDERs for life — a permanent badge and{" "}
-              <span className="font-mono text-ash font-bold">+{POINTS_RULES.FOUNDER_BONUS} PTS</span> on the house.
-            </p>
-          </div>
+          {inviteCode ? (
+            <>
+              <div className="label mb-2">STAFF INVITE · {inviteCode}</div>
+              <h1 className="font-serif text-3xl font-medium tracking-tight mb-3">Join the staff.</h1>
+              <div className="hairline border-accent bg-oil px-3 py-2.5 mb-8 flex items-center gap-3">
+                <span className="font-mono text-[11px] uppercase tracking-label text-accent border border-accent px-2 py-0.5">STAFF</span>
+                <p className="text-ghost text-[12px] leading-snug">
+                  You&rsquo;ve been invited. Create your account to activate your principal/teacher access.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="label mb-2">EARLY ACCESS · NEW PLAYER</div>
+              <h1 className="font-serif text-3xl font-medium tracking-tight mb-3">Join the arena.</h1>
+              <div className="hairline border-cinder bg-oil px-3 py-2.5 mb-8 flex items-center gap-3">
+                <span className="font-mono text-[11px] uppercase tracking-label text-ash border border-cinder px-2 py-0.5">FOUNDER</span>
+                <p className="text-ghost text-[12px] leading-snug">
+                  Early-access signups are FOUNDERs for life — a permanent badge and{" "}
+                  <span className="font-mono text-ash font-bold">+{POINTS_RULES.FOUNDER_BONUS} PTS</span> on the house.
+                </p>
+              </div>
+            </>
+          )}
 
           <form onSubmit={submit} className="space-y-5">
             <F label="Player name" hint="3–24 characters. This is what other players see.">
@@ -75,14 +95,16 @@ export default function RegisterPage() {
               <PasswordField value={password} onChange={setPassword} />
             </F>
 
-            <F label="Grade" hint="You can pick your school from your profile after you&rsquo;re in.">
-              <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
-                <option value="">—</option>
-                {GRADES.map((g) => (
-                  <option key={g} value={g}>Grade {g}</option>
-                ))}
-              </select>
-            </F>
+            {!inviteCode && (
+              <F label="Grade" hint="Locks for the school year once you set it. Pick your school on the map afterwards.">
+                <select value={grade} onChange={(e) => setGrade(e.target.value)} className="w-full px-3 py-2.5 text-body">
+                  <option value="">—</option>
+                  {GRADES.map((g) => (
+                    <option key={g} value={g}>Grade {g}</option>
+                  ))}
+                </select>
+              </F>
+            )}
 
             <F label="Referral code (optional)" hint={`+${POINTS_RULES.REFERRAL_BONUS} PTS for you and your recruiter.`}>
               <input

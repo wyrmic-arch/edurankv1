@@ -49,8 +49,42 @@ export type LedgerReason =
   | "cosmetic_purchase"
   | "admin_adjust";
 
-export type UserRole = "user" | "admin";
-export const USER_ROLES: readonly UserRole[] = ["user", "admin"] as const;
+export type UserRole = "user" | "teacher" | "principal" | "admin";
+export const USER_ROLES: readonly UserRole[] = ["user", "teacher", "principal", "admin"] as const;
+
+// "user" is the internal value for a student account. Staff roles may not be
+// self-selected — they are granted through invite codes (see staff_invites).
+export const STAFF_ROLES = ["teacher", "principal", "admin"] as const;
+export type StaffRole = (typeof STAFF_ROLES)[number];
+export function isStaffRole(role: UserRole | string | null | undefined): boolean {
+  return role === "teacher" || role === "principal" || role === "admin";
+}
+
+export const ROLE_LABELS: Record<UserRole, string> = {
+  user: "Student",
+  teacher: "Teacher",
+  principal: "Principal",
+  admin: "Admin",
+};
+
+// --- Note licensing ---------------------------------------------------------
+
+export const NOTE_LICENSES = [
+  { id: "all-rights-reserved", label: "All rights reserved", hint: "On-platform access only. Resale or redistribution is not allowed." },
+  { id: "cc-by-nc", label: "CC BY-NC", hint: "Others may share with credit for non-commercial use." },
+  { id: "cc-by", label: "CC BY", hint: "Others may share and adapt with credit." },
+] as const;
+export type LicenseId = (typeof NOTE_LICENSES)[number]["id"];
+export const DEFAULT_LICENSE: LicenseId = "all-rights-reserved";
+export function licenseLabel(id: string | null | undefined): string {
+  return NOTE_LICENSES.find((l) => l.id === id)?.label ?? NOTE_LICENSES[0].label;
+}
+
+// Academic-year helper: the SA school year is the calendar year.
+export function academicYear(at: number = Date.now()): number {
+  return new Date(at).getUTCFullYear();
+}
+
 
 export const LEDGER_REASON_LABELS: Record<LedgerReason, string> = {
   upload_approved: "Note approved",
@@ -163,6 +197,9 @@ export interface PublicUser {
   bannerUrl: string | null;
   bio: string;
   grade: number | null;
+  gradeYear: number | null;
+  heldBack: boolean;
+  graduated: boolean;
   schoolId: string | null;
   schoolName?: string | null;
   role: UserRole;
@@ -202,6 +239,7 @@ export interface NoteDTO {
   coverUrl: string | null;
   isFree: boolean;
   pricePoints: number;
+  license: string;
   status: "pending" | "approved" | "rejected";
   reviewNote?: string | null;
   downloadCount: number;
@@ -210,6 +248,8 @@ export interface NoteDTO {
   unlockedByMe?: boolean;
   upvotedByMe?: boolean;
   ownedByMe?: boolean;
+  verifiedByTeacher?: boolean;
+  canViewFile?: boolean;
   fileName?: string;
   fileSize?: number;
   mimeType?: string;

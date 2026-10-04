@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, ThumbsUp, User as UserIcon } from "lucide-react";
+import { Download, ShieldCheck, ThumbsUp, User as UserIcon } from "lucide-react";
 import type { Note } from "@/lib/api";
 import { imgUrl } from "@/lib/api";
 import { timeAgo } from "@/lib/format";
@@ -37,6 +37,14 @@ export function NoteCard({ note }: { note: Note }) {
             </span>
           )}
         </div>
+        {note.verifiedByTeacher && (
+          <span
+            className="absolute bottom-2 left-2 font-mono text-[10px] uppercase tracking-label text-accent inline-flex items-center gap-1"
+            title="Verified by a teacher"
+          >
+            <ShieldCheck className="w-3 h-3" /> VERIFIED
+          </span>
+        )}
       </div>
 
       <div className="p-4 flex flex-col gap-2 flex-1">

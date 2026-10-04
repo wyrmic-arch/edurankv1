@@ -8,6 +8,7 @@ export interface Bindings {
   RESEND_API_KEY?: string;
   EARLY_ACCESS_UNTIL?: string;
   UNSPLASH_ACCESS_KEY?: string;
+  CERT_SECRET?: string;
   AI?: Ai;
 }
 
@@ -35,7 +36,12 @@ export interface UserRow {
   avatarUrl: string | null;
   bio: string;
   grade: number | null;
+  gradeYear: number | null;
+  gradeSetAt: number | null;
+  heldBack: number;
+  graduatedAt: number | null;
   schoolId: string | null;
+  schoolLockedAt: number | null;
   role: UserRole;
   emailVerifiedAt: number | null;
   verifyToken: string | null;
@@ -69,6 +75,9 @@ export interface NoteRow {
   fileSize: number;
   mimeType: string;
   coverKey: string | null;
+  schoolId: string | null;
+  contentHash: string | null;
+  license: string;
   isFree: number;
   pricePoints: number;
   status: "pending" | "approved" | "rejected";

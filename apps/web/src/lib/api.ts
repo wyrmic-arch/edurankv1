@@ -1,4 +1,4 @@
-import type { PublicUser } from "@edurank/shared";
+import type { PublicUser, UserRole } from "@edurank/shared";
 
 // Production API URL is baked in as the fallback so the deployed build
 // always talks to the worker even if NEXT_PUBLIC_API_URL isn't set.
@@ -107,6 +107,7 @@ export const api = {
     grade?: number | null;
     schoolId?: string | null;
     referralCode?: string | null;
+    inviteCode?: string | null;
     bio?: string;
   }): Promise<{ token: string; user: PublicUser }> => request("/auth/register", { method: "POST", body }),
   login: (email: string, password: string): Promise<{ token: string; user: PublicUser }> =>
@@ -127,13 +128,14 @@ export const api = {
     request(`/me/ledger?page=${page}&flow=${flow}`),
   subjects: (): Promise<{ items: Subject[] }> => request("/subjects"),
   schools: (): Promise<{ items: School[] }> => request("/schools"),
+  school: (id: string): Promise<SchoolDetail> => request(`/schools/${id}`),
   notes: (params: Record<string, string | number | undefined>): Promise<Paginatedish<Note>> => {
     const qs = new URLSearchParams();
     Object.entries(params).forEach(([k, v]) => v !== undefined && v !== "" && qs.set(k, String(v)));
     return request(`/notes?${qs.toString()}`);
   },
   myNotes: (): Promise<{ items: Note[] }> => request("/notes/mine"),
-  note: (id: string): Promise<{ note: Note }> => request(`/notes/${id}`),
+  note: (id: string): Promise<{ note: Note; verifications: NoteVerification[] }> => request(`/notes/${id}`),
   uploadNote: (form: FormData): Promise<{ id: string; rewardOnApproval: number }> => request("/notes", { method: "POST", form }),
   unlock: (id: string): Promise<{ unlocked: boolean; pricePaid: number; balanceAfter: number }> => request(`/notes/${id}/unlock`, { method: "POST" }),
   upvote: (id: string): Promise<{ upvotedByMe: boolean; upvoteCount: number }> => request(`/notes/${id}/upvote`, { method: "POST" }),
@@ -165,6 +167,38 @@ export const api = {
   approve: (id: string): Promise<{ ok: boolean }> => request(`/admin/notes/${id}/approve`, { method: "POST" }),
   reject: (id: string, reason: string): Promise<{ ok: boolean }> => request(`/admin/notes/${id}/reject`, { method: "POST", body: { reason } }),
   profile: (id: string): Promise<ProfileResponse> => request(`/users/${id}`),
+  verifyNote: (id: string, verdict: "correct" | "needs_work", comment = ""): Promise<{ ok: boolean; verdict: string }> =>
+    request(`/notes/${id}/verify`, { method: "POST", body: { verdict, comment } }),
+  certificate: (id: string): Promise<{ certificate: Certificate }> => request(`/notes/${id}/certificate`),
+  reportNote: (id: string, reason: string, details = ""): Promise<{ ok: boolean }> =>
+    request(`/notes/${id}/report`, { method: "POST", body: { reason, details } }),
+
+  // --- admin ---
+  adminUsers: (q = "", role = ""): Promise<{ items: AdminUser[] }> =>
+    request(`/admin/users?q=${encodeURIComponent(q)}&role=${encodeURIComponent(role)}`),
+  adminSetRole: (id: string, role: string): Promise<{ ok: boolean }> => request(`/admin/users/${id}/role`, { method: "POST", body: { role } }),
+  adminSetGrade: (id: string, patch: { grade?: number | null; heldBack?: boolean; graduated?: boolean }): Promise<{ ok: boolean }> =>
+    request(`/admin/users/${id}/grade`, { method: "POST", body: patch }),
+  adminInvites: (): Promise<{ items: StaffInvite[] }> => request("/admin/invites"),
+  adminCreateInvite: (role: "principal" | "teacher", schoolId: string, subjectIds: string[] = []): Promise<{ code: string }> =>
+    request("/admin/invites", { method: "POST", body: { role, schoolId, subjectIds } }),
+  adminPromotions: (): Promise<{ academicYear: number; rows: PromotionRow[] }> => request("/admin/promotions/preview"),
+  adminRunPromotions: (): Promise<{ ok: boolean; graduated: number; heldBack: number; promoted: number }> =>
+    request("/admin/promotions/run", { method: "POST" }),
+  adminReports: (): Promise<{ items: ReportRow[] }> => request("/admin/reports"),
+  adminResolveReport: (id: string, action: "dismiss" | "remove"): Promise<{ ok: boolean }> =>
+    request(`/admin/reports/${id}/resolve`, { method: "POST", body: { action } }),
+
+  // --- principal ---
+  schoolDashboard: (): Promise<SchoolDashboard> => request("/school"),
+  schoolStudents: (): Promise<{ items: SchoolStudent[] }> => request("/school/students"),
+  schoolNotes: (): Promise<{ items: SchoolNote[] }> => request("/school/notes"),
+  schoolInvites: (): Promise<{ items: StaffInvite[] }> => request("/school/invites"),
+  schoolCreateInvite: (subjectIds: string[]): Promise<{ code: string }> => request("/school/invites", { method: "POST", body: { subjectIds } }),
+  schoolSetHeldBack: (id: string, heldBack: boolean): Promise<{ ok: boolean }> =>
+    request(`/school/students/${id}/held-back`, { method: "POST", body: { heldBack } }),
+  schoolSetTeacherSubjects: (id: string, subjectIds: string[]): Promise<{ ok: boolean }> =>
+    request(`/school/teachers/${id}/subjects`, { method: "POST", body: { subjectIds } }),
 };
 
 export interface Paginatedish<T> {
@@ -201,6 +235,21 @@ export interface School {
   lat: number | null;
   lng: number | null;
   playerCount: number;
+}
+export interface SchoolTopPlayer {
+  id: string;
+  displayName: string;
+  avatarUrl: string | null;
+  grade: number | null;
+  points: number;
+}
+export interface SchoolDetail {
+  school: School;
+  stats: { playerCount: number; notesUploaded: number; totalPoints: number };
+  topPlayers: SchoolTopPlayer[];
+}
+export function schoolCoverUrl(id: string, variant?: string): string {
+  return imgUrl(`/img/school/${encodeURIComponent(id)}${variant ? `?v=${encodeURIComponent(variant)}` : ""}`) ?? "";
 }
 export interface LeaderRow {
   userId: string;
@@ -241,4 +290,87 @@ export interface ProfileResponse {
   user: PublicUser;
   stats: { uploads: number; downloadsReceived: number; upvotesReceived: number };
   badges: BadgeDTO[];
+}
+export interface NoteVerification {
+  verdict: "correct" | "needs_work";
+  comment: string;
+  teacherName: string;
+  createdAt: string;
+}
+export interface StaffInvite {
+  id: string;
+  code: string;
+  role: string;
+  schoolId?: string;
+  schoolName?: string;
+  subjectIds: string[];
+  createdAt: string;
+  expiresAt: string;
+  used: boolean;
+  usedAt: string | null;
+}
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  grade: number | null;
+  schoolId: string | null;
+  totalEarned: number;
+  createdAt: string;
+}
+export interface PromotionRow {
+  grade: number;
+  total: number;
+  heldBack: number;
+  graduating: boolean;
+  advancing: number;
+  nextGrade: number | null;
+}
+export interface SchoolDashboard {
+  school: { id: string; name: string; province: string; city: string | null };
+  stats: { students: number; notesApproved: number; notesPending: number; points: number };
+  byGrade: { grade: number; students: number }[];
+}
+export interface SchoolStudent {
+  id: string;
+  displayName: string;
+  email: string;
+  grade: number | null;
+  heldBack: boolean;
+  totalEarned: number;
+  balance: number;
+  createdAt: string;
+}
+export interface SchoolNote {
+  id: string;
+  title: string;
+  grade: number;
+  status: string;
+  subjectName: string;
+  uploaderName: string;
+  upvoteCount: number;
+  downloadCount: number;
+  verified: boolean;
+  createdAt: string;
+}
+export interface Certificate {
+  noteId: string;
+  title: string;
+  uploaderName: string;
+  uploadedAt: string;
+  contentHash: string | null;
+  license: string;
+  signature: string | null;
+  verifyUrl: string;
+}
+export interface ReportRow {
+  id: string;
+  noteId: string;
+  noteTitle: string;
+  noteStatus: string;
+  reason: string;
+  details: string;
+  reporterName: string;
+  createdAt: string;
 }

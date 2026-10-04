@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ShieldAlert, UserCheck } from "lucide-react";
-import { REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
+import { GraduationCap, ShieldAlert, UserCheck } from "lucide-react";
+import { REQUIRE_EMAIL_VERIFICATION, isStaffRole } from "@edurank/shared";
 import { useAuth } from "@/lib/store";
 import { api } from "@/lib/api";
 
@@ -20,9 +20,10 @@ export function OnboardingBanner() {
   if (!user) return null;
   // Verification is soft while the flag is off — don't nag users about it.
   const needEmail = REQUIRE_EMAIL_VERIFICATION && !user.emailVerified;
-  const needSchool = !user.schoolId;
+  const needGrade = !isStaffRole(user.role) && user.grade == null;
+  const needSchool = !isStaffRole(user.role) && !user.schoolId;
 
-  if (!needEmail && !needSchool) return null;
+  if (!needEmail && !needGrade && !needSchool) return null;
 
   async function resend() {
     setError(null);
@@ -52,16 +53,29 @@ export function OnboardingBanner() {
         </div>
       )}
 
+      {needGrade && (
+        <div className="panel p-4 flex flex-wrap items-center gap-3">
+          <GraduationCap className="w-4 h-4 text-accent shrink-0" />
+          <div className="flex-1 min-w-[220px]">
+            <div className="font-medium text-ash">Set your grade</div>
+            <p className="text-ghost text-[13px] mt-0.5">
+              Pick your grade once — it locks for the school year and unlocks notes.
+            </p>
+          </div>
+          <Link href="/profile" className="btn-mark !text-[10px]">SET GRADE</Link>
+        </div>
+      )}
+
       {needSchool && (
         <div className="panel p-4 flex flex-wrap items-center gap-3">
           <UserCheck className="w-4 h-4 text-ash shrink-0" />
           <div className="flex-1 min-w-[220px]">
             <div className="font-medium text-ash">Set your school</div>
             <p className="text-ghost text-[13px] mt-0.5">
-              Pick your school so it shows on your profile and the leaderboard.
+              Pick your school on the map so it shows on your profile and the leaderboard.
             </p>
           </div>
-          <Link href="/profile" className="btn-solid !text-[10px]">CHOOSE SCHOOL</Link>
+          <Link href="/map?select=1" className="btn-solid !text-[10px]">CHOOSE ON MAP</Link>
         </div>
       )}
     </div>

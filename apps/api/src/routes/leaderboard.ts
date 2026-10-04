@@ -31,7 +31,7 @@ app.get("/", async (c) => {
        FROM points_ledger l
        JOIN users u ON u.id = l.user_id
        LEFT JOIN schools sc ON sc.id = u.school_id
-       WHERE l.delta > 0 AND l.subject_id = ?1 ${cutoffSql}
+       WHERE l.delta > 0 AND u.role = 'user' AND l.subject_id = ?1 ${cutoffSql}
        GROUP BY l.user_id
        ORDER BY points DESC
        LIMIT 100`,
@@ -53,7 +53,7 @@ app.get("/", async (c) => {
        LEFT JOIN schools sc ON sc.id = u.school_id
        ${joinLedger}
        ${cutoffSql ? cutoffSql.replace("WHERE", "AND") : ""}
-       WHERE u.school_id = ?1
+       WHERE u.school_id = ?1 AND u.role = 'user'
        GROUP BY u.id
        ORDER BY points DESC
        LIMIT 100`,
@@ -69,7 +69,7 @@ app.get("/", async (c) => {
          FROM points_ledger l
          JOIN users u ON u.id = l.user_id
          LEFT JOIN schools sc ON sc.id = u.school_id
-         WHERE l.delta > 0 AND l.created_at >= (strftime('%s','now') * 1000 - 7*86400000)
+         WHERE l.delta > 0 AND u.role = 'user' AND l.created_at >= (strftime('%s','now') * 1000 - 7*86400000)
          GROUP BY l.user_id
          ORDER BY points DESC
          LIMIT 100`,
@@ -81,6 +81,7 @@ app.get("/", async (c) => {
                 u.total_earned AS points
          FROM users u
          LEFT JOIN schools sc ON sc.id = u.school_id
+         WHERE u.role = 'user'
          ORDER BY points DESC
          LIMIT 100`,
       ).all<RawRow>();

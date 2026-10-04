@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { eq, sql, and, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
-import { POINTS_RULES, REFERRAL_CAPS, REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
-import { schools, users, sessions, userBadges, badges } from "../db/schema";
+import { POINTS_RULES, REFERRAL_CAPS, REQUIRE_EMAIL_VERIFICATION, academicYear } from "@edurank/shared";
+import { schools, users, sessions, userBadges, badges, staffInvites, teacherSubjects } from "../db/schema";
 import { hashPassword, verifyPassword, sha256Hex, needsRehash, PBKDF2_ITERATIONS } from "../lib/password";
 import { createSession, destroySession, requireUser, currentUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, processStreak, rankOf } from "../lib/points";
@@ -67,6 +67,15 @@ function freshUser(env: AppEnv["Bindings"], id: string) {
     .all() as Promise<{ user: UserRow }[]>;
 }
 
+function parseIds(json: string): string[] {
+  try {
+    const v = JSON.parse(json);
+    return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Enter a valid email"),
   password: z.string().min(8, "Password needs at least 8 characters").max(100),
@@ -74,6 +83,7 @@ const registerSchema = z.object({
   grade: z.number().int().min(8).max(12).nullable().optional(),
   schoolId: z.string().trim().max(64).nullable().optional(),
   referralCode: z.string().trim().length(6).nullable().optional(),
+  inviteCode: z.string().trim().max(32).nullable().optional(),
   bio: z.string().trim().max(280).optional(),
 });
 
@@ -105,6 +115,16 @@ app.post("/register", async (c) => {
   }
 
   const now = Date.now();
+
+  // Staff invite (principal/teacher) — roles are never self-selected.
+  let invite: typeof staffInvites.$inferSelect | undefined;
+  if (body.inviteCode) {
+    invite = (await db.select().from(staffInvites).where(eq(staffInvites.code, body.inviteCode.toUpperCase())).limit(1))[0];
+    if (!invite) err(400, "That staff invite code isn't valid.");
+    if (invite.usedBy) err(409, "That invite has already been used.");
+    if (invite.expiresAt < now) err(400, "That invite has expired.");
+  }
+
   const userId = shortId(12);
   const verifyToken = shortId(32);
   await db.insert(users).values({
@@ -112,8 +132,12 @@ app.post("/register", async (c) => {
     email: body.email,
     passwordHash: await hashPassword(body.password),
     displayName: body.displayName,
-    grade: body.grade ?? null,
-    schoolId: body.schoolId ?? null,
+    role: invite ? invite.role : "user",
+    grade: invite ? null : (body.grade ?? null),
+    gradeYear: !invite && body.grade != null ? academicYear(now) : null,
+    gradeSetAt: !invite && body.grade != null ? now : null,
+    schoolId: invite ? invite.schoolId : (body.schoolId ?? null),
+    schoolLockedAt: invite || body.schoolId ? now : null,
     bio: body.bio ?? "",
     referralCode: code,
     referredBy: referrer?.id ?? null,
@@ -121,6 +145,25 @@ app.post("/register", async (c) => {
     verifyTokenAt: now,
     createdAt: now,
   });
+
+  // Claim the invite atomically and attach teacher subject scoping.
+  if (invite) {
+    const claimed = await db
+      .update(staffInvites)
+      .set({ usedBy: userId, usedAt: now })
+      .where(and(eq(staffInvites.id, invite.id), sql`${staffInvites.usedBy} IS NULL`))
+      .returning({ id: staffInvites.id });
+    if (claimed.length === 0) err(409, "That invite has already been used.");
+    if (invite.role === "teacher") {
+      const subjectIds = parseIds(invite.subjectIds);
+      if (subjectIds.length > 0) {
+        await db
+          .insert(teacherSubjects)
+          .values(subjectIds.map((sid) => ({ userId, subjectId: sid })))
+          .onConflictDoNothing();
+      }
+    }
+  }
 
   // Send a one-time verification email (fire-and-forget; never blocks signup).
   const link = appUrl(c.env, `/verify-email?token=${verifyToken}&email=${encodeURIComponent(body.email)}`);
@@ -135,7 +178,7 @@ app.post("/register", async (c) => {
   // per-day and over the account lifetime so a single account can't farm
   // unlimited bonuses. When verification is enforced the referrer must be
   // verified too.
-  if (referrer && verificationSatisfied(referrer)) {
+  if (!invite && referrer && verificationSatisfied(referrer)) {
     const todayStart = startOfSASTDay(dateKeySAST());
     const [totalRow] = await db
       .select({ n: sql<number>`COUNT(*)` })
@@ -168,7 +211,7 @@ app.post("/register", async (c) => {
   // FOUNDERs: they get a points bonus plus the founder badge. Windows set how
   // the launch is framed — a clean "join now, you're an OG" moment.
   const EARLY_ACCESS_UNTIL = envEarlyAccessUntil(c.env);
-  if (now <= EARLY_ACCESS_UNTIL) {
+  if (!invite && now <= EARLY_ACCESS_UNTIL) {
     const hasFounder = await db.select({ id: badges.id }).from(badges).where(eq(badges.id, "founder")).limit(1);
     if (hasFounder.length > 0) {
       await db

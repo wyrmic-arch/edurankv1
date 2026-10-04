@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Download, ExternalLink, ThumbsUp, User } from "lucide-react";
-import { api, imgUrl, type Note } from "@/lib/api";
+import { Download, ExternalLink, ShieldCheck, ThumbsUp, User } from "lucide-react";
+import { api, imgUrl, type Note, type NoteVerification } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { fileSize, timeAgo } from "@/lib/format";
-import { POINTS_RULES } from "@edurank/shared";
+import { POINTS_RULES, licenseLabel, isStaffRole } from "@edurank/shared";
 
 export const runtime = "edge";
 
@@ -17,17 +17,36 @@ export default function NoteDetailPage() {
   const { setUser, user } = useAuth();
   const router = useRouter();
   const [note, setNote] = useState<Note | null>(null);
+  const [verifications, setVerifications] = useState<NoteVerification[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [upvoting, setUpvoting] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [reportReason, setReportReason] = useState("Stolen content");
+  const [reportFlash, setReportFlash] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    api.note(id).then((r) => setNote(r.note)).catch((e) => setError(e.message));
+    api.note(id).then((r) => { setNote(r.note); setVerifications(r.verifications ?? []); }).catch((e) => setError(e.message));
   }, [id]);
 
   useEffect(load, [load]);
+
+  async function verify(verdict: "correct" | "needs_work") {
+    if (!note || verifying) return;
+    setVerifying(true);
+    setFlash(null);
+    try {
+      await api.verifyNote(note.id, verdict, verdict === "needs_work" ? "Needs a re-check." : "");
+      load();
+    } catch (e) {
+      setFlash(e instanceof Error ? e.message : "Could not record verification");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   async function unlock() {
     if (!note) return;
@@ -83,11 +102,24 @@ export default function NoteDetailPage() {
     }
   }
 
+  async function submitReport() {
+    if (!note) return;
+    setReportFlash(null);
+    try {
+      await api.reportNote(note.id, reportReason);
+      setReportFlash("Reported — our team will review it.");
+      setReporting(false);
+    } catch (e) {
+      setReportFlash(e instanceof Error ? e.message : "Could not report");
+    }
+  }
+
   if (error) return <ErrorPanel message={error} onRetry={() => router.refresh()} />;
   if (!note) return <Spinner label="PULLING THE FILE…" />;
 
   const art = note.coverUrl ? imgUrl(note.coverUrl) : imgUrl(`/img/subject/${note.subjectId}`);
-  const canDownload = note.unlockedByMe || note.ownedByMe || user?.role === "admin";
+  const canDownload = note.canViewFile ?? (note.unlockedByMe || note.ownedByMe || user?.role === "admin");
+  const isStaff = user ? isStaffRole(user.role) : false;
 
   return (
     <div className="grid lg:grid-cols-[5fr_7fr] gap-8 items-start">
@@ -144,6 +176,12 @@ export default function NoteDetailPage() {
           </Link>
           <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {note.grade}</span>
           {note.topic && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{note.topic}</span>}
+          <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{licenseLabel(note.license)}</span>
+          {note.verifiedByTeacher && (
+            <span className="font-mono text-[11px] uppercase tracking-label border border-accent text-accent px-2 py-0.5 inline-flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3" /> TEACHER VERIFIED
+            </span>
+          )}
         </div>
 
         <p className="text-mute leading-relaxed mt-6 whitespace-pre-wrap">{note.description}</p>
@@ -166,6 +204,47 @@ export default function NoteDetailPage() {
             </span>
           )}
         </div>
+
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          <Link href={`/verify/${note.id}`} className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 no-underline hover:border-ash">
+            CERTIFICATE
+          </Link>
+          <button onClick={() => setReporting((v) => !v)} className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-mark hover:text-mark">
+            REPORT STOLEN
+          </button>
+          {reportFlash && <span className="text-accent text-[11px]">{reportFlash}</span>}
+        </div>
+        {reporting && (
+          <div className="panel p-3 mt-3 flex flex-wrap items-center gap-2">
+            <input value={reportReason} onChange={(e) => setReportReason(e.target.value)} className="flex-1 min-w-[220px] px-3 py-2 text-[12px]" placeholder="Why are you reporting this?" />
+            <button onClick={() => void submitReport()} className="btn-mark !text-[10px]">SEND REPORT</button>
+          </div>
+        )}
+
+        {isStaff && note.status === "approved" && (
+          <div className="panel p-4 mt-6 space-y-3">
+            <div className="label inline-flex items-center gap-2"><ShieldCheck className="w-3.5 h-3.5 text-accent" /> TEACHER REVIEW</div>
+            <p className="text-mute text-[12px]">
+              Free access for your school/subjects — verifying doesn&rsquo;t pay out or count as a download.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => void verify("correct")} disabled={verifying} className="btn-solid !text-[11px]">MARK CORRECT</button>
+              <button onClick={() => void verify("needs_work")} disabled={verifying} className="btn-ghost !text-[11px]">NEEDS WORK</button>
+            </div>
+            {verifications.length > 0 && (
+              <ul className="space-y-1 pt-1">
+                {verifications.map((v, i) => (
+                  <li key={i} className="text-[12px] text-mute">
+                    <span className={v.verdict === "correct" ? "text-accent" : "text-mark"}>
+                      {v.verdict === "correct" ? "CORRECT" : "NEEDS WORK"}
+                    </span>
+                    {" — "}{v.teacherName}{v.comment ? `: ${v.comment}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
         <p className="label mt-12">
           EVERY DOWNLOAD PAYS THE UPLOADER PTS · SELLER KEEPS A {Math.round(POINTS_RULES.SELLER_CUT * 100)}% CUT OF PAID UNLOCKS

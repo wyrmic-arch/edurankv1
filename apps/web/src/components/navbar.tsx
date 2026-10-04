@@ -11,6 +11,7 @@ import { PTS } from "./hud";
 
 const LINKS = [
   { href: "/browse",     label: "BROWSE" },
+  { href: "/map",        label: "MAP" },
   { href: "/leaderboard", label: "RANKS" },
   { href: "/challenges",  label: "DAILY" },
   { href: "/shop",        label: "SHOP" },
@@ -62,6 +63,17 @@ export function Navbar() {
       >
         UPLOAD
       </Link>
+      {user && (user.role === "principal" || user.role === "admin") && (
+        <Link
+          href="/school"
+          onClick={onNavigate}
+          className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+            pathname.startsWith("/school") ? "text-accent underline" : "text-ghost hover:text-ash"
+          }`}
+        >
+          SCHOOL
+        </Link>
+      )}
     </>
   );
 
@@ -118,6 +130,9 @@ export function Navbar() {
                   <MenuLink href="/shop" label="Shop" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
+                  {(user.role === "principal" || user.role === "admin") && (
+                    <MenuLink href="/school" label="School desk" />
+                  )}
                   {user.role === "admin" && (
                     <MenuLink href="/admin" label="Moderation" />
                   )}

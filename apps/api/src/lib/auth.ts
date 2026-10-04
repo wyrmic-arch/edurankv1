@@ -6,6 +6,7 @@ import { sessions, users } from "../db/schema";
 import { sha256Hex } from "./password";
 import { shortId } from "./id";
 import type { UserRole } from "@edurank/shared";
+import { isStaffRole } from "@edurank/shared";
 import { ApiError, type UserRow } from "../types";
 
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
@@ -68,6 +69,43 @@ export async function requireAdmin(c: Context): Promise<UserRow> {
   const u = await requireUser(c);
   if (u.role !== "admin") throw new ApiError(403, "Restricted area.");
   return u;
+}
+
+/** Require one of the given roles. */
+export async function requireRole(c: Context, ...roles: UserRole[]): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (!roles.includes(u.role)) throw new ApiError(403, "Restricted area.");
+  return u;
+}
+
+/** Teacher, principal or admin. */
+export async function requireStaff(c: Context): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (!isStaffRole(u.role)) throw new ApiError(403, "Staff only.");
+  return u;
+}
+
+/** Principal or admin. */
+export async function requirePrincipal(c: Context): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (u.role !== "principal" && u.role !== "admin") throw new ApiError(403, "Principals only.");
+  return u;
+}
+
+/** Teacher, principal or admin. */
+export async function requireTeacher(c: Context): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (!isStaffRole(u.role)) throw new ApiError(403, "Teachers only.");
+  return u;
+}
+
+/**
+ * Students must have a locked grade to touch notes; staff are exempt (a
+ * principal/teacher/admin is not in a grade). Graduated (alumni) keep read
+ * access.
+ */
+export function canAccessNotes(user: UserRow): boolean {
+  return isStaffRole(user.role) || user.grade != null;
 }
 
 export async function destroySession(c: Context): Promise<void> {

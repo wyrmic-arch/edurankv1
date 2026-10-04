@@ -7,3 +7,7 @@ ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
 # Local-only seed script secret. Never set this in prod.
 DEV_SEED_SECRET=local-dev-seed
+
+# Optional. Signs note ownership certificates (HMAC-SHA256). Generate a random
+# value in prod. Without it, certificates render but are marked "unsigned".
+CERT_SECRET=

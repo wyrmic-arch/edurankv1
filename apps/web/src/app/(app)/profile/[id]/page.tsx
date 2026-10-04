@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Award, Check, Download, ThumbsUp, UploadCloud } from "lucide-react";
-import { api, imgUrl, type ProfileResponse, type School } from "@/lib/api";
+import { Award, Download, Lock, ThumbsUp, UploadCloud } from "lucide-react";
+import { GRADES } from "@edurank/shared";
+import { api, imgUrl, type ProfileResponse } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { Avatar, TierChip } from "@/components/avatar";
@@ -39,15 +40,16 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 mt-3 flex-wrap">
             <TierChip totalEarned={data.user.totalEarned} />
             <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">RANK #{data.user.rank}</span>
-            {data.user.grade && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {data.user.grade}</span>}
             {isMe ? (
-              <SchoolEditor
-                currentId={data.user.schoolId ?? null}
-                currentName={data.user.schoolName ?? null}
-                onSaved={(s) => setData((d) => (d ? { ...d, user: { ...d.user, schoolId: s.id, schoolName: s.name } } : d))}
-              />
+              <>
+                <GradeEditor currentGrade={data.user.grade} />
+                <SchoolEditor currentName={data.user.schoolName ?? null} locked={data.user.schoolId != null} />
+              </>
             ) : (
-              data.user.schoolName && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{data.user.schoolName}</span>
+              <>
+                {data.user.grade && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {data.user.grade}</span>}
+                {data.user.schoolName && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{data.user.schoolName}</span>}
+              </>
             )}
           </div>
         </div>
@@ -178,83 +180,77 @@ function frameColor(frameId: string | null): string | null {
   }
 }
 
-function SchoolEditor({
-  currentId,
-  currentName,
-  onSaved,
-}: {
-  currentId: string | null;
-  currentName: string | null;
-  onSaved: (school: { id: string | null; name: string | null }) => void;
-}) {
-  const { setUser, refresh } = useAuth();
-  const [editing, setEditing] = useState(!currentId);
-  const [schools, setSchools] = useState<School[]>([]);
-  const [value, setValue] = useState<string>(currentId ?? "");
+function GradeEditor({ currentGrade }: { currentGrade: number | null }) {
+  const { setUser } = useAuth();
+  const [value, setValue] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  useEffect(() => {
-    api.schools().then((r) => setSchools(r.items)).catch(() => {});
-  }, []);
+  if (currentGrade != null) {
+    return (
+      <span className="font-mono text-[11px] uppercase tracking-label border border-cinder text-ash px-2 py-0.5 inline-flex items-center gap-1.5" title="Locked for the school year">
+        <Lock className="w-3 h-3" /> GR {currentGrade}
+      </span>
+    );
+  }
 
-  async function save() {
+  async function lockGrade() {
+    if (!value) return;
     setBusy(true);
     setMsg(null);
     try {
-      const school = schools.find((s) => s.id === value);
-      const { user: u } = await api.updateMe({ schoolId: value || null });
-      if (u) setUser(u);
-      onSaved({ id: value || null, name: school?.name ?? null });
-      setMsg("Saved.");
-      setEditing(false);
-      await refresh();
+      const { user } = await api.updateMe({ grade: Number(value) });
+      setUser(user);
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : "Could not save.");
+      setMsg(e instanceof Error ? e.message : "Could not set your grade.");
     } finally {
       setBusy(false);
     }
   }
 
-  // not editing: show the chip + a small edit button
-  if (!editing) {
-    return (
-      <button
-        onClick={() => setEditing(true)}
-        className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft hover:border-ash px-2 py-0.5 inline-flex items-center gap-1.5"
-        title="Change school"
-      >
-        {currentName ?? "NO SCHOOL"}
-        <span className="text-dim">EDIT</span>
-      </button>
-    );
-  }
-
   return (
     <span className="inline-flex items-center gap-2 flex-wrap">
-      <select
-        value={value}
-        onChange={(e) => { setValue(e.target.value); setMsg(null); }}
-        className="px-2 py-1 text-[12px] max-w-[240px]"
-        aria-label="Choose your school"
-      >
-        <option value="">— no school —</option>
-        {schools.map((s) => (
-          <option key={s.id} value={s.id}>{s.name}</option>
-        ))}
-      </select>
-      <button onClick={() => void save()} disabled={busy} className="btn-solid !text-[10px]" title="Save school">
-        <Check className="w-3 h-3" /> {busy ? "…" : "SAVE"}
-      </button>
-      {editing && (
-        <button
-          onClick={() => { setValue(currentId ?? ""); setEditing(false); setMsg(null); }}
-          className="font-mono text-[10px] uppercase tracking-label text-mute hover:text-ink"
-        >
-          CANCEL
+      {!confirming ? (
+        <button onClick={() => setConfirming(true)} className="font-mono text-[11px] uppercase tracking-label border border-accent text-accent px-2 py-0.5">
+          SET YOUR GRADE
         </button>
+      ) : (
+        <>
+          <span className="font-mono text-[10px] uppercase tracking-label text-mute">Locks for the year:</span>
+          <select value={value} onChange={(e) => setValue(e.target.value)} className="px-2 py-1 text-[12px]">
+            <option value="">GRADE…</option>
+            {GRADES.map((g) => (
+              <option key={g} value={g}>Grade {g}</option>
+            ))}
+          </select>
+          <button onClick={() => void lockGrade()} disabled={busy || !value} className="btn-mark !text-[10px] !px-2 !py-1">
+            {busy ? "…" : "LOCK IT IN"}
+          </button>
+          <button onClick={() => setConfirming(false)} className="font-mono text-[10px] uppercase tracking-label text-mute hover:text-ash">CANCEL</button>
+        </>
       )}
-      {msg && <span className="label !text-[10px]">{msg}</span>}
+      {msg && <span className="text-mark text-[11px]">{msg}</span>}
     </span>
+  );
+}
+
+function SchoolEditor({ currentName, locked }: { currentName: string | null; locked: boolean }) {
+  if (locked) {
+    return (
+      <span className="font-mono text-[11px] uppercase tracking-label border border-cinder text-ash px-2 py-0.5 inline-flex items-center gap-1.5" title="Your school is locked. Contact support to change it.">
+        <Lock className="w-3 h-3" /> {currentName ?? "SCHOOL"}
+      </span>
+    );
+  }
+  // Choosing a school happens on the map — this just deep-links there.
+  return (
+    <Link
+      href="/map?select=1"
+      className="font-mono text-[11px] uppercase tracking-label border border-accent text-accent hover:bg-accent hover:text-night px-2 py-0.5 inline-flex items-center gap-1.5 no-underline"
+      title="Choose your school on the map (locks once set)"
+    >
+      CHOOSE SCHOOL ON MAP
+    </Link>
   );
 }

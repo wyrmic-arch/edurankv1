@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { Lock } from "lucide-react";
 import { api, type Note, type Subject } from "@/lib/api";
+import { useAuth } from "@/lib/store";
 import { ErrorPanel, EmptyState, Spinner } from "@/components/hud";
 import { NoteCard } from "@/components/notecard";
-import { GRADES } from "@edurank/shared";
+import { GRADES, isStaffRole } from "@edurank/shared";
 
 export const runtime = "edge";
 
@@ -18,6 +20,8 @@ const SORTS = [
 
 export default function DistrictPage() {
   const { subject: subjectId } = useParams<{ subject: string }>();
+  const { user } = useAuth();
+  const staff = user ? isStaffRole(user.role) : false;
   const [subjects, setSubjects] = useState<Subject[] | null>(null);
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -76,12 +80,18 @@ export default function DistrictPage() {
       <div className="rule" />
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex gap-1">
-          <FilterPill active={grade === ""} onClick={() => setGrade("")}>ALL GRADES</FilterPill>
-          {GRADES.map((g) => (
-            <FilterPill key={g} active={grade === String(g)} onClick={() => setGrade(String(g))}>GR {g}</FilterPill>
-          ))}
-        </div>
+        {staff ? (
+          <div className="flex gap-1">
+            <FilterPill active={grade === ""} onClick={() => setGrade("")}>ALL GRADES</FilterPill>
+            {GRADES.map((g) => (
+              <FilterPill key={g} active={grade === String(g)} onClick={() => setGrade(String(g))}>GR {g}</FilterPill>
+            ))}
+          </div>
+        ) : (
+          <span className="font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-1.5 text-ash inline-flex items-center gap-1.5">
+            <Lock className="w-3 h-3" /> {user?.grade ? `GR ${user.grade} ONLY` : "SET YOUR GRADE TO BROWSE"}
+          </span>
+        )}
 
         <div className="ml-auto">
           <input

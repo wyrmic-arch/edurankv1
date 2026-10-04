@@ -3,6 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
 import type { UserRole } from "@edurank/shared";
+import { academicYear } from "@edurank/shared";
 import { badges, purchases, schools, shopItems, userBadges, users } from "../db/schema";
 import { requireUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, rankOf } from "../lib/points";
@@ -37,10 +38,44 @@ app.patch("/me", async (c) => {
     }),
   );
   const db = drizzle(c.env.DB);
+  const isAdmin = user.role === "admin";
 
-  if (body.schoolId) {
-    const s = await db.select({ id: schools.id }).from(schools).where(eq(schools.id, body.schoolId)).limit(1);
-    if (s.length === 0) err(400, "Unknown school");
+  const patch: Partial<{
+    displayName: string;
+    bio: string;
+    equippedFrameId: string | null;
+    equippedSkinId: string | null;
+    schoolId: string | null;
+    schoolLockedAt: number | null;
+    grade: number | null;
+    gradeYear: number | null;
+    gradeSetAt: number | null;
+  }> = {};
+  if (body.displayName !== undefined) patch.displayName = body.displayName;
+  if (body.bio !== undefined) patch.bio = body.bio;
+  if (body.equippedFrameId !== undefined) patch.equippedFrameId = body.equippedFrameId;
+  if (body.equippedSkinId !== undefined) patch.equippedSkinId = body.equippedSkinId;
+
+  // --- School is a hard lock once chosen (admin override only) -------------
+  if (body.schoolId !== undefined && body.schoolId !== user.schoolId) {
+    if (user.schoolId != null && !isAdmin) err(403, "Your school is locked. Contact support to change it.");
+    if (body.schoolId) {
+      const s = await db.select({ id: schools.id }).from(schools).where(eq(schools.id, body.schoolId)).limit(1);
+      if (s.length === 0) err(400, "Unknown school");
+    }
+    patch.schoolId = body.schoolId;
+    patch.schoolLockedAt = body.schoolId != null ? user.schoolLockedAt ?? Date.now() : null;
+  }
+
+  // --- Grade locks for the academic year (admin override only) -------------
+  if (body.grade !== undefined && body.grade !== user.grade) {
+    if (user.grade != null && !isAdmin) err(403, "Your grade is locked for the year.");
+    if (user.graduatedAt != null && !isAdmin) err(403, "Alumni can't change their grade.");
+    patch.grade = body.grade;
+    if (body.grade != null) {
+      patch.gradeYear = academicYear();
+      patch.gradeSetAt = Date.now();
+    }
   }
 
   // Cosmetics can only be equipped if actually owned AND of the matching kind
@@ -62,7 +97,9 @@ app.patch("/me", async (c) => {
     if (owned[0]!.kind !== kind) err(400, `That item can't be equipped as a ${kind}.`);
   }
 
-  await db.update(users).set(body).where(eq(users.id, user.id));
+  if (Object.keys(patch).length > 0) {
+    await db.update(users).set(patch).where(eq(users.id, user.id));
+  }
   const fresh = (await db.select().from(users).where(eq(users.id, user.id)).limit(1))[0] as UserRow;
   const completed = await checkProfileCompletion(c.env, fresh);
   await evalBadges(c.env, user.id);

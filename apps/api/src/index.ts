@@ -8,6 +8,7 @@ import leaderboardRoutes from "./routes/leaderboard";
 import shopRoutes from "./routes/shop";
 import challengeRoutes from "./routes/challenges";
 import adminRoutes from "./routes/admin";
+import schoolRoutes from "./routes/school";
 import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
 import { rateLimit } from "./lib/ratelimit";
@@ -117,6 +118,7 @@ app.route("/leaderboard", leaderboardRoutes);
 app.route("/shop", shopRoutes);
 app.route("/challenges", challengeRoutes);
 app.route("/admin", adminRoutes);
+app.route("/school", schoolRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
 

@@ -25,6 +25,8 @@ export default function TermsPage() {
 
           <Section title="3. Content you upload">
             <p>You retain ownership of the notes and material you upload. By uploading, you grant EduRank a non-exclusive licence to host, display and distribute that content on the platform, and to allow other users to access it as permitted by your chosen settings.</p>
+            <p>You choose a licence when you upload (default: all rights reserved). Unless you choose a Creative Commons licence, your notes are licensed for on-platform access only — reselling, redistributing or republishing them elsewhere is not allowed.</p>
+            <p>Every upload is fingerprinted (a SHA-256 hash recorded when you upload). You can share the resulting provenance certificate as proof that you authored the file first. If you believe your work has been copied or resold, use the &ldquo;Report stolen&rdquo; action on the note and we will review it.</p>
             <p>You promise the content you upload is yours or you have permission to share it, and that it does not infringe anyone&rsquo;s copyright. Do not upload content containing personal information of others, harmful material, or anything unlawful.</p>
           </Section>
 
