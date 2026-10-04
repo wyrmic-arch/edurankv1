@@ -5,6 +5,13 @@
 export const GRADES = [8, 9, 10, 11, 12] as const;
 export type Grade = (typeof GRADES)[number];
 
+// --- Feature flags ----------------------------------------------------------
+
+// Email verification is intentionally SOFT for now: verification emails are
+// still sent, but no feature is gated on `email_verified_at`. Flip this to true
+// (one line) once there are enough users to make verification mandatory.
+export const REQUIRE_EMAIL_VERIFICATION = false;
+
 // --- Points economy ---------------------------------------------------------
 
 export const POINTS_RULES = {
@@ -19,6 +26,13 @@ export const POINTS_RULES = {
   STREAK_CAP: 15,
   DAILY_CHALLENGE_REWARD: 25,
   SELLER_CUT: 0.5, // uploader earns 50% of unlock price when someone unlocks their note
+} as const;
+
+// Referral anti-farming caps. The referral bonus is payable to the referrer at
+// most this many times per day and over the lifetime of the account.
+export const REFERRAL_CAPS = {
+  MAX_PER_DAY: 5,
+  MAX_TOTAL: 50,
 } as const;
 
 export type LedgerReason =

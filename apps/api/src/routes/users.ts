@@ -43,17 +43,23 @@ app.patch("/me", async (c) => {
     if (s.length === 0) err(400, "Unknown school");
   }
 
-  // Cosmetics can only be equipped if actually owned.
-  for (const key of ["equippedFrameId", "equippedSkinId"] as const) {
+  // Cosmetics can only be equipped if actually owned AND of the matching kind
+  // (a purchased badge id must not be assignable to a frame/skin slot).
+  const slots = [
+    { key: "equippedFrameId", kind: "frame" },
+    { key: "equippedSkinId", kind: "skin" },
+  ] as const;
+  for (const { key, kind } of slots) {
     const itemId = body[key];
-    if (itemId) {
-      const owned = await db
-        .select({ id: purchases.id })
-        .from(purchases)
-        .where(and(eq(purchases.userId, user.id), eq(purchases.itemId, itemId)))
-        .limit(1);
-      if (owned.length === 0) err(403, "You don't own that cosmetic yet — hit the shop.");
-    }
+    if (!itemId) continue;
+    const owned = await db
+      .select({ kind: shopItems.kind })
+      .from(purchases)
+      .innerJoin(shopItems, eq(shopItems.id, purchases.itemId))
+      .where(and(eq(purchases.userId, user.id), eq(purchases.itemId, itemId)))
+      .limit(1);
+    if (owned.length === 0) err(403, "You don't own that cosmetic yet — hit the shop.");
+    if (owned[0]!.kind !== kind) err(400, `That item can't be equipped as a ${kind}.`);
   }
 
   await db.update(users).set(body).where(eq(users.id, user.id));

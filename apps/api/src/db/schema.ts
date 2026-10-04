@@ -166,6 +166,8 @@ export const pointsLedger = sqliteTable(
   (t) => ({
     userCreatedIdx: index("idx_ledger_user_created").on(t.userId, t.createdAt),
     userReasonIdx: index("idx_ledger_user_reason").on(t.userId, t.reason),
+    subjectCreatedIdx: index("idx_ledger_subject_created").on(t.subjectId, t.createdAt),
+    reasonNoteIdx: index("idx_ledger_reason_note").on(t.reason, t.noteId),
   }),
 );
 

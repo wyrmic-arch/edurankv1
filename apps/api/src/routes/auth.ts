@@ -2,18 +2,31 @@ import { Hono } from "hono";
 import { eq, sql, and, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
-import { POINTS_RULES } from "@edurank/shared";
+import { POINTS_RULES, REFERRAL_CAPS, REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
 import { schools, users, sessions, userBadges, badges } from "../db/schema";
-import { hashPassword, verifyPassword, sha256Hex } from "../lib/password";
+import { hashPassword, verifyPassword, sha256Hex, needsRehash, PBKDF2_ITERATIONS } from "../lib/password";
 import { createSession, destroySession, requireUser, currentUser } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, processStreak, rankOf } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { referralCode, shortId } from "../lib/id";
 import { err, parseJsonBody, publicUser } from "../lib/http";
 import { sendEmail, appUrl } from "../lib/email";
+import { dateKeySAST, startOfSASTDay } from "../lib/dates";
 import type { AppEnv, UserRow } from "../types";
 
 const app = new Hono<AppEnv>();
+
+// Valid-format hash with an all-zero salt/hash, used only to burn one PBKDF2
+// derivation when the email is unknown so login timing doesn't reveal account
+// existence. It can never match a real password.
+const DUMMY_PASSWORD_HASH = `pbkdf2$${PBKDF2_ITERATIONS}$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=`;
+
+// Single place every would-be email-verification gate routes through. While
+// REQUIRE_EMAIL_VERIFICATION is false this always returns true, so verification
+// is soft (emails still sent, nothing gated). Flip the shared flag to enforce.
+function verificationSatisfied(user: { emailVerifiedAt: number | null }): boolean {
+  return !REQUIRE_EMAIL_VERIFICATION || user.emailVerifiedAt != null;
+}
 
 // Early-access cutoff (unix ms). Signups on or before this are FOUNDERs.
 // Defaults to 180 days after the platform's reference launch so the window
@@ -22,7 +35,10 @@ const DEFAULT_EARLY_ACCESS_UNTIL = Date.parse("2027-03-01T00:00:00Z");
 function envEarlyAccessUntil(env: AppEnv["Bindings"]): number {
   const raw = env.EARLY_ACCESS_UNTIL;
   if (raw == null || raw === "") return DEFAULT_EARLY_ACCESS_UNTIL;
-  return Number(raw) || DEFAULT_EARLY_ACCESS_UNTIL;
+  // NB: must special-case "0" — `Number("0") || DEFAULT` would re-open the
+  // window instead of closing it (0 is falsy).
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : DEFAULT_EARLY_ACCESS_UNTIL;
 }
 
 async function schoolName(env: { DB: D1Database }, schoolId: string | null): Promise<string | null> {
@@ -115,20 +131,37 @@ app.post("/register", async (c) => {
     html: `<p>Welcome to <b>EduRank</b>.</p><p>Confirm your email to activate your account:</p><p><a href="${link}">Verify my email</a></p><p>If you didn't sign up, you can ignore this.</p>`,
   });
 
-  // Referral economy: both sides get paid immediately.
-  if (referrer) {
-    await awardPoints(c.env, {
-      userId: referrer.id,
-      delta: POINTS_RULES.REFERRAL_BONUS,
-      reason: "referral_bonus",
-      description: `Referral bonus — ${body.displayName} joined with your code`,
-    });
-    await awardPoints(c.env, {
-      userId,
-      delta: POINTS_RULES.REFERRAL_BONUS,
-      reason: "referral_bonus",
-      description: `Joined with ${referrer.displayName}'s referral code`,
-    });
+  // Referral economy: both sides get paid, but the referrer's bonus is capped
+  // per-day and over the account lifetime so a single account can't farm
+  // unlimited bonuses. When verification is enforced the referrer must be
+  // verified too.
+  if (referrer && verificationSatisfied(referrer)) {
+    const todayStart = startOfSASTDay(dateKeySAST());
+    const [totalRow] = await db
+      .select({ n: sql<number>`COUNT(*)` })
+      .from(users)
+      .where(eq(users.referredBy, referrer.id));
+    const [todayRow] = await db
+      .select({ n: sql<number>`COUNT(*)` })
+      .from(users)
+      .where(and(eq(users.referredBy, referrer.id), sql`${users.createdAt} >= ${todayStart}`));
+    const underCaps =
+      Number(totalRow?.n ?? 0) <= REFERRAL_CAPS.MAX_TOTAL &&
+      Number(todayRow?.n ?? 0) <= REFERRAL_CAPS.MAX_PER_DAY;
+    if (underCaps) {
+      await awardPoints(c.env, {
+        userId: referrer.id,
+        delta: POINTS_RULES.REFERRAL_BONUS,
+        reason: "referral_bonus",
+        description: `Referral bonus — ${body.displayName} joined with your code`,
+      });
+      await awardPoints(c.env, {
+        userId,
+        delta: POINTS_RULES.REFERRAL_BONUS,
+        reason: "referral_bonus",
+        description: `Joined with ${referrer.displayName}'s referral code`,
+      });
+    }
   }
 
   // Early-access founder reward. New signups before the cutoff are permanent
@@ -167,8 +200,17 @@ app.post("/login", async (c) => {
   const db = drizzle(c.env.DB);
   const found = (await db.select().from(users).where(sql`lower(${users.email}) = ${body.email}`).limit(1)) as UserRow[];
   const user = found[0];
-  if (!user || !(await verifyPassword(body.password, user.passwordHash))) {
+  if (!user) {
+    // Burn a derivation so unknown-email responses take as long as real ones.
+    await verifyPassword(body.password, DUMMY_PASSWORD_HASH);
     err(401, "Wrong credentials. Check your email and password.");
+  }
+  if (!(await verifyPassword(body.password, user.passwordHash))) {
+    err(401, "Wrong credentials. Check your email and password.");
+  }
+  // Transparently upgrade hashes made at a lower cost factor.
+  if (needsRehash(user.passwordHash)) {
+    await db.update(users).set({ passwordHash: await hashPassword(body.password) }).where(eq(users.id, user.id));
   }
   const token = await createSession(c, user.id);
   const me = await fullMe(c.env, user);
@@ -195,7 +237,7 @@ app.get("/verify-email", async (c) => {
   if (!token || !email) err(400, "Invalid verification link.");
   const db = drizzle(c.env.DB);
   const hashed = await sha256Hex(token);
-  const found = (await db.select().from(users).where(and(eq(users.email, email), eq(users.verifyToken, hashed))).limit(1)) as UserRow[];
+  const found = (await db.select().from(users).where(and(sql`lower(${users.email}) = ${email}`, eq(users.verifyToken, hashed))).limit(1)) as UserRow[];
   const user = found[0];
   if (!user) err(400, "This verification link is invalid or has already been used.");
   // Link valid for 24h.
@@ -221,7 +263,7 @@ app.post("/resend-verification", async (c) => {
     email = body.email;
   }
 
-  const found = (await db.select().from(users).where(eq(users.email, email!)).limit(1)) as UserRow[];
+  const found = (await db.select().from(users).where(sql`lower(${users.email}) = ${email}`).limit(1)) as UserRow[];
   const user = found[0];
   // Always return ok:true to avoid leaking which emails are registered.
   if (user && !user.emailVerifiedAt) {
@@ -242,7 +284,7 @@ app.post("/resend-verification", async (c) => {
 app.post("/forgot-password", async (c) => {
   const body = await parseJsonBody(c, z.object({ email: z.string().trim().toLowerCase().email() }));
   const db = drizzle(c.env.DB);
-  const found = (await db.select().from(users).where(eq(users.email, body.email)).limit(1)) as UserRow[];
+  const found = (await db.select().from(users).where(sql`lower(${users.email}) = ${body.email}`).limit(1)) as UserRow[];
   const user = found[0];
   if (user) {
     const resetToken = shortId(32);
@@ -266,7 +308,7 @@ app.post("/reset-password", async (c) => {
   );
   const db = drizzle(c.env.DB);
   const hashed = await sha256Hex(body.token);
-  const found = (await db.select().from(users).where(and(eq(users.email, body.email), eq(users.resetToken, hashed))).limit(1)) as UserRow[];
+  const found = (await db.select().from(users).where(and(sql`lower(${users.email}) = ${body.email}`, eq(users.resetToken, hashed))).limit(1)) as UserRow[];
   const user = found[0];
   if (!user) err(400, "This reset link is invalid or has already been used.");
   if (user.resetTokenAt && Date.now() - user.resetTokenAt > 60 * 60 * 1000) {

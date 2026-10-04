@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { subjects } from "../db/schema";
+import { subjects, users } from "../db/schema";
 import { bannerImage, subjectImage } from "../lib/images";
 import type { AppEnv, SubjectRow } from "../types";
 
@@ -20,6 +20,12 @@ app.get("/subject/:id", async (c) => {
 // GET /img/banner/:seed — profile banner defaults
 app.get("/banner/:seed", async (c) => {
   const seed = c.req.param("seed").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64) || "default";
+  // Only render banners for real users (or the "default" seed). Without this a
+  // caller can mint unbounded R2 cache objects / Unsplash calls from random seeds.
+  if (seed !== "default") {
+    const row = await drizzle(c.env.DB).select({ id: users.id }).from(users).where(eq(users.id, seed)).limit(1);
+    if (row.length === 0) return c.text("Unknown banner", 404);
+  }
   return bannerImage(c.env, seed);
 });
 

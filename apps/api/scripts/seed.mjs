@@ -18,6 +18,13 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const API = process.env.SEED_URL ?? "http://127.0.0.1:8787";
+
+// The seed script creates a known-password admin and demo data, so it must
+// never run against a non-local deployment by accident.
+if (!/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?(\/|$)/.test(API) && process.env.ALLOW_REMOTE_SEED !== "1") {
+  console.error(`Refusing to seed non-local API (${API}). Set ALLOW_REMOTE_SEED=1 to override.`);
+  process.exit(1);
+}
 const ADMIN_EMAIL = "admin@edurank.co.za";
 const ADMIN_PASS = "Admin#2026";
 

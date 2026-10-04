@@ -39,18 +39,21 @@ function originAllowed(configured: string | string[], origin: string | null | un
   return false;
 }
 
-// Security headers — set on every response.
+// Security headers — set on every response, including error responses.
 app.use("*", async (c, next) => {
-  await next();
-  c.header("X-Content-Type-Options", "nosniff");
-  c.header("X-Frame-Options", "DENY");
-  c.header("Referrer-Policy", "strict-origin-when-cross-origin");
-  c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
-  c.header("X-Robots-Tag", "noindex");
-  c.header(
-    "Strict-Transport-Security",
-    "max-age=63072000; includeSubDomains; preload",
-  );
+  try {
+    await next();
+  } finally {
+    c.header("X-Content-Type-Options", "nosniff");
+    c.header("X-Frame-Options", "DENY");
+    c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+    c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    c.header("X-Robots-Tag", "noindex");
+    c.header(
+      "Strict-Transport-Security",
+      "max-age=63072000; includeSubDomains; preload",
+    );
+  }
 });
 
 // CORS — applied to every request, including OPTIONS preflights.
@@ -120,7 +123,13 @@ app.route("/", metaRoutes); // /subjects, /schools
 // Public R2 read passthrough for avatars/covers/img keys (files stay gated
 // behind /notes/:id/file).
 app.get("/r2/*", async (c) => {
-  const key = decodeURIComponent(new URL(c.req.url).pathname.replace(/^\/r2\//, ""));
+  let key: string;
+  try {
+    key = decodeURIComponent(new URL(c.req.url).pathname.replace(/^\/r2\//, ""));
+  } catch {
+    // Malformed percent-encoding (e.g. /r2/%) must not surface as a 500.
+    return c.json({ error: "Not found" }, 404);
+  }
   if (!/^(avatars|covers|img)\//.test(key)) return c.json({ error: "Not found" }, 404);
   const obj = await c.env.NOTES_BUCKET.get(key);
   if (!obj) return c.json({ error: "Not found" }, 404);

@@ -26,6 +26,7 @@ const ALLOWED_MIME: Record<string, string> = {
   "application/zip": "zip",
 };
 const MAX_UPLOAD = 20 * 1024 * 1024;
+const MAX_COVER = 2 * 1024 * 1024;
 
 async function subjectMap(env: AppEnv["Bindings"]) {
   const rows = await drizzle(env.DB).select().from(subjects);
@@ -139,20 +140,26 @@ app.get("/", async (c) => {
         ? "n.upvote_count DESC, n.created_at DESC"
         : "n.created_at DESC";
 
+  const where = conds.join(" AND ");
   const rowsRes = await c.env.DB.prepare(
-    `SELECT n.*, u.display_name AS uploader_name, s.name AS subject_name, s.color AS subject_color,
-            COUNT(*) OVER() AS total_count
+    `SELECT n.*, u.display_name AS uploader_name, s.name AS subject_name, s.color AS subject_color
      FROM notes n
      JOIN users u ON u.id = n.uploader_id
      JOIN subjects s ON s.id = n.subject_id
-     WHERE ${conds.join(" AND ")}
+     WHERE ${where}
      ORDER BY ${orderBy}
      LIMIT ? OFFSET ?`,
   )
     .bind(...binds, pageSize, offset)
-    .all<RawNoteRow & { total_count: number }>();
+    .all<RawNoteRow>();
   const raw = rowsRes.results ?? [];
-  const total = Number(raw[0]?.total_count ?? 0);
+
+  // Separate COUNT so `total` is correct even when the requested page is past
+  // the end (a window-function total would be absent on an empty page).
+  const countRes = await c.env.DB.prepare(`SELECT COUNT(*) AS n FROM notes n WHERE ${where}`)
+    .bind(...binds)
+    .all<{ n: number }>();
+  const total = Number(countRes.results?.[0]?.n ?? 0);
 
   const viewer = await currentUser(c);
   const items = await decorate(c, raw.map(mapRaw), viewer);
@@ -248,6 +255,7 @@ app.post("/", async (c) => {
   let coverKey: string | null = null;
   const cover = form["cover"];
   if (cover instanceof File && cover.size > 0 && ALLOWED_MIME[cover.type]?.match(/^(png|jpg|webp)$/)) {
+    if (cover.size > MAX_COVER) err(413, "Cover image must be under 2MB.");
     coverKey = `covers/${id}.${ALLOWED_MIME[cover.type]}`;
     await c.env.NOTES_BUCKET.put(coverKey, await cover.arrayBuffer(), {
       httpMetadata: { contentType: cover.type },
@@ -385,24 +393,19 @@ app.post("/:id/upvote", async (c) => {
   if (!note || note.status !== "approved") err(404, "That note isn't available.");
   if (note.uploaderId === user.id) err(400, "You can't upvote your own drop.");
 
-  const existing = await db
-    .select({ userId: noteUpvotes.userId })
-    .from(noteUpvotes)
-    .where(and(eq(noteUpvotes.noteId, id), eq(noteUpvotes.userId, user.id)))
-    .limit(1);
+  // Toggle atomically: try to insert. If a row is actually inserted we just
+  // upvoted; otherwise the (note, user) PK already existed → un-vote. This
+  // avoids the read-then-write race that could 500 on a concurrent upvote.
+  const inserted = await db
+    .insert(noteUpvotes)
+    .values({ noteId: id, userId: user.id, createdAt: Date.now() })
+    .onConflictDoNothing()
+    .returning({ userId: noteUpvotes.userId });
 
   let upvotedByMe: boolean;
-  let upvoteCount: number;
-  if (existing.length > 0) {
-    await db.delete(noteUpvotes).where(and(eq(noteUpvotes.noteId, id), eq(noteUpvotes.userId, user.id)));
-    await db.update(notes).set({ upvoteCount: sql`${notes.upvoteCount} - 1` }).where(eq(notes.id, id));
-    upvotedByMe = false;
-    upvoteCount = note.upvoteCount - 1;
-  } else {
-    await db.insert(noteUpvotes).values({ noteId: id, userId: user.id, createdAt: Date.now() });
+  if (inserted.length > 0) {
     await db.update(notes).set({ upvoteCount: sql`${notes.upvoteCount} + 1` }).where(eq(notes.id, id));
     upvotedByMe = true;
-    upvoteCount = note.upvoteCount + 1;
 
     // Anti-farm guard: reward only the FIRST time this voter upvotes this note.
     const prior = await db
@@ -427,9 +430,14 @@ app.post("/:id/upvote", async (c) => {
       });
     }
     await evalBadges(c.env, note.uploaderId);
+  } else {
+    await db.delete(noteUpvotes).where(and(eq(noteUpvotes.noteId, id), eq(noteUpvotes.userId, user.id)));
+    await db.update(notes).set({ upvoteCount: sql`${notes.upvoteCount} - 1` }).where(eq(notes.id, id));
+    upvotedByMe = false;
   }
 
-  return c.json({ upvotedByMe, upvoteCount });
+  const fresh = (await db.select({ c: notes.upvoteCount }).from(notes).where(eq(notes.id, id)).limit(1))[0];
+  return c.json({ upvotedByMe, upvoteCount: fresh?.c ?? note.upvoteCount });
 });
 
 // GET /notes/:id/file — gated download stream from R2

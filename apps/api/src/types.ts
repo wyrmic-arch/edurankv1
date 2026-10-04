@@ -8,7 +8,6 @@ export interface Bindings {
   RESEND_API_KEY?: string;
   EARLY_ACCESS_UNTIL?: string;
   UNSPLASH_ACCESS_KEY?: string;
-  DEV_SEED_SECRET?: string;
   AI?: Ai;
 }
 
