@@ -16,6 +16,8 @@ export default function Landing() {
   const [top, setTop] = useState<LeaderRow[]>([]);
   const [totalNotes, setTotalNotes] = useState(0);
   const [now, setNow] = useState<string>("");
+  const [boardLoaded, setBoardLoaded] = useState(false);
+  const firstUser = boardLoaded && top.length === 0;
 
   useEffect(() => {
     if (!loading && user) router.replace("/leaderboard");
@@ -26,7 +28,7 @@ export default function Landing() {
       setSubjects(r.items);
       setTotalNotes(r.items.reduce((a, s) => a + s.noteCount, 0));
     }).catch(() => {});
-    api.leaderboard("global", "all-time").then((r) => setTop(r.items.slice(0, 8))).catch(() => {});
+    api.leaderboard("global", "all-time").then((r) => setTop(r.items.slice(0, 8))).catch(() => {}).finally(() => setBoardLoaded(true));
     setNow(new Date().toISOString().slice(0, 10));
   }, []);
 
@@ -55,7 +57,9 @@ export default function Landing() {
           <div className="label mb-6 flex items-center gap-2">
             <span className="text-accent animate-flicker">●</span>
             FOR THE KIDS THEY GAVE UP ON
-            <span className="font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-0.5 text-ash">EARLY ACCESS</span>
+            <span className="font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-0.5 text-ash">
+              {firstUser ? "EARLY ACCESS · BE THE FIRST" : "EARLY ACCESS"}
+            </span>
           </div>
           <h1 className="font-serif text-display font-medium tracking-display leading-none mb-8">
             They said
@@ -109,12 +113,23 @@ export default function Landing() {
                 <span className="shrink-0 tabular-nums">{row.points.toLocaleString("en-ZA")}</span>
               </li>
             ))}
-            {top.length === 0 && (
-              <li className="text-ghost py-6 text-center text-[12px]">The board goes live when the first player drops.</li>
+            {top.length === 0 && !firstUser && (
+              <li className="text-ghost py-6 text-center text-[12px]">Loading the board…</li>
+            )}
+            {firstUser && (
+              <li className="py-6 text-center">
+                <div className="font-serif text-2xl font-medium tracking-tight">Be the first.</div>
+                <p className="text-ghost text-[12px] mt-2 mb-4 measure mx-auto">
+                  The national board is empty. Claim #1 before anyone else does.
+                </p>
+                <Link href="/register" className="btn-mark !text-[10px]">
+                  CLAIM #1 <ArrowRight className="w-3 h-3" />
+                </Link>
+              </li>
             )}
           </ol>
           <div className="mt-4 flex items-center gap-2 label">
-            <span className="text-accent animate-ember">#1</span> THE SEAT IS YOURS
+            <span className="text-accent animate-ember">#1</span> {firstUser ? "BE THE FIRST" : "THE SEAT IS YOURS"}
           </div>
         </aside>
       </section>

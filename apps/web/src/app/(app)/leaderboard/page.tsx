@@ -106,7 +106,17 @@ function LeaderboardInner() {
       ) : (scope === "subject" && !subjectId) || (scope === "school" && !schoolId) ? (
         <p className="text-mute py-10 text-center text-[13px]">Select a {scope} above to load its board.</p>
       ) : rows.length === 0 ? (
-        <p className="text-mute py-10 text-center text-[13px]">No ranked players here yet.</p>
+        scope === "global" ? (
+          <div className="text-center py-16">
+            <div className="font-serif text-3xl font-medium tracking-tight">Be the first.</div>
+            <p className="text-mute text-[13px] mt-2">The board is empty. Earn points to claim #1.</p>
+            <Link href="/upload" className="btn-mark !text-[11px] mt-5 inline-flex">
+              UPLOAD A NOTE
+            </Link>
+          </div>
+        ) : (
+          <p className="text-mute py-10 text-center text-[13px]">No ranked players here yet.</p>
+        )
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
