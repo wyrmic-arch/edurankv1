@@ -6,10 +6,12 @@
 // existing users. Successful logins transparently re-hash old-cost hashes up to
 // the current value (see `needsRehash`).
 //
-// NOTE: raise this only if the Worker plan allows enough CPU per request
-// (Workers Free caps CPU at 10ms; Paid allows far more). 600k is OWASP's
-// current PBKDF2-SHA256 guidance.
-export const PBKDF2_ITERATIONS = 600_000;
+// Cloudflare Workers' WebCrypto caps PBKDF2 at 100,000 iterations — anything
+// higher throws NotSupportedError at runtime (production only; local Miniflare
+// does not enforce the cap). 100k is Cloudflare's hard limit, so it is our max.
+// Verification always honours the count stored in each hash, so this can be
+// raised later if/when the platform allows it.
+export const PBKDF2_ITERATIONS = 100_000;
 const SALT_LEN = 16;
 const BITS = 256;
 
