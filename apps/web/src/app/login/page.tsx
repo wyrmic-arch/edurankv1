@@ -68,7 +68,7 @@ function LoginForm() {
               </p>
             )}
 
-            <button disabled={busy} type="submit" className="btn-solid w-full">
+            <button disabled={busy} type="submit" className="btn-mark w-full">
               {busy ? "SIGNING IN…" : "SIGN IN"}
             </button>
           </form>

@@ -84,7 +84,7 @@ function ResetForm() {
 
               {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
 
-              <button disabled={busy} type="submit" className="btn-solid w-full">
+              <button disabled={busy} type="submit" className="btn-mark w-full">
                 {busy ? "UPDATING…" : "SET PASSWORD"}
               </button>
             </form>

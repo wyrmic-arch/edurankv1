@@ -160,7 +160,7 @@ export default function UploadPage() {
 
         {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
 
-        <button disabled={busy} type="submit" className="btn-solid w-full py-4 text-base">
+        <button disabled={busy} type="submit" className="btn-mark w-full py-4 text-base">
           {busy ? "TRANSMITTING…" : "SEND FOR REVIEW"}
         </button>
       </form>

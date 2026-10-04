@@ -42,7 +42,7 @@ export default function Landing() {
             <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline">
               Log in
             </Link>
-            <Link href="/register" className="btn-solid">
+            <Link href="/register" className="btn-mark">
               Join the ranks <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -53,7 +53,7 @@ export default function Landing() {
       <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 grid lg:grid-cols-[7fr_5fr] gap-12 items-start pt-16 pb-24 flex-1">
         <div className="animate-rise">
           <div className="label mb-6 flex items-center gap-2">
-            <span className="text-ash animate-flicker">●</span>
+            <span className="text-accent animate-flicker">●</span>
             FOR THE KIDS THEY GAVE UP ON
             <span className="font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-0.5 text-ash">EARLY ACCESS</span>
           </div>
@@ -71,7 +71,7 @@ export default function Landing() {
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-8">
-            <Link href="/register" className="btn-solid">
+            <Link href="/register" className="btn-mark">
               Start the climb <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <Link href="/login" className="btn-ghost">
@@ -114,7 +114,7 @@ export default function Landing() {
             )}
           </ol>
           <div className="mt-4 flex items-center gap-2 label">
-            <span className="text-ash animate-ember">#1</span> THE SEAT IS YOURS
+            <span className="text-accent animate-ember">#1</span> THE SEAT IS YOURS
           </div>
         </aside>
       </section>

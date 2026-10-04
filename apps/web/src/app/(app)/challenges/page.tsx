@@ -60,9 +60,9 @@ export default function ChallengesPage() {
         {data.challenges.map((c) => {
           const Icon = c.icon === "Flame" ? Flame : ICONS[c.icon] ?? CalendarClock;
           return (
-            <li key={c.key} className={`panel p-5 ${c.complete ? "border-mark" : ""}`}>
+            <li key={c.key} className={`panel p-5 ${c.complete ? "border-accent" : ""}`}>
               <div className="flex items-start gap-4">
-                <Icon className="w-5 h-5 mt-1 shrink-0 text-mute" />
+                <Icon className={`w-5 h-5 mt-1 shrink-0 ${c.complete ? "text-accent" : "text-mute"}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="font-medium">{c.label}</span>
@@ -77,7 +77,7 @@ export default function ChallengesPage() {
                       {Math.min(c.progress, c.target)}/{c.target}
                     </span>
                   </div>
-                  {c.claimed && <div className="label !text-[9px] mt-2">CLEARED · REWARD BANKED</div>}
+                  {c.claimed && <div className="label !text-[9px] mt-2 text-accent">CLEARED · REWARD BANKED</div>}
                 </div>
               </div>
             </li>

@@ -117,11 +117,11 @@ function LeaderboardInner() {
                 <Link
                   key={row.userId}
                   href={`/profile/${row.userId}`}
-                  className={`panel p-6 flex flex-col items-start text-left gap-2 no-underline hover:bg-ink hover:text-paper transition-colors ${slot === 0 ? "border-mark" : ""}`}
+                  className={`panel p-6 flex flex-col items-start text-left gap-2 no-underline hover:bg-ink hover:text-paper transition-colors ${slot === 0 ? "border-accent" : ""}`}
                 >
                   <div className="flex items-baseline justify-between w-full">
                     <span className="label">#{String(row.rank).padStart(2, "0")}</span>
-                    {slot === 0 && <Crown className="w-4 h-4 text-mark" />}
+                    {slot === 0 && <Crown className="w-4 h-4 text-accent" />}
                   </div>
                   <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={48} />
                   <div className="font-medium truncate max-w-full">{row.displayName}</div>

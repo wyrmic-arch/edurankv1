@@ -89,10 +89,7 @@ export function Progress({ value, target }: { value: number; target: number }) {
   const pct = Math.min(100, Math.round((value / Math.max(1, target)) * 100));
   return (
     <div className="h-px bg-smoke relative">
-      <div
-        className="absolute inset-y-0 left-0 bg-ash transition-all duration-500"
-        style={{ width: `${pct}%` }}
-      />
+      <div className="absolute inset-y-0 left-0 bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
     </div>
   );
 }

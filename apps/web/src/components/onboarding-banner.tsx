@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ShieldAlert, UserCheck } from "lucide-react";
+import { REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
 import { useAuth } from "@/lib/store";
 import { api } from "@/lib/api";
 
@@ -17,7 +18,8 @@ export function OnboardingBanner() {
   const [error, setError] = useState<string | null>(null);
 
   if (!user) return null;
-  const needEmail = !user.emailVerified;
+  // Verification is soft while the flag is off — don't nag users about it.
+  const needEmail = REQUIRE_EMAIL_VERIFICATION && !user.emailVerified;
   const needSchool = !user.schoolId;
 
   if (!needEmail && !needSchool) return null;
