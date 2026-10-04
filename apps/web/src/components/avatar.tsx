@@ -1,6 +1,7 @@
 "use client";
 
 import { tierFor } from "@edurank/shared";
+import { imgUrl } from "@/lib/api";
 
 interface AvatarProps {
   name: string;
@@ -31,7 +32,7 @@ export function Avatar({ name, avatarUrl, frameColor, size = 40 }: AvatarProps) 
     >
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl} alt={name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+        <img src={imgUrl(avatarUrl) ?? avatarUrl} alt={name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       ) : (
         <span className="font-mono text-ash" style={{ fontSize: size * 0.34 }}>
           {initials}

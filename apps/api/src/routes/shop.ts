@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { purchases, shopItems, users } from "../db/schema";
 import { currentUser, requireUser } from "../lib/auth";
-import { awardPoints } from "../lib/points";
+import { spendPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { err } from "../lib/http";
 import type { AppEnv, ShopRow, UserRow } from "../types";
@@ -45,9 +45,8 @@ app.post("/:id/purchase", async (c) => {
   if (!item) err(404, "That item isn't stocked.");
   if (user.balance < item.pricePoints) err(402, `Not enough PTS — you need ${item.pricePoints - user.balance} more.`);
 
-  // Atomic guard: insert the purchase first. UNIQUE(user_id, item_id) means
-  // a second concurrent buy hits the constraint and we return 409 before any
-  // points are deducted. Closes the previous double-charge race.
+  // Insert the purchase first so a second concurrent buy of the SAME item hits
+  // UNIQUE and bails before any points move.
   const purchaseId = crypto.randomUUID();
   try {
     await db.insert(purchases).values({
@@ -65,12 +64,19 @@ app.post("/:id/purchase", async (c) => {
     throw e;
   }
 
-  const { balanceAfter } = await awardPoints(c.env, {
+  // Guarded atomic decrement. If a concurrent spend drained the balance since
+  // the pre-check, roll the purchase row back and refuse (never go negative).
+  const spend = await spendPoints(c.env, {
     userId: user.id,
-    delta: -item.pricePoints,
+    amount: item.pricePoints,
     reason: "cosmetic_purchase",
     description: `Bought "${item.name}" (${item.kind})`,
   });
+  if (!spend.ok) {
+    await db.delete(purchases).where(and(eq(purchases.userId, user.id), eq(purchases.itemId, itemId)));
+    err(402, `Not enough PTS — you need ${item.pricePoints - spend.balanceAfter} more.`);
+  }
+  const balanceAfter = spend.balanceAfter;
 
   // Auto-equip frames/skins on purchase.
   if (item.kind === "frame") await db.update(users).set({ equippedFrameId: itemId }).where(eq(users.id, user.id));

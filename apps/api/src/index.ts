@@ -92,6 +92,21 @@ app.onError((err, c) => {
 
 app.get("/healthz", (c) => c.json({ ok: true, service: "edurank-api", time: Date.now() }));
 
+// Mutating endpoints get per-IP throttling. Auth is the harshest because
+// password-guessing is the highest-value abuse vector.
+//
+// IMPORTANT: Hono applies middleware only to handlers registered AFTER it, so
+// these MUST stay above the app.route(...) mounts below. Registering them after
+// the routes silently disables every limiter (verified against Hono 4).
+app.use("/auth/register", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/login", rateLimit({ max: 5, windowMs: 60_000 }));
+app.use("/auth/forgot-password", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/reset-password", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/auth/resend-verification", rateLimit({ max: 3, windowMs: 60_000 }));
+app.use("/notes/*/unlock", rateLimit({ max: 10, windowMs: 60_000 }));
+app.use("/notes/*/upvote", rateLimit({ max: 30, windowMs: 60_000 }));
+app.use("/shop/*/purchase", rateLimit({ max: 5, windowMs: 60_000 }));
+
 app.route("/auth", authRoutes);
 app.route("/", userRoutes); // /users/:id, /me/*
 app.route("/notes", noteRoutes);
@@ -101,17 +116,6 @@ app.route("/challenges", challengeRoutes);
 app.route("/admin", adminRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
-
-// Mutating endpoints get per-IP throttling. Auth is the harshest because
-// password-guessing is the highest-value abuse vector.
-app.use("/auth/register", rateLimit({ max: 3, windowMs: 60_000 }));
-app.use("/auth/login", rateLimit({ max: 5, windowMs: 60_000 }));
-app.use("/auth/forgot-password", rateLimit({ max: 3, windowMs: 60_000 }));
-app.use("/auth/reset-password", rateLimit({ max: 3, windowMs: 60_000 }));
-app.use("/auth/resend-verification", rateLimit({ max: 3, windowMs: 60_000 }));
-app.use("/notes/*/unlock", rateLimit({ max: 10, windowMs: 60_000 }));
-app.use("/notes/*/upvote", rateLimit({ max: 30, windowMs: 60_000 }));
-app.use("/shop/*/purchase", rateLimit({ max: 5, windowMs: 60_000 }));
 
 // Public R2 read passthrough for avatars/covers/img keys (files stay gated
 // behind /notes/:id/file).

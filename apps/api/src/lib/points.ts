@@ -55,6 +55,52 @@ export async function awardPoints(
   return { balanceAfter, ledgerId };
 }
 
+/**
+ * Atomic spend path. The conditional `WHERE balance >= amount` guarantees a
+ * concurrent pair of spends can never drive the balance negative: whichever
+ * statement lands second simply matches zero rows and reports `ok: false`.
+ * Only after the guarded decrement succeeds do we append the ledger row.
+ */
+export async function spendPoints(
+  env: { DB: D1Database },
+  input: Omit<AwardInput, "delta"> & { amount: number },
+): Promise<{ ok: boolean; balanceAfter: number }> {
+  const db = drizzle(env.DB);
+  const amount = input.amount;
+  if (amount <= 0) {
+    const row = await db.select({ b: users.balance }).from(users).where(eq(users.id, input.userId)).limit(1);
+    return { ok: true, balanceAfter: row[0]?.b ?? 0 };
+  }
+
+  const updated = await db
+    .update(users)
+    .set({
+      balance: sql`${users.balance} - ${amount}`,
+      totalSpent: sql`${users.totalSpent} + ${amount}`,
+    })
+    .where(and(eq(users.id, input.userId), sql`${users.balance} >= ${amount}`))
+    .returning({ balance: users.balance });
+
+  if (updated.length === 0) {
+    const row = await db.select({ b: users.balance }).from(users).where(eq(users.id, input.userId)).limit(1);
+    return { ok: false, balanceAfter: row[0]?.b ?? 0 };
+  }
+
+  const balanceAfter = updated[0]!.balance;
+  await db.insert(pointsLedger).values({
+    id: shortId(14),
+    userId: input.userId,
+    delta: -amount,
+    reason: input.reason,
+    noteId: input.noteId ?? null,
+    subjectId: input.subjectId ?? null,
+    description: input.description,
+    balanceAfter,
+    createdAt: input.createdAt ?? Date.now(),
+  });
+  return { ok: true, balanceAfter };
+}
+
 export interface StreakResult {
   user: UserRow;
   awardedToday: number;

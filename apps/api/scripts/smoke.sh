@@ -22,6 +22,13 @@ pdf() { # tiny valid-ish PDF on stdout
 TS=$(date +%s)
 A="smoke-a-$TS"; B="smoke-b-$TS"
 
+# Each request gets a fresh synthetic client IP so the (now-enforced) per-IP
+# rate limiters never interfere with the functional flow. A dedicated section
+# at the end deliberately hammers one IP to prove the limiter fires.
+# NB: use $RANDOM (not a counter) — curl is often called inside $(), so a
+# shell variable increment would happen in a subshell and never persist.
+curl() { command curl -H "cf-connecting-ip: smoke-$TS-$RANDOM$RANDOM" "$@"; }
+
 say "== auth =="
 RA=$(curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
   -d "{\"email\":\"$A@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke A\"}")
@@ -55,7 +62,7 @@ say "== admin setup =="
 curl -s --max-time 15 -X POST $API/auth/register -H 'Content-Type: application/json' \
   -d "{\"email\":\"admin-smoke-$TS@test.co.za\",\"password\":\"password123\",\"displayName\":\"Smoke Admin\"}" > /dev/null
 cd "$(dirname "$0")/.." || exit 1
-npx wrangler d1 execute edurank-db --local --command "UPDATE users SET role='admin' WHERE email LIKE 'admin-smoke-%'" > /dev/null 2>&1
+npx wrangler d1 execute edurank-app-db --local --command "UPDATE users SET role='admin' WHERE email LIKE 'admin-smoke-%'" > /dev/null 2>&1
 LA=$(curl -s --max-time 15 -X POST $API/auth/login -H 'Content-Type: application/json' -d '{"email":"admin-smoke-'$TS'@test.co.za","password":"password123"}')
 TADMIN=$(echo "$LA" | jq -r .token)
 check "admin login + role" '.user.role == "admin"' "$LA"
@@ -120,13 +127,29 @@ say "== shop =="
 # simplest real path: B buys cheapest item only if affordable; otherwise verify clean 402.
 SHOP=$(curl -s --max-time 15 $API/shop)
 check "shop lists items" '.items | length >= 5' "$SHOP"
+PRICE=$(echo "$SHOP" | jq -r '.items[] | select(.id=="frame-volt") | .pricePoints')
+BAL_B=$(curl -s --max-time 15 $API/auth/me -H "Authorization: Bearer $TB" | jq -r .user.balance)
 BUY=$(curl -s --max-time 15 -X POST $API/shop/frame-volt/purchase -H "Authorization: Bearer $TB")
-BAL_B2=$(curl -s --max-time 15 $API/auth/me -H "Authorization: Bearer $TB" | jq -r .user.balance)
-if [ "${BAL_B2:-0}" -ge 300 ]; then
+if [ "${BAL_B:-0}" -ge "${PRICE:-999999}" ]; then
   check "purchase succeeded + auto-equips frame" '.equippedFrameId == "frame-volt"' "$BUY"
 else
   check "purchase cleanly refused when broke (402)" '.error | test("Not enough PTS")' "$BUY"
 fi
+
+say "== rate limiting =="
+# Hammer one IP: the 5/min login limiter must reject the 6th attempt.
+RLIP="smoke-$TS-ratelimit"
+CODES=""
+for i in 1 2 3 4 5 6; do
+  CODE=$(command curl -s -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$API/auth/login" \
+    -H 'Content-Type: application/json' -H "cf-connecting-ip: $RLIP" \
+    -d '{"email":"nobody@test.co.za","password":"wrongpass"}')
+  CODES="$CODES $CODE"
+done
+case "$CODES" in
+  *429*) ok "login limiter returns 429 after 5 attempts ($CODES)";;
+  *) bad "login limiter never fired ($CODES)";;
+esac
 
 say ""
 say "RESULT: $PASS passed, $FAIL failed"

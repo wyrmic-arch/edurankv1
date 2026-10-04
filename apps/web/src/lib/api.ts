@@ -140,6 +140,23 @@ export const api = {
   unlock: (id: string): Promise<{ unlocked: boolean; pricePaid: number; balanceAfter: number }> => request(`/notes/${id}/unlock`, { method: "POST" }),
   upvote: (id: string): Promise<{ upvotedByMe: boolean; upvoteCount: number }> => request(`/notes/${id}/upvote`, { method: "POST" }),
   fileUrl: (id: string) => `${API_BASE}/notes/${id}/file`,
+  downloadNote: async (id: string): Promise<Blob> => {
+    const token = typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/notes/${id}/file`, { headers });
+    if (!res.ok) {
+      let msg = `Download failed (${res.status})`;
+      try {
+        const data = (await res.json()) as { error?: string };
+        if (data?.error) msg = data.error;
+      } catch {
+        /* non-JSON body */
+      }
+      throw new ApiClientError(res.status, msg);
+    }
+    return res.blob();
+  },
   leaderboard: (scope: string, range: string, extra?: Record<string, string>): Promise<{ items: LeaderRow[] }> =>
     request(`/leaderboard?scope=${scope}&range=${range}${extra ? `&${new URLSearchParams(extra)}` : ""}`),
   shop: (): Promise<{ items: ShopItemView[] }> => request("/shop"),

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { POINTS_RULES } from "@edurank/shared";
 import { noteUpvotes, noteUnlocks, notes, pointsLedger, subjects, users } from "../db/schema";
 import { currentUser, requireUser } from "../lib/auth";
-import { awardPoints } from "../lib/points";
+import { awardPoints, spendPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { err, noteDTO, pagination } from "../lib/http";
 import { moderateNote } from "../lib/moderation";
@@ -303,8 +303,6 @@ app.post("/:id/unlock", async (c) => {
   // Atomic guard: insert the unlock row first. The PK on (note_id, user_id)
   // means concurrent requests from the same buyer are deduplicated by the
   // database — the second one hits UNIQUE and we return "alreadyOwned".
-  // By inserting first and only running the awards on success, we close the
-  // double-spend race that previously charged the buyer twice.
   try {
     await db.insert(noteUnlocks).values({
       noteId: id,
@@ -322,14 +320,30 @@ app.post("/:id/unlock", async (c) => {
     throw e;
   }
 
-  const buyerRes = await awardPoints(c.env, {
-    userId: user.id,
-    delta: -price,
-    reason: "unlock_purchase",
-    description: `Unlocked "${note.title}"`,
-    noteId: note.id,
-    subjectId: note.subjectId,
-  });
+  // Charge the buyer with a guarded, atomic decrement. If it fails (a
+  // concurrent spend drained the balance since our pre-check) we roll the
+  // unlock row back and refuse — the balance can never go negative.
+  let balanceAfter: number;
+  if (price > 0) {
+    const spend = await spendPoints(c.env, {
+      userId: user.id,
+      amount: price,
+      reason: "unlock_purchase",
+      description: `Unlocked "${note.title}"`,
+      noteId: note.id,
+      subjectId: note.subjectId,
+    });
+    if (!spend.ok) {
+      await db
+        .delete(noteUnlocks)
+        .where(and(eq(noteUnlocks.noteId, id), eq(noteUnlocks.userId, user.id)));
+      err(402, `Not enough PTS — you need ${price - spend.balanceAfter} more.`);
+    }
+    balanceAfter = spend.balanceAfter;
+  } else {
+    const fresh = (await db.select({ b: users.balance }).from(users).where(eq(users.id, user.id)).limit(1))[0];
+    balanceAfter = fresh?.b ?? user.balance;
+  }
 
   if (price > 0) {
     await awardPoints(c.env, {
@@ -359,7 +373,7 @@ app.post("/:id/unlock", async (c) => {
 
   await evalBadges(c.env, note.uploaderId);
 
-  return c.json({ unlocked: true, pricePaid: price, balanceAfter: buyerRes.balanceAfter });
+  return c.json({ unlocked: true, pricePaid: price, balanceAfter });
 });
 
 // POST /notes/:id/upvote — toggle; first-ever upvote from this user rewards uploader once

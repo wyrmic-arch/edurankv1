@@ -50,19 +50,10 @@ app.get("/daily", async (c) => {
     const complete = progress >= def.target;
     let claimed = claimedKeys.has(def.key);
     if (complete && !claimed) {
-      // Award FIRST, then record the claim. If the ledger insert fails, we
-      // don't write the completion row and the next call retries. If the
-      // completion insert fails, the user is still paid (rare/acceptable —
-      // the next call would no-op because metrics stay >= target, but the
-      // PK on challenge_completions prevents a second award via INSERT
-      // retry in any case).
-      const { balanceAfter } = await awardPoints(c.env, {
-        userId: user.id,
-        delta: def.reward,
-        reason: "daily_challenge",
-        description: `Daily challenge cleared — ${def.label}`,
-      });
-      await db
+      // Claim FIRST. The PK on (user_id, date_key, challenge_key) makes this
+      // idempotent: a concurrent request inserts zero rows and skips the award,
+      // so the reward can only ever be minted once per challenge.
+      const inserted = await db
         .insert(challengeCompletions)
         .values({
           userId: user.id,
@@ -71,8 +62,17 @@ app.get("/daily", async (c) => {
           pointsAwarded: def.reward,
           claimedAt: Date.now(),
         })
-        .onConflictDoNothing();
-      user.balance = balanceAfter;
+        .onConflictDoNothing()
+        .returning({ k: challengeCompletions.challengeKey });
+      if (inserted.length > 0) {
+        const { balanceAfter } = await awardPoints(c.env, {
+          userId: user.id,
+          delta: def.reward,
+          reason: "daily_challenge",
+          description: `Daily challenge cleared — ${def.label}`,
+        });
+        user.balance = balanceAfter;
+      }
       claimed = true;
     }
     states.push({ ...def, progress, complete, claimed });

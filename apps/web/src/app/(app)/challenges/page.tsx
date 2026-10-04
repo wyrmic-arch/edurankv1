@@ -15,7 +15,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function ChallengesPage() {
-  const { user, setUser } = useAuth();
+  const { setUser } = useAuth();
   const [data, setData] = useState<ChallengesResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const countdown = useMidnightCountdown();
@@ -25,10 +25,11 @@ export default function ChallengesPage() {
       .challenges()
       .then((r) => {
         setData(r);
-        if (user) setUser({ ...user, balance: r.balance });
+        setError(null);
+        setUser((u) => (u ? { ...u, balance: r.balance } : u));
       })
       .catch((e) => setError(e.message));
-  }, [setUser, user]);
+  }, [setUser]);
 
   useEffect(load, [load]);
 

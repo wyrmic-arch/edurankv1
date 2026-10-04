@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { notes } from "../db/schema";
 import { requireAdmin } from "../lib/auth";
@@ -66,10 +66,15 @@ app.post("/notes/:id/approve", async (c) => {
   if (!note) err(404, "Note not found");
   if (note.status !== "pending") err(409, "That note was already reviewed.");
 
-  await db
+  // Conditional update closes the race: only the request that actually flips
+  // the row pending -> approved proceeds to pay out. A concurrent second
+  // approval (or the AI moderator) matches zero rows and bails.
+  const flipped = await db
     .update(notes)
     .set({ status: "approved", reviewedBy: admin.id, reviewedAt: Date.now(), reviewNote: null })
-    .where(eq(notes.id, id));
+    .where(and(eq(notes.id, id), eq(notes.status, "pending")))
+    .returning({ id: notes.id });
+  if (flipped.length === 0) err(409, "That note was already reviewed.");
 
   // Contribution payout lands the moment the note clears review.
   const { balanceAfter } = await awardPoints(c.env, {

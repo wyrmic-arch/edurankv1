@@ -8,8 +8,6 @@
 import type { Context } from "hono";
 import type { AppEnv } from "../types";
 
-const buckets = new Map<string, number[]>();
-
 function clientIp(c: Context<AppEnv>): string {
   return (
     c.req.header("cf-connecting-ip") ??
@@ -37,6 +35,10 @@ interface RateLimitOptions {
  * exceed.
  */
 export function rateLimit(opts: RateLimitOptions) {
+  // Each limiter gets its OWN bucket store. Sharing one Map across limiters
+  // would let the strictest limit (e.g. register: 3/min) gate every other
+  // endpoint, because the budget would be counted per-IP rather than per-route.
+  const buckets = new Map<string, number[]>();
   return async (c: Context<AppEnv>, next: () => Promise<unknown>) => {
     // CORS preflights are cheap and not abuse vectors — never count them.
     if (c.req.method === "OPTIONS") return next();

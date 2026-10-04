@@ -1,13 +1,13 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { api, isApiClientError, TOKEN_KEY, type PublicUser } from "./api";
 
 interface AuthState {
   user: PublicUser | null;
   loading: boolean;
-  setUser: (u: PublicUser | null) => void;
+  setUser: Dispatch<SetStateAction<PublicUser | null>>;
   refresh: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (body: Parameters<typeof api.register>[0]) => Promise<void>;

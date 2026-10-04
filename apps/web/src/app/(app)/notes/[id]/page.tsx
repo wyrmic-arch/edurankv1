@@ -18,6 +18,7 @@ export default function NoteDetailPage() {
   const [note, setNote] = useState<Note | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -32,13 +33,34 @@ export default function NoteDetailPage() {
     setFlash(null);
     try {
       const res = await api.unlock(note.id);
-      if (user) setUser({ ...user, balance: res.balanceAfter });
+      setUser((u) => (u ? { ...u, balance: res.balanceAfter } : u));
       setFlash(res.pricePaid > 0 ? `Unlocked for ${res.pricePaid} PTS. Yours forever.` : "Claimed for free.");
       load();
     } catch (e) {
       setFlash(e instanceof Error ? e.message : "Unlock failed");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function openFile() {
+    if (!note || downloading) return;
+    // Open the tab synchronously (inside the click gesture) so it isn't
+    // popup-blocked, then point it at the authenticated blob once it arrives.
+    const tab = window.open("about:blank", "_blank");
+    setDownloading(true);
+    setFlash(null);
+    try {
+      const blob = await api.downloadNote(note.id);
+      const url = URL.createObjectURL(blob);
+      if (tab) tab.location.href = url;
+      else window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 120_000);
+    } catch (e) {
+      if (tab) tab.close();
+      setFlash(e instanceof Error ? e.message : "Download failed");
+    } finally {
+      setDownloading(false);
     }
   }
 
@@ -83,9 +105,9 @@ export default function NoteDetailPage() {
             <div className="label !text-[9px] mt-1">{fileSize(note.fileSize ?? 0)} · {timeAgo(note.createdAt)}</div>
           </div>
           {canDownload ? (
-            <a href={api.fileUrl(note.id)} target="_blank" rel="noreferrer" className="btn-solid">
-              OPEN FILE <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            <button onClick={openFile} disabled={downloading || busy} className="btn-solid">
+              {downloading ? "LOADING…" : "OPEN FILE"} <ExternalLink className="w-3.5 h-3.5" />
+            </button>
           ) : (
             <button onClick={unlock} disabled={busy} className="btn-mark">
               {busy ? "PROCESSING…" : note.isFree ? "CLAIM — FREE" : `UNLOCK · ${note.pricePoints} PTS`}
