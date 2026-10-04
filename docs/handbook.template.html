@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>EduRank — Project Handbook</title>
+<style>
+  @font-face { font-family: 'Inter'; font-weight: 100 900; font-style: normal; font-display: block; src: url(data:font/woff2;base64,__INTER__) format('woff2'); }
+  @font-face { font-family: 'JetBrains Mono'; font-weight: 100 900; font-style: normal; font-display: block; src: url(data:font/woff2;base64,__MONO__) format('woff2'); }
+  @font-face { font-family: 'EB Garamond'; font-weight: 400; font-style: normal; font-display: block; src: url(data:font/woff2;base64,__GARAMOND__) format('woff2'); }
+
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+  @page { size: A4; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #0A0A0A; }
+  body { font-family: 'Inter', system-ui, sans-serif; color: #C9CCD1; font-size: 10.5pt; line-height: 1.55; }
+
+  .page { position: relative; width: 210mm; height: 296mm; padding: 16mm 15mm; overflow: hidden; page-break-after: always; background: #0A0A0A; }
+  .page:last-child { page-break-after: auto; }
+  .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(#141414 1px, transparent 1px), linear-gradient(90deg, #141414 1px, transparent 1px); background-size: 26px 26px; opacity: .5; pointer-events: none; }
+  .content { position: relative; z-index: 2; }
+
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .kicker { font-family: 'JetBrains Mono', monospace; font-size: 8pt; letter-spacing: .18em; text-transform: uppercase; color: #A4A9B0; }
+  .kicker.accent { color: #F0532D; }
+  h1, h2 { font-family: 'EB Garamond', Georgia, serif; font-weight: 400; color: #F2F2F2; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 26pt; line-height: 1.05; margin-bottom: 4mm; }
+  h3 { font-family: 'Inter', sans-serif; font-size: 11.5pt; font-weight: 600; color: #E4E4E4; margin: 6mm 0 1.5mm; }
+  p { margin: 0 0 3mm; }
+  .lead { color: #A4A9B0; font-size: 11.5pt; }
+  a { color: #F0532D; text-decoration: none; }
+  strong { color: #E4E4E4; font-weight: 600; }
+  .accent { color: #F0532D; }
+  .muted { color: #6B6F75; }
+  .rule { height: 1px; background: #2A2A2A; margin: 5mm 0; }
+  ul { margin: 0 0 3mm; padding-left: 5mm; }
+  li { margin-bottom: 1.4mm; }
+  li::marker { color: #8A9098; }
+
+  .head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #2A2A2A; padding-bottom: 3mm; margin-bottom: 8mm; }
+  .page-no { font-family: 'JetBrains Mono', monospace; font-size: 8pt; color: #6B6F75; }
+
+  .card { border: 1px solid #2A2A2A; background: #101010; padding: 5mm; }
+  .card.accent { border-color: #F0532D; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4mm; }
+  .stat { border: 1px solid #2A2A2A; padding: 3.5mm 4mm; }
+  .stat .n { font-family: 'JetBrains Mono', monospace; font-size: 19pt; color: #F2F2F2; }
+  .stat .l { font-family: 'JetBrains Mono', monospace; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: #6B6F75; }
+
+  table { width: 100%; border-collapse: collapse; margin: 0 0 3mm; }
+  th, td { text-align: left; padding: 2.2mm 3mm; border-bottom: 1px solid #1F1F1F; vertical-align: top; }
+  th { font-family: 'JetBrains Mono', monospace; font-size: 7.5pt; letter-spacing: .12em; text-transform: uppercase; color: #8A9098; border-bottom: 1px solid #2A2A2A; }
+  td.k { color: #E4E4E4; font-weight: 600; white-space: nowrap; }
+  td .mono, .small { font-size: 9pt; }
+
+  /* cover */
+  .cover { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+  .cover .top { border-top: 4px solid #F0532D; padding-top: 5mm; }
+  .wordmark { font-family: 'JetBrains Mono', monospace; font-weight: 700; letter-spacing: .24em; font-size: 40pt; color: #F2F2F2; margin: 32mm 0 4mm; }
+  .wordmark .e { color: #F0532D; }
+  .cover .tag { font-family: 'EB Garamond', serif; font-size: 22pt; color: #E4E4E4; }
+  .cover .sub { color: #A4A9B0; margin-top: 2mm; }
+  .cover .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 8mm; border-top: 1px solid #2A2A2A; padding-top: 5mm; }
+  .cover .meta .l { font-family: 'JetBrains Mono', monospace; font-size: 7pt; letter-spacing: .14em; text-transform: uppercase; color: #6B6F75; }
+  .cover .meta .v { color: #E4E4E4; }
+
+  .toc { display: grid; grid-template-columns: 1fr; gap: 0; }
+  .toc .row { display: flex; gap: 4mm; align-items: baseline; padding: 2.6mm 0; border-bottom: 1px solid #161616; }
+  .toc .num { font-family: 'JetBrains Mono', monospace; font-size: 9pt; color: #F0532D; width: 8mm; }
+  .toc .t { color: #E4E4E4; }
+  .toc .d { color: #6B6F75; margin-left: auto; font-size: 9pt; }
+  .step { display: flex; gap: 4mm; padding: 2.6mm 0; border-bottom: 1px solid #161616; }
+  .step .n { font-family: 'JetBrains Mono', monospace; color: #F0532D; font-size: 10pt; width: 8mm; }
+  .badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 7pt; letter-spacing: .12em; text-transform: uppercase; border: 1px solid #F0532D; color: #F0532D; padding: 1mm 2mm; }
+  .footer { position: absolute; left: 15mm; right: 15mm; bottom: 9mm; display: flex; justify-content: space-between; border-top: 1px solid #1F1F1F; padding-top: 2.5mm; z-index: 2; }
+</style>
+</head>
+<body>
+
+<!-- 1 COVER -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content cover">
+    <div class="top">
+      <div class="kicker">PROJECT HANDBOOK · HANDOVER PACK</div>
+      <div class="wordmark"><span class="e">E</span>DURANK</div>
+      <div class="tag">South Africa&rsquo;s study notes arena.</div>
+      <div class="sub">Everything you need to know about the platform that was built for you.</div>
+    </div>
+    <div class="meta">
+      <div><div class="l">Prepared for</div><div class="v">Jacques du Plessis &mdash; Owner</div></div>
+      <div><div class="l">Status</div><div class="v">Live &amp; running</div></div>
+      <div><div class="l">Live address</div><div class="v">edurank.co.za</div></div>
+      <div><div class="l">Date</div><div class="v">5 October 2026</div></div>
+      <div><div class="l">Built on</div><div class="v">Cloudflare (Pages · Workers · D1)</div></div>
+      <div><div class="l">Repository</div><div class="v">github.com/wyrmic-arch/edurankv1</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 CONTENTS -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker">Contents</span><span class="page-no">02</span></div>
+    <h2>What&rsquo;s in this handbook.</h2>
+    <div class="toc">
+      <div class="row"><span class="num">01</span><span class="t">What EduRank is</span><span class="d">The idea, the goal, the current status</span></div>
+      <div class="row"><span class="num">02</span><span class="t">How it works</span><span class="d">A student&rsquo;s journey, step by step</span></div>
+      <div class="row"><span class="num">03</span><span class="t">The points economy</span><span class="d">How PTS are earned and spent</span></div>
+      <div class="row"><span class="num">04</span><span class="t">Notes &amp; moderation</span><span class="d">Uploads, review, official content</span></div>
+      <div class="row"><span class="num">05</span><span class="t">People &amp; roles</span><span class="d">Students, teachers, principals, owner</span></div>
+      <div class="row"><span class="num">06</span><span class="t">Getting found on Google</span><span class="d">The free public notes library</span></div>
+      <div class="row"><span class="num">07</span><span class="t">What it&rsquo;s built with</span><span class="d">The technology, in plain terms</span></div>
+      <div class="row"><span class="num">08</span><span class="t">Security &amp; the law</span><span class="d">Protections and POPIA</span></div>
+      <div class="row"><span class="num">09</span><span class="t">Your access &amp; how to run it</span><span class="d">Accounts, commands, deployment</span></div>
+      <div class="row"><span class="num">10</span><span class="t">Costs, next steps &amp; support</span><span class="d">What it costs and where it goes next</span></div>
+    </div>
+    <div class="rule"></div>
+    <div class="card accent">
+      <div class="kicker accent">Read this first</div>
+      <p style="margin-top:2mm">EduRank is <strong>live</strong> and ready for its first users. The front door is <a href="https://edurank.co.za">edurank.co.za</a>. You have an <strong>owner account</strong> that sees everything. When you log in, you land on your own control room &mdash; not the student view.</p>
+    </div>
+  </div>
+  <div class="footer"><span class="kicker">EduRank — Project Handbook</span><span class="page-no">edurank.co.za</span></div>
+</section>
+
+<!-- 3 WHAT IT IS -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">01 — What EduRank is</span><span class="page-no">03</span></div>
+    <h2>A school ecosystem for sharing notes and climbing the ranks.</h2>
+    <p class="lead">EduRank lets South African high-school students (Grades 8&ndash;12) upload the notes that helped them, earn points for sharing, and spend those points to unlock other students&rsquo; work &mdash; wrapped in a leaderboard, a school map, and a free library of official notes.</p>
+    <div class="grid3" style="margin-top:5mm">
+      <div class="stat"><div class="n">226</div><div class="l">Schools on the map</div></div>
+      <div class="stat"><div class="n">10</div><div class="l">Subjects</div></div>
+      <div class="stat"><div class="n">25</div><div class="l">Official notes live</div></div>
+    </div>
+    <h3>The problem it solves</h3>
+    <p>Notes and past-paper-style study material already get traded between students on WhatsApp and at break time &mdash; informally, unfairly, and with no reward for the person who made it. EduRank gives that exchange a proper home: one place to share, earn, and be recognised.</p>
+    <h3>Current status</h3>
+    <ul>
+      <li><strong>Live</strong> at <a href="https://edurank.co.za">edurank.co.za</a>, served from Cloudflare&rsquo;s global network.</li>
+      <li><strong>Fresh start:</strong> accounts were cleared, so the site invites its first real users (&ldquo;Be the first&rdquo;).</li>
+      <li><strong>25 official notes</strong> already published for Grades 11&ndash;12 in Mathematics, Physical Sciences, Life Sciences and Accounting.</li>
+      <li>You (the owner) are the only account with full visibility.</li>
+    </ul>
+  </div>
+  <div class="footer"><span class="kicker">01 — What EduRank is</span><span class="page-no">03</span></div>
+</section>
+
+<!-- 4 HOW IT WORKS -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">02 — How it works</span><span class="page-no">04</span></div>
+    <h2>The student&rsquo;s journey, step by step.</h2>
+    <div style="margin-top:4mm">
+      <div class="step"><span class="n">01</span><div><strong>Sign up.</strong> Name, email, password &mdash; with a quick &ldquo;I&rsquo;m human&rdquo; check (Turnstile) and an email confirmation link.</div></div>
+      <div class="step"><span class="n">02</span><div><strong>Pick a grade.</strong> This locks for the school year, so a Grade 11 student only ever sees Grade 11 material.</div></div>
+      <div class="step"><span class="n">03</span><div><strong>Pick a school on the map.</strong> Tap the school on the map of South Africa; it locks once chosen and shows on the leaderboards.</div></div>
+      <div class="step"><span class="n">04</span><div><strong>Browse &amp; read.</strong> Free notes open in the browser; premium community notes cost PTS. Every download is tracked.</div></div>
+      <div class="step"><span class="n">05</span><div><strong>Upload notes.</strong> A note is fingerprinted, reviewed by an AI moderator, and paid out (+50 PTS) when approved.</div></div>
+      <div class="step"><span class="n">06</span><div><strong>Earn PTS</strong> from uploads, downloads, upvotes, referrals, streaks and daily challenges.</div></div>
+      <div class="step"><span class="n">07</span><div><strong>Spend PTS</strong> to unlock other students&rsquo; premium notes (the uploader keeps 50%) or buy cosmetics in the shop.</div></div>
+      <div class="step"><span class="n">08</span><div><strong>Climb.</strong> Weekly and all-time leaderboards for the country, each subject, and each school.</div></div>
+    </div>
+    <div class="card" style="margin-top:4mm"><span class="badge">THE LOOP</span> <span style="margin-left:3mm">Upload &rarr; get approved &rarr; earn PTS &rarr; unlock better notes &rarr; upload more.</span></div>
+  </div>
+  <div class="footer"><span class="kicker">02 — How it works</span><span class="page-no">04</span></div>
+</section>
+
+<!-- 5 ECONOMY -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">03 — The points economy</span><span class="page-no">05</span></div>
+    <h2>PTS: earned, spent, and always on the ledger.</h2>
+    <p class="lead">Every point traces back to a real record in the database &mdash; nothing on screen is invented.</p>
+    <table>
+      <tr><th>Action</th><th>PTS</th></tr>
+      <tr><td class="k">Note approved</td><td class="mono">+50</td></tr>
+      <tr><td class="k">Someone downloads your note</td><td class="mono">+10</td></tr>
+      <tr><td class="k">Someone upvotes your note</td><td class="mono">+5</td></tr>
+      <tr><td class="k">Daily login streak</td><td class="mono">+5 base, +2/day (cap +15)</td></tr>
+      <tr><td class="k">Referral (both sides)</td><td class="mono">+100</td></tr>
+      <tr><td class="k">Complete your profile</td><td class="mono">+30</td></tr>
+      <tr><td class="k">Daily challenge cleared</td><td class="mono">+25 each</td></tr>
+      <tr><td class="k">Unlock someone&rsquo;s paid note</td><td class="mono">&minus;price (uploader keeps 50%)</td></tr>
+      <tr><td class="k">Cosmetic purchase</td><td class="mono">&minus;price</td></tr>
+    </table>
+    <div class="grid2" style="margin-top:3mm">
+      <div class="card"><h3 style="margin-top:0">Daily challenges &amp; streaks</h3>Three challenges rotate each day (study, upload, upvote, show up). Login streaks pay more each consecutive day.</div>
+      <div class="card"><h3 style="margin-top:0">Leaderboards &amp; badges</h3>Boards for global / subject / school, weekly and all-time. Achievements unlock automatically and never cost points.</div>
+    </div>
+  </div>
+  <div class="footer"><span class="kicker">03 — The points economy</span><span class="page-no">05</span></div>
+</section>
+
+<!-- 6 NOTES & MODERATION -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">04 — Notes &amp; moderation</span><span class="page-no">06</span></div>
+    <h2>Quality on the way in, protection on the way out.</h2>
+    <h3>Every upload is reviewed</h3>
+    <p>Uploads are scanned by an AI moderator (plus a hard rule set) for spam, junk, and exam-paper/leaked material. Approvals pay out; rejections tell the uploader why. Nothing risky is auto-approved.</p>
+    <h3>Provenance &amp; copyright</h3>
+    <p>Each file gets a <strong>SHA-256 fingerprint</strong> at upload, and exact duplicates are rejected. Uploaders keep their copyright and can share a public <strong>provenance certificate</strong> as proof they made it first. A &ldquo;Report stolen&rdquo; button opens a takedown review.</p>
+    <h3>Official notes (written by the EduRank team)</h3>
+    <p>Hermes produces original, CAPS-aligned notes with a PDF; they&rsquo;re published through a script and marked <span class="badge">OFFICIAL</span>. They&rsquo;re <strong>free and public</strong>, which is what lets Google index them.</p>
+    <div class="grid3" style="margin-top:4mm">
+      <div class="stat"><div class="n">25</div><div class="l">Official notes</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">Grade + subject hubs</div></div>
+      <div class="stat"><div class="n">PDF</div><div class="l">Download per guide</div></div>
+    </div>
+  </div>
+  <div class="footer"><span class="kicker">04 — Notes &amp; moderation</span><span class="page-no">06</span></div>
+</section>
+
+<!-- 7 ROLES -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">05 — People &amp; roles</span><span class="page-no">07</span></div>
+    <h2>Four kinds of people, plus you.</h2>
+    <table>
+      <tr><th>Role</th><th>What they can do</th></tr>
+      <tr><td class="k">Student</td><td>Browse and unlock notes for their grade, upload, earn PTS, climb boards.</td></tr>
+      <tr><td class="k">Teacher</td><td>Beyond student access: free viewing of notes in their assigned subjects at their school, and they can mark notes <span class="badge">VERIFIED</span>. Joined by invitation from a principal.</td></tr>
+      <tr><td class="k">Principal</td><td>A dashboard for their school: students, stats, the school&rsquo;s notes, promotions (who repeats a year), and teacher invites. Joined by invitation from the owner.</td></tr>
+      <tr><td class="k">Owner (you)</td><td>Sees everything: people, content, economy, activity. Super-admin over every panel.</td></tr>
+    </table>
+    <h3>Staff are invited, never self-declared</h3>
+    <p>Roles can&rsquo;t be chosen at signup &mdash; that stops anyone claiming to be a teacher. The owner creates a <strong>principal invite</strong> for a school; that principal creates <strong>teacher invites</strong> (scoped to subjects). Each invite is a single-use link that expires in 30 days.</p>
+    <div class="card"><span class="badge">INVITE FLOW</span> <span style="margin-left:3mm">Owner &rarr; principal link &rarr; principal &rarr; teacher links &rarr; teachers.</span></div>
+  </div>
+  <div class="footer"><span class="kicker">05 — People &amp; roles</span><span class="page-no">07</span></div>
+</section>
+
+<!-- 8 SEO -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">06 — Getting found on Google</span><span class="page-no">08</span></div>
+    <h2>A free library that Google can read.</h2>
+    <p class="lead">Most of the app sits behind a login, which search engines can&rsquo;t see. The official notes are different: they have public, server-rendered pages built specifically to be found.</p>
+    <h3>What was set up</h3>
+    <ul>
+      <li><strong>Public pages</strong> at <span class="mono">/study</span>, <span class="mono">/study/&lt;grade&gt;/&lt;subject&gt;</span> and each note.</li>
+      <li><strong>Real text in the HTML</strong> (not hidden behind scripts) so crawlers can read the notes.</li>
+      <li><strong>Structured data</strong> (schema.org <em>LearningResource</em> + breadcrumbs) for rich results.</li>
+      <li><strong>Sitemap</strong> listing every page, and a <strong>robots.txt</strong> that invites Google into <span class="mono">/study</span>.</li>
+      <li>Per-page titles, descriptions and a social share image.</li>
+    </ul>
+    <div class="card accent"><div class="kicker accent">Next for SEO</div><p style="margin-top:2mm">Verify the site in <strong>Google Search Console</strong> and submit the sitemap so the notes get indexed. That&rsquo;s the one step that still needs you.</p></div>
+  </div>
+  <div class="footer"><span class="kicker">06 — Getting found on Google</span><span class="page-no">08</span></div>
+</section>
+
+<!-- 9 STACK -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">07 — What it&rsquo;s built with</span><span class="page-no">09</span></div>
+    <h2>Modern, cheap, and fast.</h2>
+    <table>
+      <tr><th>Layer</th><th>Technology</th></tr>
+      <tr><td class="k">Website</td><td>Next.js 14 (React) &mdash; hosted on Cloudflare Pages</td></tr>
+      <tr><td class="k">Backend / API</td><td>Cloudflare Worker (Hono) &mdash; the &ldquo;brain&rdquo; behind everything</td></tr>
+      <tr><td class="k">Database</td><td>Cloudflare D1 (SQLite) via Drizzle</td></tr>
+      <tr><td class="k">File storage</td><td>Cloudflare R2 (note PDFs, covers, avatars, cached images)</td></tr>
+      <tr><td class="k">AI moderation</td><td>Cloudflare Workers AI</td></tr>
+      <tr><td class="k">Email</td><td>Resend (verification, resets, daily digest)</td></tr>
+      <tr><td class="k">Bot protection</td><td>Cloudflare Turnstile</td></tr>
+      <tr><td class="k">Maps</td><td>MapLibre + OpenFreeMap (free, no API key)</td></tr>
+    </table>
+    <p class="muted small">Everything runs on Cloudflare&rsquo;s edge network &mdash; fast for South African users and cheap to run.</p>
+  </div>
+  <div class="footer"><span class="kicker">07 — What it&rsquo;s built with</span><span class="page-no">09</span></div>
+</section>
+
+<!-- 10 SECURITY & LAW -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">08 — Security &amp; the law</span><span class="page-no">10</span></div>
+    <h2>Looked after, and POPIA-aware.</h2>
+    <h3>Security measures in place</h3>
+    <ul>
+      <li>Passwords are stored as salted hashes; sessions use unguessable tokens.</li>
+      <li>Private data is scoped &mdash; students can&rsquo;t see other students&rsquo; data or other grades.</li>
+      <li>Rate limiting and <strong>Turnstile</strong> block brute-force and bot signups.</li>
+      <li><strong>Email verification</strong> is required before earning or spending.</li>
+      <li>Security headers (HTTPS/HSTS, frame protection) are set across the site.</li>
+      <li>The API has been tested against common attacks (injection, unauthorised access, traversal).</li>
+    </ul>
+    <h3>POPIA &amp; legal (South Africa)</h3>
+    <ul>
+      <li>Privacy Policy with an <strong>Information Officer</strong>, lawful basis, retention, and data-subject rights.</li>
+      <li>Terms of Service, Cookie policy, Community Guidelines, Copyright/takedown and Accessibility pages.</li>
+      <li>Data is processed on Cloudflare; cross-border handling is disclosed.</li>
+    </ul>
+    <p class="muted small">These policies are a strong, honest starting point but should be reviewed by a South African attorney before you rely on them commercially.</p>
+  </div>
+  <div class="footer"><span class="kicker">08 — Security &amp; the law</span><span class="page-no">10</span></div>
+</section>
+
+<!-- 11 ACCESS & RUN -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">09 — Your access &amp; how to run it</span><span class="page-no">11</span></div>
+    <h2>You&rsquo;re the owner. Here&rsquo;s the keys.</h2>
+    <table>
+      <tr><th>Item</th><th>Where</th></tr>
+      <tr><td class="k">Your owner account</td><td class="mono">jacquesdup90@gmail.com &mdash; logs into /owner</td></tr>
+      <tr><td class="k">Live site</td><td class="mono">edurank.co.za</td></tr>
+      <tr><td class="k">Admin panel</td><td class="mono">edurank.co.za/admin</td></tr>
+      <tr><td class="k">Code</td><td class="mono">github.com/wyrmic-arch/edurankv1</td></tr>
+      <tr><td class="k">Domain / hosting</td><td>Cloudflare account (Jacquesd264160@gmail.com)</td></tr>
+      <tr><td class="k">Email sending</td><td>Resend (jacquesd264160@gmail.com)</td></tr>
+      <tr><td class="k">Support inbox</td><td class="mono">jacquesdup90@gmail.com</td></tr>
+    </table>
+    <h3>Day-to-day</h3>
+    <ul>
+      <li><strong>Invite a principal:</strong> /admin &rarr; Staff &amp; promotions &rarr; create invite &rarr; copy the link.</li>
+      <li><strong>Publish new official notes:</strong> drop Markdown + PDF in <span class="mono">content/official/</span>, run <span class="mono">npm run publish:official</span>.</li>
+      <li><strong>Deploy changes:</strong> rebuild and push (I handle this on request).</li>
+    </ul>
+  </div>
+  <div class="footer"><span class="kicker">09 — Your access &amp; how to run it</span><span class="page-no">11</span></div>
+</section>
+
+<!-- 12 COSTS / NEXT / SUPPORT -->
+<section class="page">
+  <div class="grid-bg"></div>
+  <div class="content">
+    <div class="head"><span class="kicker accent">10 — Costs, next steps &amp; support</span><span class="page-no">12</span></div>
+    <h2>What it costs and where it goes.</h2>
+    <h3>Running costs today</h3>
+    <table>
+      <tr><th>Item</th><th>Cost</th></tr>
+      <tr><td class="k">Cloudflare (Pages, Workers, D1, R2, Turnstile)</td><td class="mono">Free tier</td></tr>
+      <tr><td class="k">Resend email</td><td class="mono">Free tier (3,000/mo)</td></tr>
+      <tr><td class="k">Map + imagery</td><td class="mono">Free</td></tr>
+      <tr><td class="k">Domain (edurank.co.za)</td><td class="mono">~R100 / year</td></tr>
+    </table>
+    <p class="muted small">Effectively free until the platform gets real traction.</p>
+    <h3>Ideas queued for next</h3>
+    <ul>
+      <li>Reward students with <strong>airtime / data vouchers</strong> (cash-outs without a bank account).</li>
+      <li><strong>Ratings &amp; reviews</strong> from verified buyers.</li>
+      <li><strong>Google Search Console</strong> setup so the free notes get indexed.</li>
+      <li>A tutor marketplace, using the teacher accounts that already exist.</li>
+    </ul>
+    <div class="rule"></div>
+    <p>Questions, changes, or something breaks? Email <a href="mailto:jacquesdup90@gmail.com">jacquesdup90@gmail.com</a> &mdash; site problems also email you automatically.</p>
+  </div>
+  <div class="footer"><span class="kicker">10 — Costs, next steps &amp; support</span><span class="page-no">12</span></div>
+</section>
+
+</body>
+</html>
