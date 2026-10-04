@@ -24,35 +24,46 @@ export async function awardPoints(
   env: { DB: D1Database },
   input: AwardInput,
 ): Promise<{ balanceAfter: number; ledgerId: string }> {
-  const db = drizzle(env.DB);
   const ledgerId = shortId(14);
   const at = input.createdAt ?? Date.now();
+  const earned = input.delta > 0 ? input.delta : 0;
+  const spent = input.delta < 0 ? -input.delta : 0;
 
-  const updated = await db
-    .update(users)
-    .set({
-      balance: sql`${users.balance} + ${input.delta}`,
-      totalEarned: sql`${users.totalEarned} + ${input.delta > 0 ? input.delta : 0}`,
-      totalSpent: sql`${users.totalSpent} + ${input.delta < 0 ? -input.delta : 0}`,
-    })
-    .where(eq(users.id, input.userId))
-    .returning({ balance: users.balance });
+  // A D1 batch is a single atomic transaction: the balance update and its
+  // ledger row commit together or not at all, so a crash can't leave the
+  // running balance out of sync with the ledger. The ledger's balance_after is
+  // read via subquery AFTER the update within the same transaction.
+  const results = await env.DB.batch([
+    env.DB
+      .prepare(
+        `UPDATE users
+            SET balance = balance + ?1,
+                total_earned = total_earned + ?2,
+                total_spent = total_spent + ?3
+          WHERE id = ?4
+          RETURNING balance`,
+      )
+      .bind(input.delta, earned, spent, input.userId),
+    env.DB
+      .prepare(
+        `INSERT INTO points_ledger
+           (id, user_id, delta, reason, note_id, subject_id, description, balance_after, created_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, (SELECT balance FROM users WHERE id = ?2), ?8)`,
+      )
+      .bind(
+        ledgerId,
+        input.userId,
+        input.delta,
+        input.reason,
+        input.noteId ?? null,
+        input.subjectId ?? null,
+        input.description,
+        at,
+      ),
+  ]);
 
-  const balanceAfter = updated[0]?.balance ?? 0;
-
-  await db.insert(pointsLedger).values({
-    id: ledgerId,
-    userId: input.userId,
-    delta: input.delta,
-    reason: input.reason,
-    noteId: input.noteId ?? null,
-    subjectId: input.subjectId ?? null,
-    description: input.description,
-    balanceAfter,
-    createdAt: at,
-  });
-
-  return { balanceAfter, ledgerId };
+  const updatedRows = (results[0]?.results ?? []) as Array<{ balance: number }>;
+  return { balanceAfter: Number(updatedRows[0]?.balance ?? 0), ledgerId };
 }
 
 /**
