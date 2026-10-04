@@ -2,22 +2,22 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { AuthProvider, useAuth } from "@/lib/store";
+import { useAuth } from "@/lib/store";
 import { Navbar } from "@/components/navbar";
 import { Spinner } from "@/components/hud";
 import { OnboardingBanner } from "@/components/onboarding-banner";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  // AuthProvider lives in the root layout — do not nest a second one here or
+  // the two states desync (e.g. stale user after logout).
   return (
-    <AuthProvider>
-      <RequireAuth>
-        <Navbar />
-        <main className="relative z-10 max-w-[1400px] mx-auto px-6 py-10 pb-32">
-          <OnboardingBanner />
-          {children}
-        </main>
-      </RequireAuth>
-    </AuthProvider>
+    <RequireAuth>
+      <Navbar />
+      <main className="relative z-10 max-w-[1400px] mx-auto px-6 py-10 pb-32">
+        <OnboardingBanner />
+        {children}
+      </main>
+    </RequireAuth>
   );
 }
 

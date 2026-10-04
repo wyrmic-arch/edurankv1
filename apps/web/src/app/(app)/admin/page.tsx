@@ -14,6 +14,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
   const previewUrlRef = useRef<string | null>(null);
 
   const load = useCallback(() => {
@@ -35,6 +36,7 @@ export default function AdminPage() {
 
   async function act(note: AdminPendingNote, action: "approve" | "reject") {
     setError(null);
+    setBusyId(note.id);
     try {
       if (action === "approve") await api.approve(note.id);
       else await api.reject(note.id, reason || "Didn't meet quality standards.");
@@ -43,21 +45,24 @@ export default function AdminPage() {
       load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Action failed");
+    } finally {
+      setBusyId(null);
     }
   }
 
   async function previewFile(note: AdminPendingNote) {
+    // Open the tab inside the click gesture so the popup isn't blocked, then
+    // point it at the authorised blob (Bearer header, not an unauthenticated URL).
+    const tab = window.open("about:blank", "_blank");
     try {
-      const res = await fetch(api.fileUrl(note.id), {
-        headers: { Authorization: `Bearer ${localStorage.getItem("edurank_token")}` },
-      });
-      if (!res.ok) throw new Error(`Preview failed (${res.status})`);
-      const blob = await res.blob();
+      const blob = await api.downloadNote(note.id);
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
       const url = URL.createObjectURL(blob);
       previewUrlRef.current = url;
-      window.open(url, "_blank");
+      if (tab) tab.location.href = url;
+      else window.open(url, "_blank");
     } catch (e) {
+      if (tab) tab.close();
       setError(e instanceof Error ? e.message : "Preview failed");
     }
   }
@@ -123,11 +128,11 @@ export default function AdminPage() {
 
                 <div className="flex flex-col items-stretch gap-2 ml-auto w-full sm:w-auto">
                   <div className="flex gap-2 justify-end">
-                    <button onClick={() => void previewFile(n)} className="btn-ghost">PREVIEW</button>
-                    <button onClick={() => void act(n, "approve")} className="btn-solid">
-                      <Check className="w-4 h-4" /> APPROVE
+                    <button onClick={() => void previewFile(n)} disabled={busyId === n.id} className="btn-ghost">PREVIEW</button>
+                    <button onClick={() => void act(n, "approve")} disabled={busyId === n.id} className="btn-solid">
+                      <Check className="w-4 h-4" /> {busyId === n.id ? "…" : "APPROVE"}
                     </button>
-                    <button onClick={() => setRejecting(rejecting === n.id ? null : n.id)} className="btn-ghost">
+                    <button onClick={() => setRejecting(rejecting === n.id ? null : n.id)} disabled={busyId === n.id} className="btn-ghost">
                       <X className="w-4 h-4" /> REJECT
                     </button>
                   </div>
@@ -139,7 +144,7 @@ export default function AdminPage() {
                         placeholder="Reason (sent to uploader)"
                         className="flex-1 px-3 py-2 text-[12px]"
                       />
-                      <button onClick={() => void act(n, "reject")} className="btn-mark">
+                      <button onClick={() => void act(n, "reject")} disabled={busyId === n.id} className="btn-mark">
                         CONFIRM
                       </button>
                     </div>

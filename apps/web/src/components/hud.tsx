@@ -154,7 +154,6 @@ export function FormField({
             onClick={() => setShow((s) => !s)}
             className="absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] uppercase tracking-label border border-cinder px-2 py-1 hover:border-ash hover:text-ash text-ghost bg-oil"
             aria-label={show ? "Hide password" : "Show password"}
-            tabIndex={-1}
           >
             {show ? "HIDE" : "SHOW"}
           </button>

@@ -116,7 +116,6 @@ export function Navbar() {
                   <MenuLink href={`/profile/${user.id}`} label="Profile" />
                   <MenuLink href="/shop" label="Shop" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
-                  <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
                   {user.role === "admin" && (
                     <MenuLink href="/admin" label="Moderation" />

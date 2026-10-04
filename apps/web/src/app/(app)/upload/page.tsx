@@ -63,8 +63,8 @@ export default function UploadPage() {
       <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1 mb-3">Submit a note.</h1>
       <p className="text-mute text-[14px] mb-10">
         Approved uploads earn <PTS value={POINTS_RULES.UPLOAD_APPROVED} size="sm" /> instantly — plus{" "}
-        <span className="font-mono font-bold">+10 PTS</span> every time someone downloads and a{" "}
-        <span className="font-mono font-bold">50% cut</span> of any unlock price you set.
+        <span className="font-mono font-bold">+{POINTS_RULES.DOWNLOAD_RECEIVED} PTS</span> every time someone downloads and a{" "}
+        <span className="font-mono font-bold">{Math.round(POINTS_RULES.SELLER_CUT * 100)}% cut</span> of any unlock price you set.
       </p>
 
       <form onSubmit={submit} className="space-y-6">
@@ -134,7 +134,7 @@ export default function UploadPage() {
               className={`border px-4 py-4 text-left transition-colors ${pricing === "free" ? "border-ash bg-ash text-night" : "border-ruleSoft hover:border-ash"}`}
             >
               <div className="font-medium">Free</div>
-              <div className="label !text-[9px] mt-1">MAX REACH · +10 PTS PER DOWNLOAD</div>
+              <div className="label !text-[9px] mt-1">MAX REACH · +{POINTS_RULES.DOWNLOAD_RECEIVED} PTS PER DOWNLOAD</div>
             </button>
             <button
               type="button"
@@ -142,7 +142,7 @@ export default function UploadPage() {
               className={`border px-4 py-4 text-left transition-colors ${pricing === "paid" ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ash"}`}
             >
               <div className="font-medium">Premium</div>
-              <div className="label !text-[9px] mt-1">SET A PTS PRICE · YOU KEEP 50%</div>
+              <div className="label !text-[9px] mt-1">SET A PTS PRICE · YOU KEEP {Math.round(POINTS_RULES.SELLER_CUT * 100)}%</div>
             </button>
           </div>
           {pricing === "paid" && (

@@ -42,7 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     mounted.current = true;
-    refresh().finally(() => setLoading(false));
+    refresh().finally(() => {
+      if (mounted.current) setLoading(false);
+    });
     return () => {
       mounted.current = false;
     };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Frame as FrameIcon, Palette, ShoppingBag } from "lucide-react";
+import { Check, Frame as FrameIcon, Layers, Palette, ShoppingBag } from "lucide-react";
 import { api, type ShopItemView } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
@@ -10,6 +10,7 @@ import { Avatar } from "@/components/avatar";
 const KINDS = [
   { key: "frame", label: "FRAMES", icon: FrameIcon },
   { key: "badge", label: "TITLES", icon: Palette },
+  { key: "skin", label: "THEMES", icon: Layers },
 ] as const;
 
 export default function ShopPage() {
@@ -21,7 +22,7 @@ export default function ShopPage() {
   const [flash, setFlash] = useState<string | null>(null);
 
   function load() {
-    api.shop().then((r) => setItems(r.items)).catch((e) => setError(e.message));
+    api.shop().then((r) => { setItems(r.items); setError(null); }).catch((e) => setError(e.message));
   }
   useEffect(load, []);
   useEffect(() => {
@@ -36,7 +37,7 @@ export default function ShopPage() {
     setError(null);
     try {
       const res = await api.purchase(item.id);
-      if (user) setUser({ ...user, balance: res.balanceAfter });
+      setUser((u) => (u ? { ...u, balance: res.balanceAfter } : u));
       setFlash(`"${item.name}" is yours. It auto-equipped.`);
       load();
       await refresh();
@@ -109,7 +110,7 @@ function ItemCard({
   balance: number;
   onBuy: () => void;
 }) {
-  const color = (item.config?.color as string) ?? "#0A0A0A";
+  const color = ((item.config?.accent ?? item.config?.color) as string) ?? "#0A0A0A";
   const afford = balance >= item.pricePoints;
 
   let preview: React.ReactNode;

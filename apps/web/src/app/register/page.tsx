@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/store";
-import { GRADES } from "@edurank/shared";
+import { GRADES, POINTS_RULES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
 import { PasswordField } from "@/components/password-field";
 
@@ -59,7 +59,7 @@ export default function RegisterPage() {
             <span className="font-mono text-[11px] uppercase tracking-label text-ash border border-cinder px-2 py-0.5">FOUNDER</span>
             <p className="text-ghost text-[12px] leading-snug">
               Early-access signups are FOUNDERs for life — a permanent badge and{" "}
-              <span className="font-mono text-ash font-bold">+150 PTS</span> on the house.
+              <span className="font-mono text-ash font-bold">+{POINTS_RULES.FOUNDER_BONUS} PTS</span> on the house.
             </p>
           </div>
 
@@ -83,7 +83,7 @@ export default function RegisterPage() {
               </select>
             </F>
 
-            <F label="Referral code (optional)" hint="+100 PTS for you and your recruiter.">
+            <F label="Referral code (optional)" hint={`+${POINTS_RULES.REFERRAL_BONUS} PTS for you and your recruiter.`}>
               <input
                 value={referralCode}
                 onChange={(e) => setReferralCode(e.target.value.toUpperCase())}

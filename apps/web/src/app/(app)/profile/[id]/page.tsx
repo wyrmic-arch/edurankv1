@@ -41,7 +41,11 @@ export default function ProfilePage() {
             <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">RANK #{data.user.rank}</span>
             {data.user.grade && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">GR {data.user.grade}</span>}
             {isMe ? (
-              <SchoolEditor currentId={data.user.schoolId ?? null} currentName={data.user.schoolName ?? null} onSaved={(n) => setData((d) => d ? { ...d, user: { ...d.user, schoolName: n } } : d)} />
+              <SchoolEditor
+                currentId={data.user.schoolId ?? null}
+                currentName={data.user.schoolName ?? null}
+                onSaved={(s) => setData((d) => (d ? { ...d, user: { ...d.user, schoolId: s.id, schoolName: s.name } } : d))}
+              />
             ) : (
               data.user.schoolName && <span className="font-mono text-[11px] uppercase tracking-label border border-ruleSoft px-2 py-0.5">{data.user.schoolName}</span>
             )}
@@ -181,7 +185,7 @@ function SchoolEditor({
 }: {
   currentId: string | null;
   currentName: string | null;
-  onSaved: (name: string | null) => void;
+  onSaved: (school: { id: string | null; name: string | null }) => void;
 }) {
   const { setUser, refresh } = useAuth();
   const [editing, setEditing] = useState(!currentId);
@@ -201,8 +205,9 @@ function SchoolEditor({
       const school = schools.find((s) => s.id === value);
       const { user: u } = await api.updateMe({ schoolId: value || null });
       if (u) setUser(u);
-      onSaved(school?.name ?? null);
+      onSaved({ id: value || null, name: school?.name ?? null });
       setMsg("Saved.");
+      setEditing(false);
       await refresh();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Could not save.");
@@ -241,8 +246,13 @@ function SchoolEditor({
       <button onClick={() => void save()} disabled={busy} className="btn-solid !text-[10px]" title="Save school">
         <Check className="w-3 h-3" /> {busy ? "…" : "SAVE"}
       </button>
-      {!currentId && currentName === null && (
-        <button onClick={() => { setEditing(false); setMsg(null); }} className="font-mono text-[10px] uppercase tracking-label text-mute hover:text-ink">CANCEL</button>
+      {editing && (
+        <button
+          onClick={() => { setValue(currentId ?? ""); setEditing(false); setMsg(null); }}
+          className="font-mono text-[10px] uppercase tracking-label text-mute hover:text-ink"
+        >
+          CANCEL
+        </button>
       )}
       {msg && <span className="label !text-[10px]">{msg}</span>}
     </span>

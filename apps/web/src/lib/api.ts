@@ -47,34 +47,32 @@ async function request<T>(path: string, opts: { method?: string; body?: unknown;
   const timer = setTimeout(() => controller.abort(), 8_000);
 
   let res: Response | null;
+  const method = opts.method ?? "GET";
   try {
     res = await fetch(`${API_BASE}${path}`, {
-      method: opts.method ?? "GET",
+      method,
       headers,
       body,
       signal: controller.signal,
     });
   } catch {
+    // Only retry idempotent requests. Retrying a POST/PATCH could duplicate a
+    // note, re-run a purchase, or surface a confusing error after success.
+    if (method !== "GET" && method !== "HEAD") {
+      clearTimeout(timer);
+      throw new ApiClientError(0, "Network error — check your connection and try again.");
+    }
     // Aborted / network failure — retry once before surfacing the error.
     try {
       res = await fetch(`${API_BASE}${path}`, {
-        method: opts.method ?? "GET",
+        method,
         headers,
         body,
         signal: AbortSignal.timeout(8_000),
       });
-    } catch (e) {
+    } catch {
       clearTimeout(timer);
-      // Network-level failure (DNS, TLS, CORS preflight, offline, etc.).
-      // Browsers swallow the real reason for CORS preflight failures, so
-      // give the user something actionable.
-      throw new ApiClientError(
-        0,
-        `Can't reach the API at ${API_BASE}. ` +
-          `Open the browser dev tools (Network tab) and look at the failing request — ` +
-          `if it's red and says "CORS" or "(blocked)", the API needs ${API_BASE} 's origin in its ALLOWED_ORIGINS. ` +
-          `Otherwise make sure the worker is deployed (it is at: ${API_BASE}).`,
-      );
+      throw new ApiClientError(0, "Can't reach the server — check your connection, then try again.");
     }
   } finally {
     clearTimeout(timer);

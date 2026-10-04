@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Crown } from "lucide-react";
@@ -12,6 +12,15 @@ type Scope = "global" | "subject" | "school";
 type Range = "weekly" | "all-time";
 
 export default function LeaderboardPage() {
+  // useSearchParams requires a Suspense boundary in the App Router.
+  return (
+    <Suspense fallback={<Spinner label="TALLYING THE BOARD…" />}>
+      <LeaderboardInner />
+    </Suspense>
+  );
+}
+
+function LeaderboardInner() {
   const params = useSearchParams();
   const [scope, setScope] = useState<Scope>((params.get("scope") as Scope) ?? "global");
   const [range, setRange] = useState<Range>("weekly");
@@ -21,6 +30,7 @@ export default function LeaderboardPage() {
   const [schools, setSchools] = useState<School[]>([]);
   const [rows, setRows] = useState<LeaderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     api.subjects().then((r) => setSubjects(r.items)).catch(() => {});
@@ -40,7 +50,7 @@ export default function LeaderboardPage() {
     return () => {
       live = false;
     };
-  }, [scope, range, subjectId, schoolId]);
+  }, [scope, range, subjectId, schoolId, reload]);
 
   const podium = rows?.slice(0, 3) ?? [];
   const rest = rows?.slice(3) ?? [];
@@ -90,7 +100,7 @@ export default function LeaderboardPage() {
       </div>
 
       {error ? (
-        <ErrorPanel message={error} onRetry={() => setRange(range)} />
+        <ErrorPanel message={error} onRetry={() => setReload((n) => n + 1)} />
       ) : rows === null ? (
         <Spinner label="TALLYING THE BOARD…" />
       ) : (scope === "subject" && !subjectId) || (scope === "school" && !schoolId) ? (
@@ -115,7 +125,7 @@ export default function LeaderboardPage() {
                   </div>
                   <Avatar name={row.displayName} avatarUrl={row.avatarUrl} size={48} />
                   <div className="font-medium truncate max-w-full">{row.displayName}</div>
-                  <TierChip totalEarned={row.points} />
+                  {scope !== "subject" && range === "all-time" && <TierChip totalEarned={row.points} />}
                   <PTS value={row.points} size="lg" />
                   <span className="label !text-[9px]">{row.schoolName ?? "NO SCHOOL"}</span>
                 </Link>

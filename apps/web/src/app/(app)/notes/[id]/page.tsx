@@ -8,6 +8,7 @@ import { api, imgUrl, type Note } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { fileSize, timeAgo } from "@/lib/format";
+import { POINTS_RULES } from "@edurank/shared";
 
 export const runtime = "edge";
 
@@ -19,6 +20,7 @@ export default function NoteDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [upvoting, setUpvoting] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -65,9 +67,10 @@ export default function NoteDetailPage() {
   }
 
   async function upvote() {
-    if (!note) return;
+    if (!note || upvoting) return;
     const wasUpvoted = note.upvotedByMe;
     const previousCount = note.upvoteCount;
+    setUpvoting(true);
     setNote({ ...note, upvotedByMe: !wasUpvoted, upvoteCount: wasUpvoted ? previousCount - 1 : previousCount + 1 });
     try {
       const res = await api.upvote(note.id);
@@ -75,6 +78,8 @@ export default function NoteDetailPage() {
     } catch (e) {
       setNote((n) => (n ? { ...n, upvotedByMe: wasUpvoted, upvoteCount: previousCount } : n));
       setFlash(e instanceof Error ? e.message : "Upvote failed");
+    } finally {
+      setUpvoting(false);
     }
   }
 
@@ -146,7 +151,7 @@ export default function NoteDetailPage() {
         <div className="flex items-center gap-3 mt-6">
           <button
             onClick={upvote}
-            disabled={note.ownedByMe}
+            disabled={note.ownedByMe || upvoting}
             className={`btn ${note.upvotedByMe ? "border-ash bg-ash text-night" : ""}`}
           >
             <ThumbsUp className="w-4 h-4" />
@@ -163,7 +168,7 @@ export default function NoteDetailPage() {
         </div>
 
         <p className="label mt-12">
-          EVERY DOWNLOAD PAYS THE UPLOADER PTS · SELLER KEEPS A 50% CUT OF PAID UNLOCKS
+          EVERY DOWNLOAD PAYS THE UPLOADER PTS · SELLER KEEPS A {Math.round(POINTS_RULES.SELLER_CUT * 100)}% CUT OF PAID UNLOCKS
         </p>
       </div>
     </div>

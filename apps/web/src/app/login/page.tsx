@@ -18,7 +18,10 @@ function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/leaderboard";
+  // Only accept same-site absolute paths — never a scheme or protocol-relative
+  // URL (prevents /login?next=https://evil.com open redirects).
+  const rawNext = params.get("next");
+  const next = rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/leaderboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

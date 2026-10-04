@@ -24,10 +24,11 @@ export default function DistrictPage() {
   const [grade, setGrade] = useState("");
   const [sort, setSort] = useState<string>("recent");
   const [q, setQ] = useState("");
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     api.subjects().then((r) => setSubjects(r.items)).catch((e) => setError(e.message));
-  }, []);
+  }, [reload]);
 
   useEffect(() => {
     let live = true;
@@ -40,11 +41,15 @@ export default function DistrictPage() {
     return () => {
       live = false;
     };
-  }, [subjectId, grade, sort, q]);
+  }, [subjectId, grade, sort, q, reload]);
 
   const subject = useMemo(() => subjects?.find((s) => s.id === subjectId), [subjects, subjectId]);
 
-  if (subjects && !subject) {
+  if (subjects === null && error) {
+    return <ErrorPanel message={error} onRetry={() => setReload((n) => n + 1)} />;
+  }
+  if (subjects === null) return <Spinner label="OPENING SUBJECT…" />;
+  if (!subject) {
     return (
       <EmptyState
         title="Unknown subject."
@@ -53,7 +58,6 @@ export default function DistrictPage() {
       />
     );
   }
-  if (!subject || (notes === null && !error)) return <Spinner label="OPENING SUBJECT…" />;
 
   return (
     <div className="space-y-6">
@@ -98,7 +102,7 @@ export default function DistrictPage() {
       </div>
 
       {error ? (
-        <ErrorPanel message={error} onRetry={() => setSort(sort)} />
+        <ErrorPanel message={error} onRetry={() => setReload((n) => n + 1)} />
       ) : notes === null ? (
         <Spinner label="SCANNING THE ARCHIVE…" />
       ) : notes.length === 0 ? (
