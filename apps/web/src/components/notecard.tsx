@@ -8,9 +8,10 @@ import { timeAgo } from "@/lib/format";
 
 export function NoteCard({ note }: { note: Note }) {
   const art = imgUrl(`/img/subject/${note.subjectId}`);
+  const href = note.isOfficial && note.slug ? `/study/${note.grade}/${note.subjectId}/${note.slug}` : `/notes/${note.id}`;
   return (
     <Link
-      href={`/notes/${note.id}`}
+      href={href}
       className="group panel overflow-hidden flex flex-col no-underline hover:bg-ink hover:text-paper transition-colors"
     >
       <div className="relative h-32 overflow-hidden bg-ruleSoft">
@@ -29,6 +30,11 @@ export function NoteCard({ note }: { note: Note }) {
         >
           GR {note.grade} · {note.subjectId.toUpperCase()}
         </span>
+        {note.isOfficial && (
+          <span className="absolute top-2 right-2 font-mono text-[10px] uppercase tracking-label px-2 py-0.5 border border-accent text-accent bg-oil">
+            OFFICIAL
+          </span>
+        )}
         <div className="absolute bottom-2 right-2">
           {note.isFree ? (
             <span className="font-mono text-[10px] uppercase tracking-label">FREE</span>

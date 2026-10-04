@@ -104,6 +104,10 @@ export const notes = sqliteTable(
     schoolId: text("school_id").references(() => schools.id), // uploader's school at upload time
     contentHash: text("content_hash"), // SHA-256 of the file — provenance / duplicate detection
     license: text("license").notNull().default("all-rights-reserved"), // see NOTE_LICENSES
+    isOfficial: integer("is_official").notNull().default(0), // EduRank Team content
+    slug: text("slug"), // SEO URL slug (official notes)
+    body: text("body"), // sanitised HTML body (official notes; powers SEO pages)
+    bodyUpdatedAt: integer("body_updated_at"),
     isFree: integer("is_free").notNull().default(1),
     pricePoints: integer("price_points").notNull().default(0),
     status: text("status").notNull().default("pending"), // pending | approved | rejected

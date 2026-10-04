@@ -85,6 +85,8 @@ export function noteDTO(
     isFree: n.isFree === 1,
     pricePoints: n.pricePoints,
     license: n.license,
+    isOfficial: n.isOfficial === 1,
+    slug: n.slug,
     status: n.status,
     reviewNote: n.reviewNote,
     downloadCount: n.downloadCount,

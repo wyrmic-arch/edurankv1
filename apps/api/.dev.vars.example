@@ -19,3 +19,7 @@ ALERT_EMAIL=
 # Dev only: auto-verify new accounts so local seed/smoke skip the inbox step.
 # NEVER set this in production.
 DEV_AUTO_VERIFY=true
+
+# Shared secret for publishing official notes (scripts/publish-official.mjs).
+# Generate a random value; set the same value as a Worker secret in prod.
+OFFICIAL_PUBLISH_SECRET=

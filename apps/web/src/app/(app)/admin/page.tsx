@@ -69,7 +69,7 @@ export default function AdminPage() {
   }
 
   if (!user) return <Spinner />;
-  if (user.role !== "admin") {
+  if (user.role !== "admin" && user.role !== "owner") {
     return (
       <div className="max-w-md mx-auto text-center py-20">
         <ShieldAlert className="w-10 h-10 mx-auto text-mark mb-4" />

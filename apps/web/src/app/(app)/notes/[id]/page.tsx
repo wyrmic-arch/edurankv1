@@ -182,6 +182,14 @@ export default function NoteDetailPage() {
               <ShieldCheck className="w-3 h-3" /> TEACHER VERIFIED
             </span>
           )}
+          {note.isOfficial && note.slug && (
+            <Link
+              href={`/study/${note.grade}/${note.subjectId}/${note.slug}`}
+              className="font-mono text-[11px] uppercase tracking-label border border-accent text-accent px-2 py-0.5 no-underline inline-flex items-center gap-1"
+            >
+              OFFICIAL · READ →
+            </Link>
+          )}
         </div>
 
         <p className="text-mute leading-relaxed mt-6 whitespace-pre-wrap">{note.description}</p>

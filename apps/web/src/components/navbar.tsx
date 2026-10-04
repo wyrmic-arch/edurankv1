@@ -93,11 +93,14 @@ export function Navbar() {
                   <MenuLink href="/shop" label="Shop" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
-                  {(user.role === "principal" || user.role === "admin") && (
+                  {(user.role === "principal" || user.role === "admin" || user.role === "owner") && (
                     <MenuLink href="/school" label="School desk" />
                   )}
-                  {user.role === "admin" && (
+                  {(user.role === "admin" || user.role === "owner") && (
                     <MenuLink href="/admin" label="Moderation" />
+                  )}
+                  {user.role === "owner" && (
+                    <MenuLink href="/owner" label="Owner control room" />
                   )}
                   <button
                     onClick={() => void logout()}
@@ -167,7 +170,7 @@ function NavLinks({
       >
         UPLOAD
       </Link>
-      {(role === "principal" || role === "admin") && (
+      {(role === "principal" || role === "admin" || role === "owner") && (
         <Link
           href="/school"
           onClick={onNavigate}

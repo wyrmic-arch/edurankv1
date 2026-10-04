@@ -199,6 +199,8 @@ export const api = {
   adminResolveReport: (id: string, action: "dismiss" | "remove"): Promise<{ ok: boolean }> =>
     request(`/admin/reports/${id}/resolve`, { method: "POST", body: { action } }),
 
+  ownerOverview: (): Promise<OwnerOverview> => request("/owner/overview"),
+
   // --- principal ---
   schoolDashboard: (): Promise<SchoolDashboard> => request("/school"),
   schoolStudents: (): Promise<{ items: SchoolStudent[] }> => request("/school/students"),
@@ -383,4 +385,26 @@ export interface ReportRow {
   details: string;
   reporterName: string;
   createdAt: string;
+}
+export interface OwnerOverview {
+  stats: {
+    students: number;
+    teachers: number;
+    principals: number;
+    admins: number;
+    owners: number;
+    notesTotal: number;
+    notesPending: number;
+    notesApproved: number;
+    notesRejected: number;
+    notesOfficial: number;
+    pointsIssued: number;
+    pointsSpent: number;
+    pointsOutstanding: number;
+    unlocks: number;
+    reportsOpen: number;
+    principalInvites: number;
+  };
+  recentUsers: { id: string; displayName: string; role: UserRole; createdAt: string }[];
+  recentNotes: { id: string; title: string; status: string; official: boolean; createdAt: string }[];
 }

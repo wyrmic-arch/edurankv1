@@ -1,4 +1,6 @@
 User-agent: *
+Allow: /study
+Allow: /study/
 Allow: /about
 Allow: /terms
 Allow: /privacy

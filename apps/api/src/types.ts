@@ -9,6 +9,7 @@ export interface Bindings {
   REPLY_TO?: string;
   ALERT_EMAIL?: string;
   TURNSTILE_SECRET?: string;
+  OFFICIAL_PUBLISH_SECRET?: string;
   /** Local/dev only: auto-verify new accounts so seed/smoke don't need inboxes. */
   DEV_AUTO_VERIFY?: string;
   EARLY_ACCESS_UNTIL?: string;
@@ -85,6 +86,10 @@ export interface NoteRow {
   schoolId: string | null;
   contentHash: string | null;
   license: string;
+  isOfficial: number;
+  slug: string | null;
+  body: string | null;
+  bodyUpdatedAt: number | null;
   isFree: number;
   pricePoints: number;
   status: "pending" | "approved" | "rejected";

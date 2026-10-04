@@ -127,3 +127,53 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.72; }
 }
+
+/* Rendered official-note HTML (Markdown → sanitised HTML). Keep it readable. */
+.study-body { color: #c9ccd1; font-size: 16px; line-height: 1.75; }
+.study-body > * + * { margin-top: 1rem; }
+.study-body h2 {
+  color: #e4e4e4;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.25rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+.study-body h3 { color: #e4e4e4; font-size: 1.15rem; font-weight: 600; margin-top: 1.75rem; }
+.study-body h4 { color: #e4e4e4; font-size: 1rem; font-weight: 600; margin-top: 1.25rem; }
+.study-body p { margin-top: 0.9rem; }
+.study-body a { color: #f0532d; text-underline-offset: 4px; }
+.study-body strong { color: #e4e4e4; font-weight: 600; }
+.study-body ul, .study-body ol { margin-top: 0.75rem; padding-left: 1.4rem; }
+.study-body ul { list-style: disc; }
+.study-body ol { list-style: decimal; }
+.study-body li { margin-top: 0.35rem; }
+.study-body li::marker { color: #8a9098; }
+.study-body blockquote {
+  border-left: 2px solid #f0532d;
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: #a4a9b0;
+  margin-top: 1.25rem;
+}
+.study-body code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  padding: 0.1rem 0.35rem;
+}
+.study-body pre {
+  background: #101010;
+  border: 1px solid #2a2a2a;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-top: 1.25rem;
+}
+.study-body pre code { background: none; border: none; padding: 0; }
+.study-body table { width: 100%; border-collapse: collapse; margin-top: 1.25rem; font-size: 0.9rem; }
+.study-body th, .study-body td { border: 1px solid #2a2a2a; padding: 0.5rem 0.7rem; text-align: left; }
+.study-body th { background: #161616; color: #e4e4e4; }
+.study-body hr { border: 0; border-top: 1px solid #2a2a2a; margin: 2rem 0; }
+.study-body img { max-width: 100%; height: auto; border: 1px solid #2a2a2a; }
+

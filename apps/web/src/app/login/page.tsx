@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { useAuth } from "@/lib/store";
+import { roleHome } from "@/lib/roles";
 import { Spinner, FormField } from "@/components/hud";
 import { AsciiLogo } from "@/components/ascii-logo";
 import { Turnstile } from "@/components/turnstile";
@@ -40,8 +41,8 @@ function LoginForm() {
     setError(null);
     setBusy(true);
     try {
-      await login(email.trim(), password, turnstileToken);
-      router.replace(next);
+      const u = await login(email.trim(), password, turnstileToken);
+      router.replace(roleHome(u.role, next));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

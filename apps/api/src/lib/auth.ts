@@ -67,7 +67,14 @@ export async function requireUser(c: Context): Promise<UserRow> {
 
 export async function requireAdmin(c: Context): Promise<UserRow> {
   const u = await requireUser(c);
-  if (u.role !== "admin") throw new ApiError(403, "Restricted area.");
+  if (u.role !== "admin" && u.role !== "owner") throw new ApiError(403, "Restricted area.");
+  return u;
+}
+
+/** The platform founder — super-admin. */
+export async function requireOwner(c: Context): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (u.role !== "owner") throw new ApiError(403, "Owner only.");
   return u;
 }
 
@@ -85,10 +92,10 @@ export async function requireStaff(c: Context): Promise<UserRow> {
   return u;
 }
 
-/** Principal or admin. */
+/** Principal, admin or owner. */
 export async function requirePrincipal(c: Context): Promise<UserRow> {
   const u = await requireUser(c);
-  if (u.role !== "principal" && u.role !== "admin") throw new ApiError(403, "Principals only.");
+  if (u.role !== "principal" && u.role !== "admin" && u.role !== "owner") throw new ApiError(403, "Principals only.");
   return u;
 }
 

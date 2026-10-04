@@ -49,15 +49,16 @@ export type LedgerReason =
   | "cosmetic_purchase"
   | "admin_adjust";
 
-export type UserRole = "user" | "teacher" | "principal" | "admin";
-export const USER_ROLES: readonly UserRole[] = ["user", "teacher", "principal", "admin"] as const;
+export type UserRole = "user" | "teacher" | "principal" | "admin" | "owner";
+export const USER_ROLES: readonly UserRole[] = ["user", "teacher", "principal", "admin", "owner"] as const;
 
 // "user" is the internal value for a student account. Staff roles may not be
 // self-selected — they are granted through invite codes (see staff_invites).
-export const STAFF_ROLES = ["teacher", "principal", "admin"] as const;
+// "owner" is the platform founder: a super-admin who sees everything.
+export const STAFF_ROLES = ["teacher", "principal", "admin", "owner"] as const;
 export type StaffRole = (typeof STAFF_ROLES)[number];
 export function isStaffRole(role: UserRole | string | null | undefined): boolean {
-  return role === "teacher" || role === "principal" || role === "admin";
+  return role === "teacher" || role === "principal" || role === "admin" || role === "owner";
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
@@ -65,6 +66,7 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   teacher: "Teacher",
   principal: "Principal",
   admin: "Admin",
+  owner: "Owner",
 };
 
 // --- Note licensing ---------------------------------------------------------
@@ -240,6 +242,8 @@ export interface NoteDTO {
   isFree: boolean;
   pricePoints: number;
   license: string;
+  isOfficial?: boolean;
+  slug?: string | null;
   status: "pending" | "approved" | "rejected";
   reviewNote?: string | null;
   downloadCount: number;

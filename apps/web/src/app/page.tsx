@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Upload, Download, Trophy } from "lucide-react";
 import { api, type LeaderRow, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
+import { roleHome } from "@/lib/roles";
 import { ASCIIBlob } from "@/components/ascii-blob";
 import { AsciiLogo } from "@/components/ascii-logo";
 
@@ -20,7 +21,7 @@ export default function Landing() {
   const firstUser = boardLoaded && top.length === 0;
 
   useEffect(() => {
-    if (!loading && user) router.replace("/leaderboard");
+    if (!loading && user) router.replace(roleHome(user.role));
   }, [loading, user, router]);
 
   useEffect(() => {

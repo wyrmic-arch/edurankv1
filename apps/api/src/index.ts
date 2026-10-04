@@ -10,6 +10,9 @@ import challengeRoutes from "./routes/challenges";
 import adminRoutes from "./routes/admin";
 import schoolRoutes from "./routes/school";
 import notificationRoutes from "./routes/notifications";
+import officialRoutes from "./routes/official";
+import studyRoutes from "./routes/study";
+import ownerRoutes from "./routes/owner";
 import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
 import { rateLimit } from "./lib/ratelimit";
@@ -142,6 +145,9 @@ app.route("/challenges", challengeRoutes);
 app.route("/admin", adminRoutes);
 app.route("/school", schoolRoutes);
 app.route("/notifications", notificationRoutes);
+app.route("/official", officialRoutes);
+app.route("/study", studyRoutes);
+app.route("/owner", ownerRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
 
