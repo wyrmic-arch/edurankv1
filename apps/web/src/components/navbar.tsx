@@ -38,46 +38,6 @@ export function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <>
-      {LINKS.map((l) => {
-        const active = pathname.startsWith(l.href);
-        return (
-          <Link
-            key={l.href}
-            href={l.href}
-            onClick={onNavigate}
-            className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-              active ? "text-accent underline" : "text-ghost hover:text-ash"
-            }`}
-          >
-            {l.label}
-          </Link>
-        );
-      })}
-      <Link
-        href="/upload"
-        onClick={onNavigate}
-        className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-          pathname.startsWith("/upload") ? "text-accent underline" : "text-ghost hover:text-ash"
-        }`}
-      >
-        UPLOAD
-      </Link>
-      {user && (user.role === "principal" || user.role === "admin") && (
-        <Link
-          href="/school"
-          onClick={onNavigate}
-          className={`font-mono text-[11px] uppercase tracking-label no-underline ${
-            pathname.startsWith("/school") ? "text-accent underline" : "text-ghost hover:text-ash"
-          }`}
-        >
-          SCHOOL
-        </Link>
-      )}
-    </>
-  );
-
   return (
     <header className="sticky top-0 z-50 bg-oil border-b border-cinder">
       <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
@@ -86,7 +46,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-5 flex-1">
-          <NavLinks />
+          <NavLinks pathname={pathname} role={user?.role ?? null} />
         </nav>
 
         <div className="lg:hidden">
@@ -164,11 +124,61 @@ export function Navbar() {
       {mobileOpen && (
         <div className="lg:hidden border-t border-ruleSoft">
           <div className="max-w-[1400px] mx-auto px-6 py-4 flex flex-col gap-4">
-            <NavLinks onNavigate={() => setMobileOpen(false)} />
+            <NavLinks pathname={pathname} role={user?.role ?? null} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       )}
     </header>
+  );
+}
+
+function NavLinks({
+  pathname,
+  role,
+  onNavigate,
+}: {
+  pathname: string;
+  role: string | null;
+  onNavigate?: () => void;
+}) {
+  return (
+    <>
+      {LINKS.map((l) => {
+        const active = pathname.startsWith(l.href);
+        return (
+          <Link
+            key={l.href}
+            href={l.href}
+            onClick={onNavigate}
+            className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+              active ? "text-accent underline" : "text-ghost hover:text-ash"
+            }`}
+          >
+            {l.label}
+          </Link>
+        );
+      })}
+      <Link
+        href="/upload"
+        onClick={onNavigate}
+        className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+          pathname.startsWith("/upload") ? "text-accent underline" : "text-ghost hover:text-ash"
+        }`}
+      >
+        UPLOAD
+      </Link>
+      {(role === "principal" || role === "admin") && (
+        <Link
+          href="/school"
+          onClick={onNavigate}
+          className={`font-mono text-[11px] uppercase tracking-label no-underline ${
+            pathname.startsWith("/school") ? "text-accent underline" : "text-ghost hover:text-ash"
+          }`}
+        >
+          SCHOOL
+        </Link>
+      )}
+    </>
   );
 }
 

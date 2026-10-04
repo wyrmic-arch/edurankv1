@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Download, ShieldCheck, ThumbsUp, User as UserIcon } from "lucide-react";
 import type { Note } from "@/lib/api";
 import { imgUrl } from "@/lib/api";
@@ -8,7 +9,7 @@ import { timeAgo } from "@/lib/format";
 export function NoteCard({ note }: { note: Note }) {
   const art = imgUrl(`/img/subject/${note.subjectId}`);
   return (
-    <a
+    <Link
       href={`/notes/${note.id}`}
       className="group panel overflow-hidden flex flex-col no-underline hover:bg-ink hover:text-paper transition-colors"
     >
@@ -65,6 +66,6 @@ export function NoteCard({ note }: { note: Note }) {
         </div>
         <div className="label !text-[9px]">{timeAgo(note.createdAt)}</div>
       </div>
-    </a>
+    </Link>
   );
 }
