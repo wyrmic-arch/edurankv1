@@ -10,7 +10,7 @@ interface AuthState {
   setUser: Dispatch<SetStateAction<PublicUser | null>>;
   refresh: () => Promise<void>;
   login: (email: string, password: string, turnstileToken?: string) => Promise<PublicUser>;
-  register: (body: Parameters<typeof api.register>[0]) => Promise<void>;
+  register: (body: Parameters<typeof api.register>[0]) => Promise<PublicUser>;
   logout: () => Promise<void>;
 }
 
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user } = await api.register(body);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(user);
+    return user;
   }, []);
 
   const logout = useCallback(async () => {

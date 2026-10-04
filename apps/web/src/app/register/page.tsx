@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/store";
+import { roleHome } from "@/lib/roles";
 import { GRADES, POINTS_RULES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
 import { PasswordField } from "@/components/password-field";
@@ -37,7 +38,7 @@ export default function RegisterPage() {
     setError(null);
     setBusy(true);
     try {
-      await register({
+      const u = await register({
         email: email.trim(),
         password,
         displayName: displayName.trim(),
@@ -46,7 +47,7 @@ export default function RegisterPage() {
         inviteCode: inviteCode.trim() ? inviteCode.trim().toUpperCase() : null,
         turnstileToken: turnstileToken || null,
       });
-      router.replace("/leaderboard");
+      router.replace(roleHome(u.role));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
