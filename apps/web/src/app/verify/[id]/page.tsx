@@ -8,6 +8,8 @@ import { api, type Certificate } from "@/lib/api";
 import { ErrorPanel, Spinner } from "@/components/hud";
 import { licenseLabel } from "@edurank/shared";
 
+export const runtime = "edge";
+
 export default function VerifyPage() {
   const { id } = useParams<{ id: string }>();
   const [cert, setCert] = useState<Certificate | null>(null);
