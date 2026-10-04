@@ -1,70 +1,116 @@
-import Link from "next/link";
+import { LegalPage, Section } from "@/components/legal-page";
 
-export const metadata = {
-  title: "Privacy Policy — EduRank",
-};
+export const metadata = { title: "Privacy Policy" };
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-night text-ash">
-      <div className="max-w-[760px] mx-auto px-6 py-16">
-        <Link href="/" className="font-mono text-[11px] uppercase tracking-label text-ghost no-underline hover:text-ash">
-          ← Back to EduRank
-        </Link>
-        <h1 className="font-serif text-4xl font-medium tracking-tight mt-6 mb-3">Privacy Policy</h1>
-        <p className="label mb-10">Effective 2026 · How EduRank handles your information.</p>
+    <LegalPage title="Privacy Policy">
+      <Section title="1. Who we are">
+        <p>
+          EduRank is a study-notes platform for South African students (grades 8–12). For the purposes of
+          the Protection of Personal Information Act 4 of 2013 (&ldquo;POPIA&rdquo;), EduRank is the
+          responsible party for the personal information described here.
+        </p>
+        <p>
+          <b>Information Officer:</b> Jacques du Plessis ·{" "}
+          <a href="mailto:privacy@edurank.co.za" className="text-ash no-underline hover:underline">privacy@edurank.co.za</a>
+        </p>
+      </Section>
 
-        <div className="space-y-8">
-          <Section title="1. What we collect">
-            <p>When you create an account we collect your email address, display name, and optional grade and school. When you use the platform we collect the notes you upload, your points activity, and basic usage data needed to run leaderboards, streaks and challenges.</p>
-          </Section>
+      <Section title="2. What we collect">
+        <p>
+          When you create an account: your email address, display name, and optional grade and school. When
+          you use the platform: the notes you upload, your points activity, and basic technical/usage data
+          needed to run accounts, rankings, streaks, challenges and abuse prevention.
+        </p>
+      </Section>
 
-          <Section title="2. How we use it">
-            <p>We use your information to operate the platform: to create and secure your account, personalise the notes you see, run rankings and streaks, award points, prevent abuse, and communicate important account messages (for example email verification and password resets, which you may only receive from us).</p>
-          </Section>
+      <Section title="3. Why we process it (lawful basis)">
+        <p>
+          We process your information to perform our contract with you (running your account and the
+          platform), for our legitimate interests (security, fraud and abuse prevention, and improving the
+          service), and to comply with legal obligations. Where we rely on consent (for example an optional
+          email digest) you can withdraw it at any time.
+        </p>
+      </Section>
 
-          <Section title="3. Email">
-            <p>We send transactional email only — account verification and password reset. We do not send marketing email unless you separately opt in, and we never sell your email address.</p>
-          </Section>
+      <Section title="4. Email">
+        <p>
+          We send transactional email (account verification, password reset, and notifications you have
+          enabled). You can switch the daily email digest off in your profile at any time, and we never sell
+          your email address.
+        </p>
+      </Section>
 
-          <Section title="4. What we don't do">
-            <p>We do not sell your personal data. We do not use your email for third-party advertising. We do not associate your activity with advertising profiles.</p>
-          </Section>
+      <Section title="5. Sharing">
+        <p>
+          We share personal information only with service providers that help us run the platform (for
+          example our hosting and email providers), where required by law, or to protect the rights and
+          safety of EduRank and its users. We do not sell your personal data or use it for third-party
+          advertising.
+        </p>
+      </Section>
 
-          <Section title="5. Sharing">
-            <p>We do not share your personal information with third parties except with service providers that help us run the platform (for example our hosting provider), where required by law, or to protect the rights and safety of EduRank and its users.</p>
-          </Section>
+      <Section title="6. Cross-border transfers">
+        <p>
+          Our infrastructure may process data outside South Africa (for example on Cloudflare&rsquo;s global
+          network). Where information is transferred across borders we take steps to ensure it receives a
+          comparable level of protection, as POPIA requires.
+        </p>
+      </Section>
 
-          <Section title="6. Your data & your rights">
-            <p>You can update your profile details at any time. You can request access to, correction of, or deletion of your personal data. Because your notes and points history are part of the platform, deleting your account removes the personal data we hold about you (uploaded content may remain to the extent governed by our Terms of Service).</p>
-          </Section>
+      <Section title="7. Retention">
+        <p>
+          We keep personal information for as long as your account is active and as needed to run the
+          platform. Account and security records are kept no longer than necessary. Records we must keep for
+          legal, tax or accounting reasons are retained for the periods the law requires (generally up to
+          five years), then securely destroyed.
+        </p>
+      </Section>
 
-          <Section title="7. Security">
-            <p>We store passwords as salted hashes and session tokens as hashes. Access to your account data is limited to what the platform needs to function. No method of transmission is 100% secure, but we take reasonable measures to protect your information.</p>
-          </Section>
+      <Section title="8. Your rights">
+        <p>
+          Under POPIA you may ask us to access, correct or delete your personal information, object to
+          processing, and withdraw consent. Email{" "}
+          <a href="mailto:privacy@edurank.co.za" className="text-ash no-underline hover:underline">privacy@edurank.co.za</a>{" "}
+          to make a request; we may need to verify your identity first. If you are not satisfied, you may
+          complain to the Information Regulator (South Africa) at{" "}
+          <a href="https://inforegulator.org.za" className="text-ash no-underline hover:underline">inforegulator.org.za</a>.
+        </p>
+      </Section>
 
-          <Section title="8. Children">
-            <p>EduRank is intended for users aged 13 and over. We do not knowingly collect personal data from children under 13. If you believe a child has provided us personal data, contact us and we will remove it.</p>
-          </Section>
+      <Section title="9. Security">
+        <p>
+          We store passwords as salted hashes and session tokens as hashes, serve everything over HTTPS, and
+          limit access to what each role needs. If a security compromise affects your personal information,
+          we will notify you and the Information Regulator as POPIA requires. See our{" "}
+          <a href="/security" className="text-ash no-underline hover:underline">Security page</a>.
+        </p>
+      </Section>
 
-          <Section title="9. Changes">
-            <p>We may update this policy. If we make material changes we will notify you. Continued use means you accept the updated policy.</p>
-          </Section>
+      <Section title="10. Cookies & local storage">
+        <p>
+          We store a session token in your browser and may set a strictly necessary cookie so you stay
+          signed in. We do not use advertising or third-party tracking cookies. See our{" "}
+          <a href="/cookies" className="text-ash no-underline hover:underline">Cookies page</a>.
+        </p>
+      </Section>
 
-          <Section title="10. Contact">
-            <p>For any privacy question or request, contact us through the address listed on our About page.</p>
-          </Section>
-        </div>
-      </div>
-    </div>
-  );
-}
+      <Section title="11. Children">
+        <p>
+          EduRank is intended for users aged 13 and over. Because many of our users are minors, we take
+          extra care with their information and collect only what the platform needs. We do not knowingly
+          collect personal data from children under 13. If you believe a child has given us personal data,
+          contact us and we will remove it.
+        </p>
+      </Section>
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section>
-      <h2 className="font-mono text-[13px] uppercase tracking-label text-ash mb-2">{title}</h2>
-      <div className="space-y-3 text-[15px] leading-relaxed text-ghost">{children}</div>
-    </section>
+      <Section title="12. Changes">
+        <p>
+          We may update this policy. If we make material changes we will notify you, and continued use means
+          you accept the updated policy. The date at the top shows the latest version.
+        </p>
+      </Section>
+    </LegalPage>
   );
 }

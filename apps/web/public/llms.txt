@@ -1,0 +1,17 @@
+# EduRank
+
+> South Africa's study notes arena for grades 8–12. Students upload CAPS-aligned notes, earn PTS, unlock other students' work, and climb a national leaderboard.
+
+EduRank is a points-only study marketplace for South African high-school students (grades 8–12). Notes are grade-locked and school-locked; moderation and teacher verification keep quality up. Real-money payout is not offered; points are an in-platform currency.
+
+## Key pages
+- Home: https://edurank.co.za/
+- About: https://edurank.co.za/about
+- Terms: https://edurank.co.za/terms
+- Privacy: https://edurank.co.za/privacy
+- Cookies: https://edurank.co.za/cookies
+- Community guidelines: https://edurank.co.za/guidelines
+- Copyright & takedown: https://edurank.co.za/copyright
+- Accessibility: https://edurank.co.za/accessibility
+- Security: https://edurank.co.za/security
+- Contact: questions@edurank.co.za

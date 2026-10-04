@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://edurank.co.za/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://edurank.co.za/about</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://edurank.co.za/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://edurank.co.za/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://edurank.co.za/cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://edurank.co.za/guidelines</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://edurank.co.za/copyright</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://edurank.co.za/accessibility</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>

@@ -48,11 +48,11 @@ export async function runDigest(
       "",
       `Open EduRank: ${base}/notifications`,
       "",
-      "You can turn this daily digest off in your profile settings.",
+      `Turn this daily digest off any time: ${base}/profile`,
     ].join("\n");
     const html = `<p>Here's what happened on EduRank:</p><ul>${items
       .map((n) => `<li><b>${escapeHtml(n.title)}</b>${n.body ? ` — ${escapeHtml(n.body)}` : ""}</li>`)
-      .join("")}</ul><p><a href="${base}/notifications">Open EduRank</a></p><p style="color:#888;font-size:12px">Turn this daily digest off in your profile settings.</p>`;
+      .join("")}</ul><p><a href="${base}/notifications">Open EduRank</a></p><p style="color:#888;font-size:12px">Don't want these? <a href="${base}/profile">Turn the daily digest off</a> in your profile.</p>`;
 
     const { delivered } = await sendEmail(
       { env },
