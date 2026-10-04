@@ -15,3 +15,7 @@ CERT_SECRET=
 # Optional. Replies to app emails and operational alerts are routed here.
 REPLY_TO=
 ALERT_EMAIL=
+
+# Dev only: auto-verify new accounts so local seed/smoke skip the inbox step.
+# NEVER set this in production.
+DEV_AUTO_VERIFY=true

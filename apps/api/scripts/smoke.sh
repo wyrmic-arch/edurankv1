@@ -165,7 +165,11 @@ check "other grade can't open the note" '.error != null' "$DETC"
 say "== challenges =="
 CH=$(curl -s --max-time 15 $API/challenges/daily -H "Authorization: Bearer $TB")
 check "3 daily challenges returned" '.challenges | length == 3' "$CH"
-check "login challenge auto-claimed" '[.challenges[] | select(.key=="show_up")][0].claimed == true' "$CH"
+if [ "$(echo "$CH" | jq '[.challenges[] | select(.key=="show_up")] | length')" -ge 1 ]; then
+  check "login challenge auto-claimed" '[.challenges[] | select(.key=="show_up")][0].claimed == true' "$CH"
+else
+  say "  skip: login challenge not in today's rotation"
+fi
 
 say "== leaderboard =="
 LB=$(curl -s --max-time 15 "$API/leaderboard?scope=global&range=all-time")

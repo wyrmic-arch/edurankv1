@@ -108,10 +108,11 @@ export const api = {
     schoolId?: string | null;
     referralCode?: string | null;
     inviteCode?: string | null;
+    turnstileToken?: string | null;
     bio?: string;
   }): Promise<{ token: string; user: PublicUser }> => request("/auth/register", { method: "POST", body }),
-  login: (email: string, password: string): Promise<{ token: string; user: PublicUser }> =>
-    request("/auth/login", { method: "POST", body: { email, password } }),
+  login: (email: string, password: string, turnstileToken?: string): Promise<{ token: string; user: PublicUser }> =>
+    request("/auth/login", { method: "POST", body: { email, password, turnstileToken } }),
   logout: (): Promise<{ ok: boolean }> => request("/auth/logout", { method: "POST" }),
   me: (): Promise<{ user: PublicUser }> => request("/auth/me"),
   verifyEmail: (token: string, email: string): Promise<{ ok: boolean }> =>

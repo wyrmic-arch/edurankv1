@@ -12,6 +12,7 @@ import { notify } from "../lib/notify";
 import { referralCode, shortId } from "../lib/id";
 import { err, parseJsonBody, publicUser } from "../lib/http";
 import { sendEmail, appUrl } from "../lib/email";
+import { verifyTurnstile, clientIp } from "../lib/turnstile";
 import { dateKeySAST, startOfSASTDay } from "../lib/dates";
 import type { AppEnv, UserRow } from "../types";
 
@@ -85,11 +86,15 @@ const registerSchema = z.object({
   schoolId: z.string().trim().max(64).nullable().optional(),
   referralCode: z.string().trim().length(6).nullable().optional(),
   inviteCode: z.string().trim().max(32).nullable().optional(),
+  turnstileToken: z.string().max(4096).optional(),
   bio: z.string().trim().max(280).optional(),
 });
 
 app.post("/register", async (c) => {
   const body = await parseJsonBody(c, registerSchema);
+  if (!(await verifyTurnstile(c.env, body.turnstileToken, clientIp(c)))) {
+    err(400, "Please complete the human check and try again.");
+  }
   const db = drizzle(c.env.DB);
 
   const existing = await db.select({ id: users.id }).from(users).where(sql`lower(${users.email}) = ${body.email}`).limit(1);
@@ -144,6 +149,7 @@ app.post("/register", async (c) => {
     referredBy: referrer?.id ?? null,
     verifyToken: await sha256Hex(verifyToken),
     verifyTokenAt: now,
+    emailVerifiedAt: c.env.DEV_AUTO_VERIFY === "true" ? now : null,
     createdAt: now,
   });
 
@@ -167,13 +173,15 @@ app.post("/register", async (c) => {
   }
 
   // Send a one-time verification email (fire-and-forget; never blocks signup).
-  const link = appUrl(c.env, `/verify-email?token=${verifyToken}&email=${encodeURIComponent(body.email)}`);
-  void sendEmail(c, {
-    to: body.email,
-    subject: "Verify your EduRank email",
-    text: `Welcome to EduRank. Confirm your email to activate your account:\n${link}\n\nIf you didn't sign up, ignore this.`,
-    html: `<p>Welcome to <b>EduRank</b>.</p><p>Confirm your email to activate your account:</p><p><a href="${link}">Verify my email</a></p><p>If you didn't sign up, you can ignore this.</p>`,
-  });
+  if (c.env.DEV_AUTO_VERIFY !== "true") {
+    const link = appUrl(c.env, `/verify-email?token=${verifyToken}&email=${encodeURIComponent(body.email)}`);
+    void sendEmail(c, {
+      to: body.email,
+      subject: "Verify your EduRank email",
+      text: `Welcome to EduRank. Confirm your email to activate your account:\n${link}\n\nIf you didn't sign up, ignore this.`,
+      html: `<p>Welcome to <b>EduRank</b>.</p><p>Confirm your email to activate your account:</p><p><a href="${link}">Verify my email</a></p><p>If you didn't sign up, you can ignore this.</p>`,
+    });
+  }
 
   // Referral economy: both sides get paid, but the referrer's bonus is capped
   // per-day and over the account lifetime so a single account can't farm
@@ -245,8 +253,12 @@ app.post("/login", async (c) => {
     z.object({
       email: z.string().trim().toLowerCase(),
       password: z.string().min(1),
+      turnstileToken: z.string().max(4096).optional(),
     }),
   );
+  if (!(await verifyTurnstile(c.env, body.turnstileToken, clientIp(c)))) {
+    err(400, "Please complete the human check and try again.");
+  }
   const db = drizzle(c.env.DB);
   const found = (await db.select().from(users).where(sql`lower(${users.email}) = ${body.email}`).limit(1)) as UserRow[];
   const user = found[0];

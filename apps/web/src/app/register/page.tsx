@@ -8,6 +8,7 @@ import { GRADES, POINTS_RULES } from "@edurank/shared";
 import { Spinner } from "@/components/hud";
 import { PasswordField } from "@/components/password-field";
 import { AsciiLogo } from "@/components/ascii-logo";
+import { Turnstile } from "@/components/turnstile";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -19,6 +20,7 @@ export default function RegisterPage() {
   const [grade, setGrade] = useState<string>("");
   const [referralCode, setReferralCode] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -42,6 +44,7 @@ export default function RegisterPage() {
         grade: inviteCode ? null : grade ? Number(grade) : null,
         referralCode: referralCode.trim() ? referralCode.trim().toUpperCase() : null,
         inviteCode: inviteCode.trim() ? inviteCode.trim().toUpperCase() : null,
+        turnstileToken: turnstileToken || null,
       });
       router.replace("/leaderboard");
     } catch (err) {
@@ -115,6 +118,8 @@ export default function RegisterPage() {
                 className="w-full px-3 py-2.5 font-mono uppercase text-body"
               />
             </F>
+
+            <Turnstile onToken={setTurnstileToken} />
 
             {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
 

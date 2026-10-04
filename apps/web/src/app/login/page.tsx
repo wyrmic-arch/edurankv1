@@ -6,6 +6,7 @@ import { Suspense, useState } from "react";
 import { useAuth } from "@/lib/store";
 import { Spinner, FormField } from "@/components/hud";
 import { AsciiLogo } from "@/components/ascii-logo";
+import { Turnstile } from "@/components/turnstile";
 
 export default function LoginPage() {
   return (
@@ -26,6 +27,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -38,7 +40,7 @@ function LoginForm() {
     setError(null);
     setBusy(true);
     try {
-      await login(email.trim(), password);
+      await login(email.trim(), password, turnstileToken);
       router.replace(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -61,6 +63,8 @@ function LoginForm() {
           <form onSubmit={submit} className="space-y-5">
             <FormField label="Email" type="email" value={email} onChange={setEmail} required autoFocus />
             <FormField label="Password" type="password" value={password} onChange={setPassword} required />
+
+            <Turnstile onToken={setTurnstileToken} />
 
             {error && (
               <p className="text-[13px] border px-3 py-2 border-mark text-mark bg-mark/5">

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { purchases, shopItems, users } from "../db/schema";
-import { currentUser, requireUser } from "../lib/auth";
+import { currentUser, requireVerifiedUser } from "../lib/auth";
 import { spendPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { err } from "../lib/http";
@@ -38,7 +38,7 @@ app.get("/", async (c) => {
 
 // POST /shop/:id/purchase
 app.post("/:id/purchase", async (c) => {
-  const user = await requireUser(c);
+  const user = await requireVerifiedUser(c);
   const itemId = c.req.param("id");
   const db = drizzle(c.env.DB);
   const item = (await db.select().from(shopItems).where(eq(shopItems.id, itemId)).limit(1))[0] as ShopRow | undefined;

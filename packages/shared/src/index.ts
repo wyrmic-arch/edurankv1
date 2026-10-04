@@ -7,10 +7,10 @@ export type Grade = (typeof GRADES)[number];
 
 // --- Feature flags ----------------------------------------------------------
 
-// Email verification is intentionally SOFT for now: verification emails are
-// still sent, but no feature is gated on `email_verified_at`. Flip this to true
-// (one line) once there are enough users to make verification mandatory.
-export const REQUIRE_EMAIL_VERIFICATION = false;
+// Email verification is ENFORCED: new student accounts must confirm their
+// email before they can upload, unlock or buy. Local dev sets DEV_AUTO_VERIFY
+// so seed/smoke accounts skip it. Staff (invite-based) are exempt.
+export const REQUIRE_EMAIL_VERIFICATION = true;
 
 // --- Points economy ---------------------------------------------------------
 

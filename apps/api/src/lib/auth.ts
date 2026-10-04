@@ -6,7 +6,7 @@ import { sessions, users } from "../db/schema";
 import { sha256Hex } from "./password";
 import { shortId } from "./id";
 import type { UserRole } from "@edurank/shared";
-import { isStaffRole } from "@edurank/shared";
+import { isStaffRole, REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
 import { ApiError, type UserRow } from "../types";
 
 const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
@@ -106,6 +106,15 @@ export async function requireTeacher(c: Context): Promise<UserRow> {
  */
 export function canAccessNotes(user: UserRow): boolean {
   return isStaffRole(user.role) || user.grade != null;
+}
+
+/** Require a signed-in, email-verified user (staff are exempt). */
+export async function requireVerifiedUser(c: Context): Promise<UserRow> {
+  const u = await requireUser(c);
+  if (REQUIRE_EMAIL_VERIFICATION && !isStaffRole(u.role) && u.emailVerifiedAt == null) {
+    throw new ApiError(403, "Verify your email first — check your inbox for the confirmation link.");
+  }
+  return u;
 }
 
 export async function destroySession(c: Context): Promise<void> {

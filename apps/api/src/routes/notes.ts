@@ -4,7 +4,7 @@ import { drizzle } from "drizzle-orm/d1";
 import { z } from "zod";
 import { DEFAULT_LICENSE, POINTS_RULES, isStaffRole } from "@edurank/shared";
 import { noteUpvotes, noteUnlocks, notes, noteReports, noteVerifications, pointsLedger, subjects, teacherSubjects, users } from "../db/schema";
-import { canAccessNotes, currentUser, requireTeacher, requireUser } from "../lib/auth";
+import { canAccessNotes, currentUser, requireTeacher, requireUser, requireVerifiedUser } from "../lib/auth";
 import { awardPoints, spendPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { notify } from "../lib/notify";
@@ -420,7 +420,7 @@ app.post("/:id/report", async (c) => {
 
 // POST /notes — multipart upload -> pending review
 app.post("/", async (c) => {
-  const user = await requireUser(c);
+  const user = await requireVerifiedUser(c);
   if (!canAccessNotes(user)) err(403, "Set your grade before uploading notes.");
   const form = await c.req.parseBody();
   const file = form["file"];
@@ -524,7 +524,7 @@ app.post("/", async (c) => {
 
 // POST /notes/:id/unlock — spend points / claim free access; pays the uploader
 app.post("/:id/unlock", async (c) => {
-  const user = await requireUser(c);
+  const user = await requireVerifiedUser(c);
   const id = c.req.param("id");
   const db = drizzle(c.env.DB);
   const note = (await db.select().from(notes).where(eq(notes.id, id)).limit(1))[0] as NoteRow | undefined;

@@ -9,7 +9,7 @@ interface AuthState {
   loading: boolean;
   setUser: Dispatch<SetStateAction<PublicUser | null>>;
   refresh: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<void>;
   register: (body: Parameters<typeof api.register>[0]) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [refresh]);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const { token, user } = await api.login(email, password);
+  const login = useCallback(async (email: string, password: string, turnstileToken?: string) => {
+    const { token, user } = await api.login(email, password, turnstileToken);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(user);
   }, []);
