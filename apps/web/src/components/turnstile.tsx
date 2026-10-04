@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+// Site key is public (safe to ship). Falls back to the configured EduRank key
+// so the check is always on without needing an env var at build time.
+const SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "0x4AAAAAAFN0JoveTFdzdxU-";
 
 declare global {
   interface Window {
