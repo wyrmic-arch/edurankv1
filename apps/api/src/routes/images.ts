@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { subjects, users } from "../db/schema";
-import { bannerImage, subjectImage } from "../lib/images";
+import { subjects, users, schools } from "../db/schema";
+import { bannerImage, subjectImage, schoolImage } from "../lib/images";
 import type { AppEnv, SubjectRow } from "../types";
 
 const app = new Hono<AppEnv>();
@@ -27,6 +27,15 @@ app.get("/banner/:seed", async (c) => {
     if (row.length === 0) return c.text("Unknown banner", 404);
   }
   return bannerImage(c.env, seed);
+});
+
+// GET /img/school/:id?v= — school cover art (representative campus imagery)
+app.get("/school/:id", async (c) => {
+  const id = c.req.param("id");
+  const variant = (c.req.query("v") ?? "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 8);
+  const row = (await drizzle(c.env.DB).select().from(schools).where(eq(schools.id, id)).limit(1))[0];
+  if (!row) return c.text("Unknown school", 404);
+  return schoolImage(c.env, row.id, row.name, row.city, variant);
 });
 
 export default app;

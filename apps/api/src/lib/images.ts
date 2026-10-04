@@ -132,8 +132,51 @@ export async function subjectImage(
   });
 }
 
-/** Profile banner defaults keyed by a stable seed (user id or explicit seed). */
-export async function bannerImage(env: Bindings, seed: string): Promise<Response> {
+/**
+ * School cover art. Cached in R2 under img/school/{id}[-variant]. Uses an
+ * Unsplash search (representative campus imagery — not verified photos of the
+ * specific campus) and falls back to on-brand placeholder art.
+ */
+export async function schoolImage(
+  env: Bindings,
+  schoolId: string,
+  schoolName: string,
+  city: string | null,
+  variant = "",
+): Promise<Response> {
+  const key = `img/school/${schoolId}${variant ? `-${variant}` : ""}`;
+  const cached = await r2Get(env, key);
+  if (cached) return cached;
+
+  const query = `school campus ${city ?? "South Africa"}`;
+  const photo = await fetchUnsplashPhoto(env, query, `${schoolId}${variant}`);
+  if (photo) {
+    await env.NOTES_BUCKET.put(key, photo.bytes, {
+      httpMetadata: { contentType: photo.contentType },
+      customMetadata: { attribution: `Photo by ${photo.photographer} on Unsplash`, kind: "school-art" },
+    });
+    return new Response(photo.bytes, {
+      headers: {
+        "Content-Type": photo.contentType,
+        "Cache-Control": `public, max-age=${IMG_CACHE_MAX_AGE}, immutable`,
+        "X-Image-Attribution": `Photo by ${photo.photographer} on Unsplash`,
+      },
+    });
+  }
+  const code = schoolName
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 4);
+  return new Response(placeholderArt({ label: schoolName, code, color: "#F0532D", seed: `${schoolId}${variant}` }), {
+    headers: {
+      "Content-Type": "image/svg+xml",
+      "Cache-Control": `public, max-age=${IMG_CACHE_MAX_AGE}, immutable`,
+    },
+  });
+}
+
+/** Profile banner defaults keyed by a stable seed (user id or explicit seed). */export async function bannerImage(env: Bindings, seed: string): Promise<Response> {
   const key = `img/banner/${seed}`;
   const cached = await r2Get(env, key);
   if (cached) return cached;
