@@ -9,7 +9,7 @@ import { notify } from "../lib/notify";
 import { runDigest } from "../lib/digest";
 import { err } from "../lib/http";
 import { shortId } from "../lib/id";
-import { POINTS_RULES, USER_ROLES, academicYear, type UserRole } from "@edurank/shared";
+import { POINTS_RULES, USER_ROLES, academicYear, seasonInfo, type UserRole } from "@edurank/shared";
 import type { AppEnv, NoteRow, UserRow } from "../types";
 
 const app = new Hono<AppEnv>();
@@ -249,21 +249,55 @@ app.get("/promotions/preview", async (c) => {
   return c.json({ academicYear: academicYear(), rows });
 });
 
-// POST /admin/promotions/run — apply the annual promotion atomically
+// POST /admin/promotions/run — apply the annual promotion atomically.
+// Repeaters stay put, everyone else advances, Grade 12 graduates — and passing
+// pays a bonus (+PROMOTION_BONUS to advance, +MATRIC_BONUS to graduate).
 app.post("/promotions/run", async (c) => {
   const now = Date.now();
+  const season = seasonInfo().season;
+  const ADVANCE = `role = 'user' AND grade IS NOT NULL AND grade < 12 AND held_back = 0 AND graduated_at IS NULL`;
+  const GRADUATING = `role = 'user' AND grade = 12 AND graduated_at IS NULL`;
+  const ledgerCols = `(id, user_id, delta, reason, note_id, subject_id, description, balance_after, created_at)`;
+  const notifCols = `(id, user_id, type, title, body, link, data_json, created_at)`;
+
   const results = await c.env.DB.batch([
-    // 1. Grade 12 leaves as alumni (read-only).
+    // --- Bonuses first, while the "who advances / graduates" predicate still
+    // matches (later statements mutate grade + status). All in one atomic batch.
+    c.env.DB.prepare(
+      `INSERT INTO points_ledger ${ledgerCols}
+       SELECT lower(hex(randomblob(7))), id, ?1, 'promotion_bonus', NULL, NULL, ?2, balance + ?1, ?3
+         FROM users WHERE ${ADVANCE}`,
+    ).bind(POINTS_RULES.PROMOTION_BONUS, `Passed ${season} — advanced a grade`, now),
+    c.env.DB.prepare(
+      `INSERT INTO points_ledger ${ledgerCols}
+       SELECT lower(hex(randomblob(7))), id, ?1, 'matric_bonus', NULL, NULL, ?2, balance + ?1, ?3
+         FROM users WHERE ${GRADUATING}`,
+    ).bind(POINTS_RULES.MATRIC_BONUS, `Matric passed — class of ${season}`, now),
+    c.env.DB.prepare(
+      `INSERT INTO notifications ${notifCols}
+       SELECT lower(hex(randomblob(7))), id, 'promoted', ?1, ?2, '/profile', '{}', ?3
+         FROM users WHERE ${ADVANCE}`,
+    ).bind("You passed — nice one", `+${POINTS_RULES.PROMOTION_BONUS} PTS for advancing to the next grade. See you next season.`, now),
+    c.env.DB.prepare(
+      `INSERT INTO notifications ${notifCols}
+       SELECT lower(hex(randomblob(7))), id, 'matric_passed', ?1, ?2, '/profile', '{}', ?3
+         FROM users WHERE ${GRADUATING}`,
+    ).bind("Matric passed — congratulations", `+${POINTS_RULES.MATRIC_BONUS} PTS, and a permanent place among our alumni. Go well.`, now),
+    c.env.DB.prepare(
+      `UPDATE users SET balance = balance + ?1, total_earned = total_earned + ?1 WHERE ${ADVANCE}`,
+    ).bind(POINTS_RULES.PROMOTION_BONUS),
+    c.env.DB.prepare(
+      `UPDATE users SET balance = balance + ?1, total_earned = total_earned + ?1 WHERE ${GRADUATING}`,
+    ).bind(POINTS_RULES.MATRIC_BONUS),
+    // --- Then the promotion itself.
     c.env.DB.prepare(
       `UPDATE users SET graduated_at = ?1, grade_year = grade_year + 1
         WHERE role = 'user' AND grade = 12 AND graduated_at IS NULL`,
     ).bind(now),
-    // 2. Repeaters (principal-flagged) stay on their grade.
     c.env.DB.prepare(
       `UPDATE users SET held_back = 0, grade_year = grade_year + 1
         WHERE role = 'user' AND grade < 12 AND held_back = 1 AND graduated_at IS NULL`,
     ),
-    // 3. Everyone else advances a grade.
     c.env.DB.prepare(
       `UPDATE users SET grade = grade + 1, grade_year = grade_year + 1
         WHERE role = 'user' AND grade IS NOT NULL AND grade < 12 AND held_back = 0 AND graduated_at IS NULL`,
@@ -272,9 +306,16 @@ app.post("/promotions/run", async (c) => {
   const changes = (r: D1Result | undefined) => Number(r?.meta?.changes ?? 0);
   return c.json({
     ok: true,
-    graduated: changes(results[0]),
-    heldBack: changes(results[1]),
-    promoted: changes(results[2]),
+    season,
+    graduated: changes(results[6]),
+    heldBack: changes(results[7]),
+    promoted: changes(results[8]),
+    bonuses: {
+      promoted: changes(results[0]),
+      matric: changes(results[1]),
+      pointsAwarded:
+        changes(results[0]) * POINTS_RULES.PROMOTION_BONUS + changes(results[1]) * POINTS_RULES.MATRIC_BONUS,
+    },
   });
 });
 

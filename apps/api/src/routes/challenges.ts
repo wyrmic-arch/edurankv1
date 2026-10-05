@@ -6,7 +6,7 @@ import { requireUser } from "../lib/auth";
 import { awardPoints } from "../lib/points";
 import { dateKeySAST, startOfSASTDay } from "../lib/dates";
 import type { AppEnv, UserRow } from "../types";
-import { challengesForDate, type ChallengeStateDTO } from "@edurank/shared";
+import { challengesForDate, seasonInfo, type ChallengeStateDTO } from "@edurank/shared";
 
 const app = new Hono<AppEnv>();
 
@@ -15,6 +15,17 @@ app.get("/daily", async (c) => {
   const user = (await requireUser(c)) as UserRow;
   const db = drizzle(c.env.DB);
   const today = dateKeySAST();
+
+  // Off-season: the boards are closed for the December holidays.
+  const season = seasonInfo();
+  if (season.active) {
+    return c.json({
+      dateKey: today,
+      challenges: [] as ChallengeStateDTO[],
+      balance: user.balance,
+      holiday: { active: true, season: season.season, reopensOn: season.reopensOn },
+    });
+  }
   const dayStart = startOfSASTDay(today);
   const defs = challengesForDate(today);
 

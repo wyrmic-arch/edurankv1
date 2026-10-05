@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/lib/store";
+import { roleHome } from "@/lib/roles";
 import { Avatar } from "./avatar";
 import { AsciiLogo } from "./ascii-logo";
 import { NotificationBell } from "./notification-bell";
@@ -41,7 +42,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-oil border-b border-cinder">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-6">
-        <Link href="/leaderboard" className="flex items-center shrink-0 no-underline">
+        <Link href={user ? roleHome(user.role) : "/"} className="flex items-center shrink-0 no-underline">
           <AsciiLogo size="sm" />
         </Link>
 

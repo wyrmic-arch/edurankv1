@@ -47,7 +47,7 @@ export default function GuidelinesPage() {
       <Section title="6. Reporting and consequences">
         <p>
           Every note has a &ldquo;Report stolen&rdquo; action, and you can email{" "}
-          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>.
+          <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>.
           Breaking these rules can get content removed, points reversed, or your account suspended.
           Serious cases may be reported to your school or the authorities.
         </p>

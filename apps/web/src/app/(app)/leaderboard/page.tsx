@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Crown } from "lucide-react";
+import { seasonInfo, seasonLabel } from "@edurank/shared";
 import { api, type LeaderRow, type Subject, type School } from "@/lib/api";
 import { Avatar, TierChip } from "@/components/avatar";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
@@ -58,7 +59,7 @@ function LeaderboardInner() {
   return (
     <div className="space-y-8">
       <div>
-        <div className="label">NATIONAL STANDINGS</div>
+        <div className="label">NATIONAL STANDINGS · {seasonLabel(seasonInfo().season)}</div>
         <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">The board.</h1>
       </div>
 

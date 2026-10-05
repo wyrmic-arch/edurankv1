@@ -10,6 +10,7 @@ const LEGAL_LINKS = [
   { href: "/accessibility", label: "Accessibility" },
   { href: "/security", label: "Security" },
   { href: "/about", label: "About" },
+  { href: "/mission", label: "Mission" },
 ];
 
 export function LegalPage({
@@ -39,7 +40,7 @@ export function LegalPage({
           ))}
         </nav>
         <p className="text-mute text-[12px] mt-6">
-          Questions? <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>
+          Questions? <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>
         </p>
       </div>
     </div>

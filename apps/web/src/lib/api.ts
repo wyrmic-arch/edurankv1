@@ -205,7 +205,14 @@ export const api = {
   adminCreateInvite: (role: "principal" | "teacher", schoolId: string, subjectIds: string[] = []): Promise<{ code: string }> =>
     request("/admin/invites", { method: "POST", body: { role, schoolId, subjectIds } }),
   adminPromotions: (): Promise<{ academicYear: number; rows: PromotionRow[] }> => request("/admin/promotions/preview"),
-  adminRunPromotions: (): Promise<{ ok: boolean; graduated: number; heldBack: number; promoted: number }> =>
+  adminRunPromotions: (): Promise<{
+    ok: boolean;
+    season?: number;
+    graduated: number;
+    heldBack: number;
+    promoted: number;
+    bonuses?: { promoted: number; matric: number; pointsAwarded: number };
+  }> =>
     request("/admin/promotions/run", { method: "POST" }),
   adminReports: (): Promise<{ items: ReportRow[] }> => request("/admin/reports"),
   adminResolveReport: (id: string, action: "dismiss" | "remove"): Promise<{ ok: boolean }> =>
@@ -288,6 +295,7 @@ export interface ChallengesResponse {
   dateKey: string;
   challenges: ChallengeStateDTO[];
   balance: number;
+  holiday?: { active: boolean; season: number; reopensOn: string };
 }
 export interface AdminPendingNote {
   id: string;

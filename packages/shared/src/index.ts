@@ -26,6 +26,8 @@ export const POINTS_RULES = {
   STREAK_CAP: 15,
   DAILY_CHALLENGE_REWARD: 25,
   SELLER_CUT: 0.5, // uploader earns 50% of unlock price when someone unlocks their note
+  PROMOTION_BONUS: 100, // year-end: advanced to the next grade
+  MATRIC_BONUS: 250, // year-end: passed Grade 12 and graduated
 } as const;
 
 // Referral anti-farming caps. The referral bonus is payable to the referrer at
@@ -47,6 +49,8 @@ export type LedgerReason =
   | "profile_bonus"
   | "daily_challenge"
   | "cosmetic_purchase"
+  | "promotion_bonus"
+  | "matric_bonus"
   | "admin_adjust";
 
 export type UserRole = "user" | "teacher" | "principal" | "admin" | "owner";
@@ -87,6 +91,51 @@ export function academicYear(at: number = Date.now()): number {
   return new Date(at).getUTCFullYear();
 }
 
+// --- Season & holiday mode --------------------------------------------------
+//
+// The school year is a "season". The December school holidays (1 Dec – 9 Jan)
+// are the off-season: daily challenges close, login streaks pause (nobody
+// loses a streak for taking a holiday), and the annual promotion run hands out
+// pass bonuses when the next season opens on 10 January.
+
+export interface SeasonInfo {
+  /** The season this date belongs to (or just ended, in early January). */
+  season: number;
+  /** True while the off-season is running. */
+  active: boolean;
+  /** First day of the off-season, 'YYYY-MM-DD'. */
+  closedOn: string;
+  /** First day of the next season, 'YYYY-MM-DD'. */
+  reopensOn: string;
+}
+
+const SAST_TZ = "Africa/Johannesburg";
+
+function sastYMD(at: number): { y: number; m: number; d: number } {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: SAST_TZ }).format(new Date(at)).split("-");
+  return { y: Number(parts[0]), m: Number(parts[1]), d: Number(parts[2]) };
+}
+
+export function seasonInfo(at: number = Date.now()): SeasonInfo {
+  const { y, m, d } = sastYMD(at);
+  const inDec = m === 12;
+  const inEarlyJan = m === 1 && d <= 9;
+  const season = m === 1 ? y - 1 : y;
+  return {
+    season,
+    active: inDec || inEarlyJan,
+    closedOn: `${season}-12-01`,
+    reopensOn: `${season + 1}-01-10`,
+  };
+}
+
+export function seasonLabel(season: number): string {
+  return `SEASON ${season}`;
+}
+
+/** Days (inclusive) after reopening during which a paused streak is restored. */
+export const STREAK_GRACE_DAYS = 7;
+
 
 export const LEDGER_REASON_LABELS: Record<LedgerReason, string> = {
   upload_approved: "Note approved",
@@ -100,6 +149,8 @@ export const LEDGER_REASON_LABELS: Record<LedgerReason, string> = {
   profile_bonus: "Profile completed",
   daily_challenge: "Daily challenge cleared",
   cosmetic_purchase: "Shop purchase",
+  promotion_bonus: "Passed — promoted a grade",
+  matric_bonus: "Matric passed — graduated",
   admin_adjust: "Admin adjustment",
 };
 
@@ -328,6 +379,8 @@ export type NotificationType =
   | "referral_joined"
   | "badge_earned"
   | "challenge_cleared"
+  | "promoted"
+  | "matric_passed"
   | "system";
 
 export interface NotificationDTO {

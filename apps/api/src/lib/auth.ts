@@ -9,7 +9,9 @@ import type { UserRole } from "@edurank/shared";
 import { isStaffRole, REQUIRE_EMAIL_VERIFICATION } from "@edurank/shared";
 import { ApiError, type UserRow } from "../types";
 
-const SESSION_TTL_MS = 30 * 24 * 3600 * 1000;
+// Sessions last a year, and are slid forward on every authenticated request
+// (see touchSession) so someone who keeps using EduRank never gets logged out.
+const SESSION_TTL_MS = 365 * 24 * 3600 * 1000;
 export const SESSION_COOKIE = "edu_session";
 
 const dbOf = (c: Context) => drizzle(c.env.DB);
@@ -122,6 +124,33 @@ export async function requireVerifiedUser(c: Context): Promise<UserRow> {
     throw new ApiError(403, "Verify your email first — check your inbox for the confirmation link.");
   }
   return u;
+}
+
+/**
+ * Sliding expiration: push the current session's expiry back out to a full TTL.
+ * Called on authenticated reads (e.g. /auth/me, which runs on every app load)
+ * so an active user stays signed in indefinitely. Best-effort — never throws.
+ */
+export async function touchSession(c: Context): Promise<void> {
+  const token = bearerFrom(c);
+  if (!token) return;
+  try {
+    const id = await sha256Hex(token);
+    const now = Date.now();
+    await dbOf(c).update(sessions).set({ expiresAt: now + SESSION_TTL_MS }).where(eq(sessions.id, id));
+    // Keep the (unused-by-the-web) cookie in step when it's what authenticated.
+    if (!c.req.header("Authorization")) {
+      setCookie(c, SESSION_COOKIE, token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+        path: "/",
+        maxAge: SESSION_TTL_MS / 1000,
+      });
+    }
+  } catch {
+    /* best-effort: a failed touch must never break the request */
+  }
 }
 
 export async function destroySession(c: Context): Promise<void> {

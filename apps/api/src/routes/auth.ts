@@ -5,7 +5,7 @@ import { z } from "zod";
 import { POINTS_RULES, REFERRAL_CAPS, REQUIRE_EMAIL_VERIFICATION, academicYear } from "@edurank/shared";
 import { schools, users, sessions, userBadges, badges, staffInvites, teacherSubjects } from "../db/schema";
 import { hashPassword, verifyPassword, sha256Hex, needsRehash, PBKDF2_ITERATIONS } from "../lib/password";
-import { createSession, destroySession, requireUser, currentUser } from "../lib/auth";
+import { createSession, destroySession, requireUser, currentUser, touchSession } from "../lib/auth";
 import { awardPoints, checkProfileCompletion, processStreak, rankOf } from "../lib/points";
 import { evalBadges } from "../lib/badges";
 import { notify } from "../lib/notify";
@@ -286,6 +286,7 @@ app.post("/logout", async (c) => {
 
 app.get("/me", async (c) => {
   const user = await requireUser(c);
+  await touchSession(c); // slide the session forward so active users stay signed in
   const me = await fullMe(c.env, user);
   const earnedBadges = await evalBadges(c.env, user.id); // ensure badge state is fresh
   void earnedBadges;

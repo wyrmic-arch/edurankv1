@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, FileText, GraduationCap, Lightbulb, ShieldAlert, Sparkles, Ticket, X } from "lucide-react";
+import { POINTS_RULES } from "@edurank/shared";
 import { api, type AdminPendingNote, type AdminStats, type AdminRejectedNote, type AdminSuggestion, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ErrorPanel, Spinner } from "@/components/hud";
@@ -249,7 +250,8 @@ function StaffAdmin() {
     setFlash(null);
     try {
       const r = await api.adminRunPromotions();
-      setFlash(`Promotions run — ${r.promoted} promoted, ${r.heldBack} held back, ${r.graduated} graduated.`);
+      const bonus = r.bonuses?.pointsAwarded ? ` · ${r.bonuses.pointsAwarded.toLocaleString("en-ZA")} PTS in pass bonuses paid` : "";
+      setFlash(`Promotions run — ${r.promoted} promoted, ${r.heldBack} held back, ${r.graduated} graduated${bonus}.`);
       reload();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Failed");
@@ -261,7 +263,9 @@ function StaffAdmin() {
       <div>
         <div className="label inline-flex items-center gap-2"><GraduationCap className="w-3.5 h-3.5" /> PROMOTIONS</div>
         <p className="text-mute text-[13px] mt-2">
-          End-of-year rollover. Everyone advances a grade unless a principal marked them to repeat; grade 12 becomes alumni.
+          End-of-year rollover. Everyone advances a grade unless a principal marked them to repeat; grade 12
+          becomes alumni. Passing pays a bonus — +{POINTS_RULES.PROMOTION_BONUS} PTS to advance,
+          +{POINTS_RULES.MATRIC_BONUS} PTS to pass matric.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
           {(promos ?? []).map((p) => (

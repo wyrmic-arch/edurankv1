@@ -1,9 +1,9 @@
 import { and, eq, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { POINTS_RULES, type LedgerReason } from "@edurank/shared";
+import { POINTS_RULES, STREAK_GRACE_DAYS, seasonInfo, type LedgerReason } from "@edurank/shared";
 import { pointsLedger, streakClaims, users } from "../db/schema";
 import { shortId } from "./id";
-import { dateKeySAST } from "./dates";
+import { dateKeySAST, startOfSASTDay } from "./dates";
 import type { UserRow } from "../types";
 
 export interface AwardInput {
@@ -125,8 +125,21 @@ export async function processStreak(
   const today = dateKeySAST();
   if (user.lastStreakDate === today) return { user, awardedToday: 0 };
 
+  // Off-season: challenges and streaks are closed for the December holidays.
+  // Don't process (and don't break) the streak — it resumes when we reopen.
+  const season = seasonInfo();
+  if (season.active) return { user, awardedToday: 0 };
+
   const yesterday = dateKeySAST(Date.now() - 86_400_000);
-  const nextCount = user.lastStreakDate === yesterday ? user.streakCount + 1 : 1;
+  // A streak also continues if the only gap was the off-season and the user is
+  // back within the grace window after the new season opens.
+  const inGrace =
+    !season.active &&
+    startOfSASTDay(today) >= startOfSASTDay(season.reopensOn) &&
+    startOfSASTDay(today) <= startOfSASTDay(season.reopensOn) + STREAK_GRACE_DAYS * 86_400_000 &&
+    !!user.lastStreakDate &&
+    user.lastStreakDate < season.reopensOn;
+  const nextCount = user.lastStreakDate === yesterday || inGrace ? user.streakCount + 1 : 1;
   const best = Math.max(user.bestStreak, nextCount);
   // Day 1 pays the base; each extra consecutive day adds a step up to the cap.
   const reward = Math.min(POINTS_RULES.STREAK_CAP, POINTS_RULES.STREAK_BASE + POINTS_RULES.STREAK_STEP * (nextCount - 1));

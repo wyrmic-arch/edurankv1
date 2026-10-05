@@ -31,7 +31,7 @@ export default function AccessibilityPage() {
       <Section title="4. Feedback">
         <p>
           If you hit an accessibility barrier, tell us at{" "}
-          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>{" "}
+          <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>{" "}
           and describe the page and what went wrong. We aim to respond within a few days.
         </p>
       </Section>

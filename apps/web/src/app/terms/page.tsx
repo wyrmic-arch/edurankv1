@@ -96,7 +96,7 @@ export default function TermsPage() {
       <Section title="10. Contact">
         <p>
           Questions about these terms? Email{" "}
-          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>.
+          <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>.
         </p>
       </Section>
     </LegalPage>

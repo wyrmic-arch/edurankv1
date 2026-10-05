@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { CalendarClock, Download, Flame, ThumbsUp, Trophy, UploadCloud } from "lucide-react";
 import { api, type ChallengesResponse } from "@/lib/api";
 import { useAuth } from "@/lib/store";
@@ -40,6 +41,7 @@ export default function ChallengesPage() {
 
   if (error) return <ErrorPanel message={error} onRetry={load} />;
   if (!data) return <Spinner label="BRIEFING TODAY'S CHALLENGES…" />;
+  if (data.holiday?.active) return <HolidayClosed season={data.holiday.season} reopensOn={data.holiday.reopensOn} />;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -88,6 +90,44 @@ export default function ChallengesPage() {
       <p className="label text-center">
         FULL CATALOGUE ROTATES DAILY · {CHALLENGE_CATALOG.length} CHALLENGE TYPES · PROGRESS COUNTS LIVE FROM REAL ACTIVITY
       </p>
+    </div>
+  );
+}
+
+function niceDate(key: string): string {
+  const d = new Date(`${key}T00:00:00+02:00`);
+  if (Number.isNaN(d.getTime())) return key;
+  return d.toLocaleDateString("en-ZA", { day: "numeric", month: "long" });
+}
+
+function HolidayClosed({ season, reopensOn }: { season: number; reopensOn: string }) {
+  return (
+    <div className="max-w-3xl mx-auto space-y-8">
+      <div>
+        <div className="label inline-flex items-center gap-2">
+          <Trophy className="w-3.5 h-3.5" /> DAILY CHALLENGES
+        </div>
+        <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">Off-season.</h1>
+      </div>
+
+      <div className="rule" />
+
+      <div className="panel p-8 text-center">
+        <CalendarClock className="w-6 h-6 mx-auto text-accent mb-4" />
+        <div className="font-serif text-2xl font-medium tracking-tight">Closed for the holidays.</div>
+        <p className="text-ghost text-[14px] mt-3 max-w-md mx-auto leading-relaxed">
+          Season {season} is done. Challenges, streaks and the boards are taking a break over December and
+          reopen on {niceDate(reopensOn)}. Your free notes stay open all holiday.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3 mt-6">
+          <Link href="/study" className="btn-solid">
+            Browse free notes
+          </Link>
+          <Link href="/leaderboard" className="btn-ghost">
+            See the final board
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

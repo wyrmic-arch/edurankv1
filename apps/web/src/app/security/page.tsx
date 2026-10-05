@@ -8,7 +8,7 @@ export default function SecurityPage() {
       <Section title="1. Report a vulnerability">
         <p>
           Found a security issue? Please email{" "}
-          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>{" "}
+          <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>{" "}
           with steps to reproduce. Give us a reasonable chance to fix it before disclosing it publicly. We
           will not pursue legal action against researchers who act in good faith and do not access, modify
           or exfiltrate other people&rsquo;s data.
@@ -26,7 +26,7 @@ export default function SecurityPage() {
       <Section title="3. Reporting abuse">
         <p>
           For spam, stolen notes or abusive accounts, use the in-app <b>Report</b> action or email{" "}
-          <a href="mailto:jacquesdup90@gmail.com" className="text-ash no-underline hover:underline">jacquesdup90@gmail.com</a>.
+          <a href="mailto:studyedurank@gmail.com" className="text-ash no-underline hover:underline">studyedurank@gmail.com</a>.
         </p>
       </Section>
 

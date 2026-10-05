@@ -1,4 +1,4 @@
-Contact: mailto:jacquesdup90@gmail.com
+Contact: mailto:studyedurank@gmail.com
 Expires: 2027-10-04T00:00:00.000Z
 Preferred-Languages: en, af, zu
 Canonical: https://edurank.co.za/.well-known/security.txt

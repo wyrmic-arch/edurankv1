@@ -36,8 +36,8 @@ ALLOWED_ORIGINS = "https://edurank.co.za,https://www.edurank.co.za,https://*.pag
 APP_URL = "https://edurank.co.za"
 
 # Where replies to app emails and operational alerts (site errors, reports) go.
-REPLY_TO = "jacquesdup90@gmail.com"
-ALERT_EMAIL = "jacquesdup90@gmail.com"
+REPLY_TO = "studyedurank@gmail.com"
+ALERT_EMAIL = "studyedurank@gmail.com"
 
 # Unix-ms cutoff for the FOUNDER early-access reward. Set 0 to close the window.
 # Leave unset to use the default (2027-03-01).

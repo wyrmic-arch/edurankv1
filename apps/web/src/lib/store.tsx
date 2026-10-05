@@ -7,6 +7,9 @@ import { api, isApiClientError, TOKEN_KEY, type PublicUser } from "./api";
 interface AuthState {
   user: PublicUser | null;
   loading: boolean;
+  /** Set when we have a token but the API couldn't be reached — lets the app
+   *  show a retry instead of treating the user as logged out. */
+  authError: string | null;
   setUser: Dispatch<SetStateAction<PublicUser | null>>;
   refresh: () => Promise<void>;
   login: (email: string, password: string, turnstileToken?: string) => Promise<PublicUser>;
@@ -19,25 +22,43 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   const mounted = useRef(true);
 
   const refresh = useCallback(async () => {
     if (!localStorage.getItem(TOKEN_KEY)) {
       setUser(null);
+      setAuthError(null);
       return;
     }
-    try {
-      const { user } = await api.me();
-      if (mounted.current) setUser(user);
-    } catch (e) {
-      // Only clear the token on 401 — network blips and 5xx should not log
-      // the user out. Anything else (unknown errors) is left as-is so we
-      // don't accidentally wipe a still-valid session.
-      if (isApiClientError(e) && e.status === 401) {
-        localStorage.removeItem(TOKEN_KEY);
+    // Retry transient failures (cold worker, flaky mobile network) before
+    // giving up. We only ever *log out* on an explicit 401.
+    const delays = [0, 800, 2000];
+    for (let attempt = 0; attempt < delays.length; attempt++) {
+      if (delays[attempt]) await new Promise((r) => setTimeout(r, delays[attempt]));
+      if (!mounted.current) return;
+      try {
+        const { user } = await api.me();
+        if (mounted.current) {
+          setUser(user);
+          setAuthError(null);
+        }
+        return;
+      } catch (e) {
+        if (isApiClientError(e) && e.status === 401) {
+          localStorage.removeItem(TOKEN_KEY);
+          if (mounted.current) {
+            setUser(null);
+            setAuthError(null);
+          }
+          return;
+        }
+        // Network / 5xx — fall through and retry.
       }
-      if (mounted.current) setUser(null);
     }
+    // Token still present but the API is unreachable: keep the session and
+    // surface a retryable error rather than redirecting to /login.
+    if (mounted.current) setAuthError("Couldn't reach EduRank. Check your connection and try again.");
   }, []);
 
   useEffect(() => {
@@ -54,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user } = await api.login(email, password, turnstileToken);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(user);
+    setAuthError(null);
     return user;
   }, []);
 
@@ -61,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { token, user } = await api.register(body);
     localStorage.setItem(TOKEN_KEY, token);
     setUser(user);
+    setAuthError(null);
     return user;
   }, []);
 
@@ -72,10 +95,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
+    setAuthError(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, setUser, refresh, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, authError, setUser, refresh, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
