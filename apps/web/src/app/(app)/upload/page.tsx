@@ -7,7 +7,9 @@ import { api, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Spinner } from "@/components/hud";
 import { compressPdf, isPdfFile, type PdfCompressStats } from "@/lib/pdf-compress";
+import { buildPhotoPdf, makePhotoEdit, type PhotoEdit } from "@/lib/photo-pdf";
 import { fileSize } from "@/lib/format";
+import { PhotoUploader } from "@/components/photo-uploader";
 import { GRADES, POINTS_RULES, isStaffRole } from "@edurank/shared";
 
 export default function UploadPage() {
@@ -27,6 +29,9 @@ export default function UploadPage() {
   const [optimizing, setOptimizing] = useState(false);
   const [stats, setStats] = useState<PdfCompressStats | null>(null);
   const [compressEnabled, setCompressEnabled] = useState(true);
+  const [photos, setPhotos] = useState<PhotoEdit[]>([]);
+  const [building, setBuilding] = useState(false);
+  const [buildProgress, setBuildProgress] = useState<{ done: number; total: number } | null>(null);
 
   useEffect(() => {
     api.subjects().then((r) => setSubjects(r.items)).catch(() => setSubjects([]));
@@ -39,6 +44,18 @@ export default function UploadPage() {
       setFile(null);
       return;
     }
+    // A photo picked from the main drop goes through the photo → PDF builder.
+    if (next.type.startsWith("image/")) {
+      try {
+        const photo = await makePhotoEdit(next);
+        setPhotos((p) => [...p, photo]);
+        setFile(null);
+      } catch {
+        setError(`Couldn't read "${next.name}". Try a JPG/PNG, or screenshot it first.`);
+      }
+      return;
+    }
+    setPhotos([]);
     if (compressEnabled && isPdfFile(next) && next.size >= 1_000_000) {
       setOptimizing(true);
       try {
@@ -57,15 +74,44 @@ export default function UploadPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) {
-      setError("Attach your file first.");
+    setError(null);
+
+    // Build a PDF from photos if that's how the note was supplied.
+    let uploadFile: File | null = file;
+    if (!uploadFile && photos.length > 0) {
+      setBuilding(true);
+      setBuildProgress({ done: 0, total: photos.length });
+      try {
+        const subjectName = subjects?.find((s) => s.id === subjectId)?.name ?? "";
+        uploadFile = await buildPhotoPdf(photos, { title, subjectName, grade }, (done, total) =>
+          setBuildProgress({ done, total }),
+        );
+        if (compressEnabled) {
+          try {
+            const result = await compressPdf(uploadFile, { minBytes: 300_000 });
+            uploadFile = result.file;
+          } catch {
+            /* keep the uncompressed PDF */
+          }
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not build the PDF from your photos.");
+        return;
+      } finally {
+        setBuilding(false);
+        setBuildProgress(null);
+      }
+    }
+
+    if (!uploadFile) {
+      setError("Attach a file or add photos first.");
       return;
     }
-    setError(null);
+
     setBusy(true);
     try {
       const form = new FormData();
-      form.append("file", file);
+      form.append("file", uploadFile);
       form.append("title", title);
       form.append("description", description);
       form.append("subjectId", subjectId);
@@ -122,7 +168,7 @@ export default function UploadPage() {
             <>
               <FileUp className="w-6 h-6 mx-auto text-dim mb-2" />
               <div className="font-medium">Drop your file / click to browse</div>
-              <div className="label !text-[9px] mt-2">PDF · IMAGES · DOCX · PPTX · XLSX · TXT · ZIP — MAX 20MB</div>
+              <div className="label !text-[9px] mt-2">PDF · DOCX · PPTX · XLSX · TXT · ZIP · PHOTO — MAX 20MB</div>
             </>
           )}
         </label>
@@ -147,6 +193,29 @@ export default function UploadPage() {
             {Math.max(1, Math.round((1 - stats.ratio) * 100))}% smaller).
           </p>
         )}
+
+        <div className="rule" />
+
+        <div className="space-y-3">
+          <div className="label">Turn photos into a clean PDF</div>
+          <PhotoUploader
+            photos={photos}
+            onChange={setPhotos}
+            onSelect={() => {
+              setFile(null);
+              setStats(null);
+            }}
+            disabled={busy || building}
+          />
+          {building && (
+            <p className="text-[12px] text-accent">
+              Building your PDF{buildProgress ? ` — page ${Math.max(1, buildProgress.done)}/${buildProgress.total}` : ""}
+              …
+            </p>
+          )}
+        </div>
+
+        <div className="rule" />
 
         <Field label="Title">
           <input value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={120}
@@ -222,8 +291,8 @@ export default function UploadPage() {
 
         {error && <p className="text-mark text-[13px] border border-mark bg-mark/5 px-3 py-2">{error}</p>}
 
-        <button disabled={busy} type="submit" className="btn-mark w-full py-4 text-base">
-          {busy ? "TRANSMITTING…" : "SEND FOR REVIEW"}
+        <button disabled={busy || building || optimizing} type="submit" className="btn-mark w-full py-4 text-base">
+          {building ? "BUILDING PDF…" : busy ? "TRANSMITTING…" : "SEND FOR REVIEW"}
         </button>
       </form>
     </div>

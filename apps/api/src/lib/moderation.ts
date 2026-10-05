@@ -179,9 +179,9 @@ export async function moderateNote(env: Env, noteId: string): Promise<void> {
     const text = await extractText(env, note);
 
     if (text !== null && text.trim().length < 30) {
-      await fail(
-        "AI review: the document has almost no readable text (scanned images?). Upload a text-based PDF or typed notes.",
-      );
+      // Photo / handwritten / scanned notes don't OCR well. Don't auto-reject —
+      // hold them for the operator, who reviews the queue by hand.
+      await holdForHuman("Held for human review — little or no machine-readable text (photo/handwritten notes?).");
       return;
     }
 
