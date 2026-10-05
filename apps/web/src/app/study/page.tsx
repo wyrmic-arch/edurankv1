@@ -25,7 +25,7 @@ export default async function StudyIndex() {
 
   return (
     <div className="min-h-screen bg-night text-ash">
-      <div className="max-w-[1000px] mx-auto px-6 py-16">
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-16">
         <div className="label">FREE · WRITTEN BY THE EDURANK TEAM</div>
         <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-2">Free study notes.</h1>
         <p className="text-ghost text-[16px] leading-relaxed mt-4 max-w-2xl">

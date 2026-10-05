@@ -74,7 +74,7 @@ export default function ShopPage() {
       )}
       {error && <ErrorPanel message={error} onRetry={load} />}
 
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
         {KINDS.map((k) => (
           <button
             key={k.key}

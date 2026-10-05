@@ -137,7 +137,7 @@ function Students() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 flex-wrap">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search students…" className="px-3 py-2 text-[13px] w-64" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search students…" className="px-3 py-2 text-[13px] w-full sm:w-64" />
         <span className="label !text-[9px] inline-flex items-center gap-1.5"><GraduationCap className="w-3 h-3" /> Mark a student to REPEAT their year</span>
       </div>
       <ul className="panel divide-y divide-ruleSoft">

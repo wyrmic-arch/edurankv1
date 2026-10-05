@@ -176,4 +176,19 @@
 .study-body th { background: #161616; color: #e4e4e4; }
 .study-body hr { border: 0; border-top: 1px solid #2a2a2a; margin: 2rem 0; }
 .study-body img { max-width: 100%; height: auto; border: 1px solid #2a2a2a; }
+.study-body { overflow-wrap: anywhere; }
+
+/* Mobile refinement: keep the mono/display type readable on small screens,
+   stop iOS from zooming into sub-16px form fields, and guarantee comfortable
+   touch targets for every button variant. */
+@media (max-width: 640px) {
+  body { overflow-x: clip; }
+  .text-display { font-size: 2.6rem; }
+  .text-5xl { font-size: 2rem; }
+  .text-4xl { font-size: 1.75rem; }
+  .text-3xl { font-size: 1.5rem; }
+  .btn, .btn-solid, .btn-ghost, .btn-mark { min-height: 40px; }
+  input, select, textarea { font-size: 16px !important; }
+  .study-body table { display: block; overflow-x: auto; white-space: nowrap; }
+}
 

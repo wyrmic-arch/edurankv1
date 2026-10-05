@@ -23,7 +23,7 @@ export function LegalPage({
 }) {
   return (
     <div className="min-h-screen bg-night text-ash">
-      <div className="max-w-[760px] mx-auto px-6 py-16">
+      <div className="max-w-[760px] mx-auto px-4 sm:px-6 py-16">
         <Link href="/" className="font-mono text-[11px] uppercase tracking-label text-ghost no-underline hover:text-ash">
           ← Back to EduRank
         </Link>

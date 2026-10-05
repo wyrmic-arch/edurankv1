@@ -121,9 +121,16 @@ With Cloudflare Pages + `@cloudflare/next-on-pages`:
 ```bash
 cd apps/web
 npm i -D @cloudflare/next-on-pages
+npm run copy-gs                         # copies the Ghostscript WASM runtime into public/gs/
 npx @cloudflare/next-on-pages           # produces .vercel/output/static
 npx wrangler pages deploy .vercel/output/static --project-name edurank
 ```
+
+> `npm install` and `npm run build` already run `copy-gs` automatically (via
+> `postinstall`/`prebuild`); run it manually if you build with a tool that
+> bypasses those hooks. `public/gs/gs.{js,wasm}` are gitignored, so `public/gs/`
+> must contain the runtime before deploying or client-side PDF compression will
+> silently fall back to uploading the original file.
 
 In the Pages dashboard, set env var `NEXT_PUBLIC_API_URL=https://edurank-api.<subdomain>.workers.dev`.
 (The pages are client-rendered against the API, so no Node runtime features are required.)
@@ -133,6 +140,32 @@ from `apps/api` (requires `DEV_SEED_SECRET`-less flow used by the script — it 
 public API like a normal client).
 
 ---
+
+## PDF compression (storage)
+
+Two layers keep PDFs small:
+
+1. **Uploads — in the browser.** On the upload page, PDFs over 1MB are re-encoded
+   client-side before they reach the API, using Ghostscript compiled to
+   WebAssembly (`@okathira/ghostpdl-wasm`) inside a Web Worker. Ghostscript
+   resamples images, subsets fonts and repacks streams — typically 40–85%
+   smaller — while keeping text selectable. If the runtime is unavailable or the
+   result isn't smaller, the original file is uploaded, so output is never worse.
+   The runtime is copied to `apps/web/public/gs/` by `scripts/copy-gs.mjs`
+   (`npm run copy-gs`); it is not committed to git.
+
+2. **Official notes — at build time.** `content/tools/md2pdf.py` runs Ghostscript
+   (`/ebook`) on each rendered PDF, and `content/tools/compress_pdfs.py`
+   back-fills existing ones:
+
+   ```bash
+   python3 content/tools/compress_pdfs.py content/official   # recompress in place
+   PDF_PRESET=screen python3 content/tools/compress_pdfs.py  # smaller, 72dpi
+   ```
+
+   Docs in `content/official/` are ~46% smaller after this pass (verified text
+   and stream integrity preserved). Re-run `npm run publish:official` to push the
+   recompressed PDFs to R2.
 
 ## The points economy (how numbers are earned)
 

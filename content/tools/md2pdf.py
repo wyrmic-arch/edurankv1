@@ -11,11 +11,18 @@ Produces <same-name>.pdf next to each .md.
 import html
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
 
 CHROMIUM = "chromium"
+# Ghostscript pass applied after rendering: resamples images, subsets fonts and
+# repacks streams so the published PDFs take far less storage in R2.
+# /ebook ≈ 150 dpi (readable on screen, ~40–55% smaller); override with
+# PDF_PRESET=screen|printer|prepress.
+GS = os.environ.get("GS", "gs")
+GS_PRESET = os.environ.get("PDF_PRESET", "ebook")
 
 CSS = """
 @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
@@ -196,6 +203,33 @@ def build_html(md_path):
     )
 
 
+def compress_pdf(pdf_path):
+    """Shrink a rendered PDF in place with Ghostscript, if available."""
+    if not shutil.which(GS):
+        print(f"  (ghostscript not found — leaving {os.path.basename(pdf_path)} uncompressed)")
+        return
+    before = os.path.getsize(pdf_path)
+    out = pdf_path + ".gs.tmp"
+    try:
+        subprocess.run(
+            [GS, "-sDEVICE=pdfwrite", "-dCompatibilityLevel=1.7",
+             f"-dPDFSETTINGS=/{GS_PRESET}", "-dDetectDuplicateImages=true",
+             "-dNOPAUSE", "-dQUIET", "-dBATCH", "-dSAFER",
+             f"-sOutputFile={out}", pdf_path],
+            check=True, capture_output=True, timeout=300,
+        )
+        after = os.path.getsize(out)
+        if after < before:
+            os.replace(out, pdf_path)
+            print(f"  compressed {before // 1024}KB -> {after // 1024}KB")
+        else:
+            os.unlink(out)
+    except Exception as e:  # noqa: BLE001
+        if os.path.exists(out):
+            os.unlink(out)
+        print(f"  (ghostscript compression skipped: {e})")
+
+
 def render_one(md_path):
     html_str = build_html(md_path)
     pdf_path = os.path.splitext(md_path)[0] + ".pdf"
@@ -210,6 +244,7 @@ def render_one(md_path):
         )
     finally:
         os.unlink(tmp)
+    compress_pdf(pdf_path)
     return pdf_path
 
 

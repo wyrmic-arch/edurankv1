@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <RequireAuth>
       <Navbar />
-      <main className="relative z-10 max-w-[1400px] mx-auto px-6 py-10 pb-32">
+      <main className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 py-8 sm:py-10 pb-28 sm:pb-32">
         <OnboardingBanner />
         {children}
       </main>

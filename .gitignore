@@ -10,3 +10,5 @@ node_modules/
 dist/
 tsconfig.tsbuildinfo
 .next/types
+apps/web/public/gs/gs.js
+apps/web/public/gs/gs.wasm

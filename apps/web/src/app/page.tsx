@@ -36,24 +36,26 @@ export default function Landing() {
   return (
     <div className="min-h-screen relative flex flex-col">
       <header className="relative z-10 border-b border-cinder">
-        <div className="max-w-[1400px] mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 no-underline">
             <AsciiLogo size="md" />
           </Link>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3 sm:gap-5">
             <span className="label hidden sm:inline">SOUTH AFRICA · GRADES 8–12</span>
             <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline">
               Log in
             </Link>
-            <Link href="/register" className="btn-mark">
-              Join the ranks <ArrowRight className="w-3.5 h-3.5" />
+            <Link href="/register" className="btn-mark whitespace-nowrap">
+              <span className="hidden sm:inline">Join the ranks</span>
+              <span className="sm:hidden">Join</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 grid lg:grid-cols-[7fr_5fr] gap-12 items-start pt-16 pb-24 flex-1">
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-4 sm:px-6 grid lg:grid-cols-[7fr_5fr] gap-8 sm:gap-12 items-start pt-10 sm:pt-16 pb-16 sm:pb-24 flex-1">
         <div className="animate-rise">
           <div className="label mb-6 flex items-center gap-2">
             <span className="text-accent animate-flicker">●</span>
@@ -84,7 +86,7 @@ export default function Landing() {
             </Link>
           </div>
 
-          <div className="rule mt-12 pt-6 grid grid-cols-3 gap-6">
+          <div className="rule mt-12 pt-6 grid grid-cols-3 gap-3 sm:gap-6">
             <Stat label="Notes circulating" value={totalNotes.toLocaleString("en-ZA")} />
             <Stat label="Subjects" value={subjects.length.toString().padStart(2, "0")} />
             <Stat label="PTS by #1 player" value={(top[0]?.points ?? 0).toLocaleString("en-ZA")} />
@@ -136,7 +138,7 @@ export default function Landing() {
       </section>
 
       {/* Free notes + roadmap */}
-      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="flex items-baseline gap-3 mb-10">
           <span className="label">RUNNING IN THE OPEN</span>
           <span className="flex-1 h-px bg-cinder" />
@@ -162,7 +164,7 @@ export default function Landing() {
       </section>
 
       {/* Blob accent band */}
-      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="flex items-baseline gap-3 mb-10">
           <span className="label">THE NIGHT SHIFT</span>
           <span className="flex-1 h-px bg-cinder" />
@@ -183,7 +185,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
         <div className="flex items-baseline gap-3 mb-10">
           <span className="label">HOW IT WORKS</span>
           <span className="flex-1 h-px bg-cinder" />
@@ -197,8 +199,8 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
-        <div className="hairline p-8 text-center bg-oil/80">
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-4 sm:px-6 pb-16 sm:pb-24">
+        <div className="hairline p-6 sm:p-8 text-center bg-oil/80">
           <div className="label mb-2">THE CURVE</div>
           <div className="font-serif text-3xl font-medium tracking-tight mb-3">
             The next wave doesn&rsquo;t wait.

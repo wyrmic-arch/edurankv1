@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-night flex items-center justify-center px-4 sm:px-6 py-10">
       <div className="w-full max-w-md text-center">
         <div className="label mb-4">ERROR 404</div>
         <h1 className="font-serif text-6xl font-medium tracking-tight leading-none mb-6 text-ash">Off the map.</h1>

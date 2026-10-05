@@ -40,7 +40,7 @@ export default async function RoadmapPage() {
 
   return (
     <div className="min-h-screen bg-night text-ash">
-      <div className="max-w-[860px] mx-auto px-6 py-16">
+      <div className="max-w-[860px] mx-auto px-4 sm:px-6 py-16">
         <div className="label text-accent">ROADMAP</div>
         <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-2">What&rsquo;s coming.</h1>
         <p className="text-ghost text-[16px] leading-relaxed mt-4 max-w-xl">

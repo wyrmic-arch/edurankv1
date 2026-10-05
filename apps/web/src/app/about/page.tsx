@@ -8,7 +8,7 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-night text-ash">
-      <div className="max-w-[760px] mx-auto px-6 py-16">
+      <div className="max-w-[760px] mx-auto px-4 sm:px-6 py-16">
         <Link href="/" className="font-mono text-[11px] uppercase tracking-label text-ghost no-underline hover:text-ash">
           ← Back to EduRank
         </Link>
@@ -48,7 +48,14 @@ export default function AboutPage() {
           </div>
         </div>
 
-        <p className="text-mute text-[13px] mt-10">By using EduRank you agree to our terms and privacy policy.</p>
+        <p className="text-dim text-[12px] mt-10 leading-relaxed">
+          Uploaded PDFs are compressed in your browser using{" "}
+          <a href="https://www.ghostscript.com" className="text-ghost no-underline hover:text-ash" target="_blank" rel="noreferrer">
+            Ghostscript
+          </a>{" "}
+          (AGPL-3.0), compiled to WebAssembly. Maps use OpenFreeMap and OpenStreetMap data.
+        </p>
+        <p className="text-mute text-[13px] mt-4">By using EduRank you agree to our terms and privacy policy.</p>
       </div>
     </div>
   );

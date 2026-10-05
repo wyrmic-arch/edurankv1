@@ -7,10 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "copy-gs": "node scripts/copy-gs.mjs",
+    "predev": "node scripts/copy-gs.mjs",
+    "prebuild": "node scripts/copy-gs.mjs",
+    "postinstall": "node scripts/copy-gs.mjs"
   },
   "dependencies": {
     "@edurank/shared": "*",
+    "@okathira/ghostpdl-wasm": "^1.1.0",
     "lucide-react": "^0.441.0",
     "maplibre-gl": "^6.12.0",
     "next": "^14.2.13",

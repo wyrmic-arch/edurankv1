@@ -2,10 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FileUp, Lock, X } from "lucide-react";
+import { FileUp, Loader2, Lock, X } from "lucide-react";
 import { api, type Subject } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, Spinner } from "@/components/hud";
+import { compressPdf, isPdfFile, type PdfCompressStats } from "@/lib/pdf-compress";
+import { fileSize } from "@/lib/format";
 import { GRADES, POINTS_RULES, isStaffRole } from "@edurank/shared";
 
 export default function UploadPage() {
@@ -22,10 +24,36 @@ export default function UploadPage() {
   const [pricePoints, setPricePoints] = useState(100);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
+  const [stats, setStats] = useState<PdfCompressStats | null>(null);
+  const [compressEnabled, setCompressEnabled] = useState(true);
 
   useEffect(() => {
     api.subjects().then((r) => setSubjects(r.items)).catch(() => setSubjects([]));
   }, []);
+
+  async function pickFile(next: File | null) {
+    setError(null);
+    setStats(null);
+    if (!next) {
+      setFile(null);
+      return;
+    }
+    if (compressEnabled && isPdfFile(next) && next.size >= 1_000_000) {
+      setOptimizing(true);
+      try {
+        const result = await compressPdf(next);
+        setFile(result.file);
+        setStats(result.stats);
+      } catch {
+        setFile(next);
+      } finally {
+        setOptimizing(false);
+      }
+    } else {
+      setFile(next);
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,18 +96,25 @@ export default function UploadPage() {
       </p>
 
       <form onSubmit={submit} className="space-y-6">
-        <label className={`block border border-dashed p-8 text-center cursor-pointer transition-colors ${file ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ash"}`}>
+        <label className={`block border border-dashed p-6 sm:p-8 text-center cursor-pointer transition-colors ${file ? "border-mark bg-mark/5" : "border-ruleSoft hover:border-ash"}`}>
           <input
             type="file"
             className="hidden"
+            disabled={optimizing}
             accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx,.pptx,.xlsx,.zip"
-            onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => void pickFile(e.target.files?.[0] ?? null)}
           />
-          {file ? (
-            <div className="flex items-center justify-center gap-3">
-              <FileUp className="w-5 h-5" />
-              <span className="font-mono text-[13px]">{file.name}</span>
-              <button type="button" onClick={(e) => { e.preventDefault(); setFile(null); }} className="text-mute hover:text-mark">
+          {optimizing ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-2">
+              <Loader2 className="w-5 h-5 animate-spin text-accent" />
+              <div className="label">OPTIMISING YOUR PDF…</div>
+              <div className="label !text-[9px]">Compressing in your browser — this can take a few seconds</div>
+            </div>
+          ) : file ? (
+            <div className="flex items-center justify-center gap-3 min-w-0">
+              <FileUp className="w-5 h-5 shrink-0" />
+              <span className="font-mono text-[13px] truncate">{file.name}</span>
+              <button type="button" onClick={(e) => { e.preventDefault(); setFile(null); setStats(null); }} className="text-mute hover:text-mark">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -91,6 +126,27 @@ export default function UploadPage() {
             </>
           )}
         </label>
+
+        <label className="flex items-start gap-2.5 text-[12px] text-mute cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={compressEnabled}
+            onChange={(e) => setCompressEnabled(e.target.checked)}
+            disabled={optimizing || busy}
+            className="mt-0.5 accent-mark"
+          />
+          <span>
+            Shrink PDFs before upload — faster upload, smaller storage, same content.
+            <span className="text-dim"> Compressed in your browser with Ghostscript.</span>
+          </span>
+        </label>
+
+        {stats && (
+          <p className="text-[12px] border border-accent text-accent bg-accent/5 px-3 py-2">
+            PDF optimised: {fileSize(stats.originalBytes)} → {fileSize(stats.compressedBytes)} (
+            {Math.max(1, Math.round((1 - stats.ratio) * 100))}% smaller).
+          </p>
+        )}
 
         <Field label="Title">
           <input value={title} onChange={(e) => setTitle(e.target.value)} required minLength={3} maxLength={120}
@@ -133,7 +189,7 @@ export default function UploadPage() {
 
         <div className="panel p-5">
           <div className="label mb-4">ACCESS PRICING</div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setPricing("free")}

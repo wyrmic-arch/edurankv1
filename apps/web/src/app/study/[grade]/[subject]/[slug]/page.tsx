@@ -74,7 +74,7 @@ export default async function StudyNotePage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
 
-      <div className="max-w-[820px] mx-auto px-6 py-16">
+      <div className="max-w-[820px] mx-auto px-4 sm:px-6 py-16">
         <nav className="label mb-6 flex flex-wrap gap-2">
           <Link href="/study" className="no-underline hover:text-ash">FREE NOTES</Link>
           <span className="text-dim">/</span>

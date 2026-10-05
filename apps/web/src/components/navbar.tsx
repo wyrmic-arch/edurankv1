@@ -40,7 +40,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-oil border-b border-cinder">
-      <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 sm:gap-6">
         <Link href="/leaderboard" className="flex items-center shrink-0 no-underline">
           <AsciiLogo size="sm" />
         </Link>
@@ -61,7 +61,7 @@ export function Navbar() {
         </div>
 
         {user ? (
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <Link
               href={`/profile/${user.id}`}
               className="hidden sm:flex items-baseline gap-2 no-underline hover:text-mark"
@@ -114,8 +114,8 @@ export function Navbar() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link href="/login" className="font-mono text-[11px] uppercase tracking-label text-ghost hover:text-ash no-underline whitespace-nowrap">
               Log in
             </Link>
             <Link href="/register" className="btn-solid">
@@ -127,7 +127,7 @@ export function Navbar() {
 
       {mobileOpen && (
         <div className="lg:hidden border-t border-ruleSoft">
-          <div className="max-w-[1400px] mx-auto px-6 py-4 flex flex-col gap-4">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3 flex flex-col gap-1 [&_a]:py-2.5">
             <NavLinks pathname={pathname} role={user?.role ?? null} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>

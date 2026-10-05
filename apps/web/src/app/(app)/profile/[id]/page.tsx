@@ -74,7 +74,7 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid lg:grid-cols-[7fr_5fr] gap-8">
-        <section className="panel">
+        <section className="panel min-w-0">
           <header className="px-5 py-3 border-b border-cinder flex items-baseline justify-between">
             <h2 className="font-mono text-[13px] uppercase tracking-label">Points ledger</h2>
             <span className="label">FULL HISTORY · REAL ROWS</span>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
           <LedgerTable userId={isMe ? me.id : null} fallback={<LedgerHint isMe={isMe} />} />
         </section>
 
-        <section>
+        <section className="min-w-0">
           <h2 className="font-mono text-[13px] uppercase tracking-label mb-3 inline-flex items-center gap-2">
             <Award className="w-3.5 h-3.5" /> Badges
           </h2>
@@ -135,6 +135,7 @@ function LedgerTable({ userId, fallback }: { userId: string | null; fallback: Re
   if (!userId || entries === null) return fallback;
 
   return (
+    <div className="overflow-x-auto">
     <table className="w-full text-[13px]">
       <tbody className="divide-y divide-ruleSoft">
         {entries.slice(0, 12).map((e) => (
@@ -152,6 +153,7 @@ function LedgerTable({ userId, fallback }: { userId: string | null; fallback: Re
         )}
       </tbody>
     </table>
+    </div>
   );
 }
 

@@ -129,7 +129,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="flex flex-col items-stretch gap-2 ml-auto w-full sm:w-auto">
-                  <div className="flex gap-2 justify-end">
+                  <div className="flex flex-wrap gap-2 justify-end">
                     <button onClick={() => void previewFile(n)} disabled={busyId === n.id} className="btn-ghost">PREVIEW</button>
                     <button onClick={() => void act(n, "approve")} disabled={busyId === n.id} className="btn-solid">
                       <Check className="w-4 h-4" /> {busyId === n.id ? "…" : "APPROVE"}
@@ -426,7 +426,7 @@ function SuggestionsAdmin() {
     <div>
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="label inline-flex items-center gap-2"><Lightbulb className="w-3.5 h-3.5 text-accent" /> SUGGESTIONS ({items.length})</div>
-        <div className="flex gap-1 ml-auto">
+        <div className="flex flex-wrap gap-1 ml-auto">
           {["", "open", "planned", "done", "declined"].map((s) => (
             <button
               key={s || "all"}
@@ -473,7 +473,7 @@ function SuggestionsAdmin() {
                     placeholder="Optional reply…"
                     className="px-3 py-1.5 text-[12px] w-full sm:w-56"
                   />
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     {["planned", "done", "declined", "open"].map((st) => (
                       <button key={st} onClick={() => void triage(s.id, st)} disabled={busy === s.id} className="btn-ghost !text-[10px] !px-2 !py-1">
                         {st.toUpperCase()}

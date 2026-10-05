@@ -32,7 +32,7 @@ export default async function StudyHub({ params }: { params: { grade: string; su
   return (
     <div className="min-h-screen bg-night text-ash">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="max-w-[900px] mx-auto px-6 py-16">
+      <div className="max-w-[900px] mx-auto px-4 sm:px-6 py-16">
         <nav className="label mb-6">
           <Link href="/study" className="no-underline hover:text-ash">FREE NOTES</Link>
           <span className="mx-2 text-dim">/</span>

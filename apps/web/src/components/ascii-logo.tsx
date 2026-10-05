@@ -37,7 +37,7 @@ export function AsciiLogo({
   }, [text]);
 
   const sizeClass =
-    size === "lg" ? "text-4xl sm:text-5xl" : size === "sm" ? "text-lg" : "text-2xl";
+    size === "lg" ? "text-4xl sm:text-5xl" : size === "sm" ? "text-base sm:text-lg" : "text-xl sm:text-2xl";
 
   return (
     <span

@@ -81,7 +81,7 @@ export default function DistrictPage() {
 
       <div className="flex flex-wrap items-center gap-2">
         {staff ? (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             <FilterPill active={grade === ""} onClick={() => setGrade("")}>ALL GRADES</FilterPill>
             {GRADES.map((g) => (
               <FilterPill key={g} active={grade === String(g)} onClick={() => setGrade(String(g))}>GR {g}</FilterPill>
@@ -93,17 +93,17 @@ export default function DistrictPage() {
           </span>
         )}
 
-        <div className="ml-auto">
+        <div className="w-full sm:ml-auto sm:w-auto">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search this subject…"
-            className="px-3 py-2 text-[13px] w-64"
+            className="px-3 py-2 text-[13px] w-full sm:w-64"
           />
         </div>
       </div>
 
-      <div className="flex gap-1 -mt-3">
+      <div className="flex flex-wrap gap-1 -mt-3">
         {SORTS.map((s) => (
           <FilterPill key={s.key} active={sort === s.key} onClick={() => setSort(s.key)}>
             {s.label}

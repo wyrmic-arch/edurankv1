@@ -8,7 +8,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     console.error(error);
   }, [error]);
   return (
-    <div className="min-h-screen bg-night text-ash flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-night text-ash flex items-center justify-center px-4 sm:px-6 py-10">
       <div className="w-full max-w-md text-center">
         <div className="label mb-4">SOMETHING BROKE</div>
         <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mb-6 text-ash">Off the rails.</h1>

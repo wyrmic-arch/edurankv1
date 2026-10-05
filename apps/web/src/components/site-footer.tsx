@@ -16,7 +16,7 @@ const LINKS = [
 export function SiteFooter() {
   return (
     <footer className="relative z-10 border-t border-cinder mt-auto">
-      <div className="max-w-[1400px] mx-auto px-6 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
           {LINKS.map((l) => (
             <Link key={l.href} href={l.href} className="label no-underline hover:text-ash">

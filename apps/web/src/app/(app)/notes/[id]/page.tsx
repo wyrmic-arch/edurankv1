@@ -135,8 +135,8 @@ export default function NoteDetailPage() {
           </span>
         </div>
 
-        <div className="panel p-4 flex items-center justify-between">
-          <div>
+        <div className="panel p-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
             <div className="label">FILE</div>
             <div className="font-mono text-[13px] mt-1 truncate max-w-[220px]">{note.fileName}</div>
             <div className="label !text-[9px] mt-1">{fileSize(note.fileSize ?? 0)} · {timeAgo(note.createdAt)}</div>

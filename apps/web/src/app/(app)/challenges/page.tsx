@@ -43,7 +43,7 @@ export default function ChallengesPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div className="flex items-end justify-between gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-4 sm:gap-6">
         <div>
           <div className="label inline-flex items-center gap-2"><Trophy className="w-3.5 h-3.5" /> DAILY CHALLENGES</div>
           <h1 className="font-serif text-5xl font-medium tracking-tight leading-none mt-1">Today&rsquo;s board.</h1>

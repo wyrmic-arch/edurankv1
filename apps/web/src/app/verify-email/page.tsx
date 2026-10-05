@@ -40,13 +40,13 @@ function VerifyForm() {
   }, [token, email]);
 
   return (
-    <div className="min-h-screen bg-night flex items-center justify-center px-6 py-10">
+    <div className="min-h-screen bg-night flex items-center justify-center px-4 sm:px-6 py-10">
       <div className="w-full max-w-md">
         <Link href="/" className="flex justify-center mb-10 no-underline">
           <AsciiLogo size="lg" />
         </Link>
 
-        <div className="panel p-8 text-center">
+        <div className="panel p-6 sm:p-8 text-center">
           {status === "loading" ? (
             <Spinner label="VERIFYING…" />
           ) : status === "ok" ? (

@@ -195,7 +195,7 @@ function MapInner() {
       )}
 
       <div className="grid lg:grid-cols-[7fr_5fr] gap-6 items-start">
-        <div className="relative panel overflow-hidden h-[64vh] min-h-[420px]">
+        <div className="relative panel overflow-hidden h-[50vh] min-h-[320px] sm:h-[64vh] sm:min-h-[420px]">
           {/* NB: MapLibre forces `.maplibregl-map { position: relative }`, so use
               explicit w-full h-full here — absolute inset-0 would collapse to 0. */}
           <div ref={containerRef} className="w-full h-full" />
@@ -206,7 +206,7 @@ function MapInner() {
           )}
         </div>
 
-        <div className="panel flex flex-col max-h-[64vh] min-h-[420px]">
+        <div className="panel flex flex-col max-h-[50vh] min-h-[320px] sm:max-h-[64vh] sm:min-h-[420px]">
           {selected ? (
             <SchoolPanel
               selected={selected}
