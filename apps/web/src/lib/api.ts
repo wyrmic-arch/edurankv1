@@ -1,4 +1,4 @@
-import type { PublicUser, UserRole, NotificationDTO } from "@edurank/shared";
+import type { PublicUser, UserRole, NotificationDTO, SuggestionDTO, SuggestionCategory } from "@edurank/shared";
 
 // Production API URL is baked in as the fallback so the deployed build
 // always talks to the worker even if NEXT_PUBLIC_API_URL isn't set.
@@ -185,6 +185,15 @@ export const api = {
   notificationPrefs: (): Promise<{ email: boolean }> => request("/notifications/prefs"),
   setNotificationPrefs: (email: boolean): Promise<{ ok: boolean; email: boolean }> =>
     request("/notifications/prefs", { method: "PATCH", body: { email } }),
+
+  submitSuggestion: (body: { title: string; body: string; category: SuggestionCategory }): Promise<{ ok: boolean; id: string }> =>
+    request("/suggestions", { method: "POST", body }),
+  mySuggestions: (): Promise<{ items: SuggestionDTO[] }> => request("/suggestions/mine"),
+  withdrawSuggestion: (id: string): Promise<{ ok: boolean }> => request(`/suggestions/${id}`, { method: "DELETE" }),
+  adminSuggestions: (status = ""): Promise<{ items: AdminSuggestion[] }> =>
+    request(`/admin/suggestions${status ? `?status=${status}` : ""}`),
+  adminTriageSuggestion: (id: string, status: string, adminNote = ""): Promise<{ ok: boolean }> =>
+    request(`/admin/suggestions/${id}`, { method: "POST", body: { status, adminNote } }),
 
   // --- admin ---
   adminUsers: (q = "", role = ""): Promise<{ items: AdminUser[] }> =>
@@ -404,6 +413,17 @@ export interface ReportRow {
   details: string;
   reporterName: string;
   createdAt: string;
+}
+export interface AdminSuggestion {
+  id: string;
+  title: string;
+  body: string;
+  category: string;
+  status: string;
+  adminNote: string | null;
+  userName: string;
+  createdAt: string;
+  updatedAt: string | null;
 }
 export interface OwnerOverview {
   stats: {

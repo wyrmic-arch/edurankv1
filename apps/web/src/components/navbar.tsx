@@ -93,6 +93,7 @@ export function Navbar() {
                   <MenuLink href="/shop" label="Shop" />
                   <MenuLink href="/leaderboard" label="Leaderboards" />
                   <MenuLink href="/upload" label="Upload a note" />
+                  <MenuLink href="/feedback" label="Ideas & feedback" />
                   {(user.role === "principal" || user.role === "admin" || user.role === "owner") && (
                     <MenuLink href="/school" label="School desk" />
                   )}

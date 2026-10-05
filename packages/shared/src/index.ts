@@ -339,3 +339,33 @@ export interface NotificationDTO {
   read: boolean;
   createdAt: string;
 }
+
+// --- Suggestions (feature requests / improvements) -------------------------
+
+export type SuggestionCategory = "idea" | "bug" | "content" | "other";
+export type SuggestionStatus = "open" | "planned" | "done" | "declined";
+
+export const SUGGESTION_CATEGORIES: { id: SuggestionCategory; label: string }[] = [
+  { id: "idea", label: "Idea / improvement" },
+  { id: "bug", label: "Something's broken" },
+  { id: "content", label: "Notes / content" },
+  { id: "other", label: "Something else" },
+];
+
+export const SUGGESTION_STATUSES: Record<SuggestionStatus, string> = {
+  open: "Open",
+  planned: "Planned",
+  done: "Done",
+  declined: "Declined",
+};
+
+export interface SuggestionDTO {
+  id: string;
+  title: string;
+  body: string;
+  category: SuggestionCategory;
+  status: SuggestionStatus;
+  adminNote: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}

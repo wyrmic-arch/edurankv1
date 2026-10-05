@@ -366,7 +366,6 @@ export const noteReports = sqliteTable(
 );
 
 // --- Notifications ----------------------------------------------------------
-
 export const notifications = sqliteTable(
   "notifications",
   {
@@ -385,5 +384,28 @@ export const notifications = sqliteTable(
   (t) => ({
     userCreatedIdx: index("idx_notifications_user_created").on(t.userId, t.createdAt),
     userReadIdx: index("idx_notifications_user_read").on(t.userId, t.readAt),
+  }),
+);
+
+// --- Suggestions -----------------------------------------------------------
+
+export const suggestions = sqliteTable(
+  "suggestions",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    category: text("category").notNull().default("idea"), // idea | bug | content | other
+    status: text("status").notNull().default("open"), // open | planned | done | declined
+    adminNote: text("admin_note"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at"),
+  },
+  (t) => ({
+    userCreatedIdx: index("idx_suggestions_user").on(t.userId, t.createdAt),
+    statusCreatedIdx: index("idx_suggestions_status").on(t.status, t.createdAt),
   }),
 );

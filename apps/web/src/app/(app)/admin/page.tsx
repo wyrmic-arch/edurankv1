@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, FileText, GraduationCap, ShieldAlert, Sparkles, Ticket, X } from "lucide-react";
-import { api, type AdminPendingNote, type AdminStats, type AdminRejectedNote, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
+import { Check, FileText, GraduationCap, Lightbulb, ShieldAlert, Sparkles, Ticket, X } from "lucide-react";
+import { api, type AdminPendingNote, type AdminStats, type AdminRejectedNote, type AdminSuggestion, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ErrorPanel, Spinner } from "@/components/hud";
 import { InviteLink, CopyLinkButton } from "@/components/invite-link";
@@ -161,6 +161,9 @@ export default function AdminPage() {
       <div className="rule" />
       <AiCheck />
       <RejectedQueue />
+
+      <div className="rule" />
+      <SuggestionsAdmin />
 
       <div className="rule" />
       <StaffAdmin />
@@ -389,6 +392,95 @@ function RejectedQueue() {
                 <button onClick={() => void restore(n.id)} disabled={busy === n.id} className="btn-ghost !text-[10px]">
                   {busy === n.id ? "…" : "RESTORE"}
                 </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function SuggestionsAdmin() {
+  const [items, setItems] = useState<AdminSuggestion[]>([]);
+  const [filter, setFilter] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
+
+  function load() {
+    api.adminSuggestions(filter).then((r) => setItems(r.items)).catch(() => {});
+  }
+  useEffect(load, [filter]);
+
+  async function triage(id: string, status: string) {
+    setBusy(id);
+    try {
+      await api.adminTriageSuggestion(id, status, notes[id] ?? "");
+      load();
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="label inline-flex items-center gap-2"><Lightbulb className="w-3.5 h-3.5 text-accent" /> SUGGESTIONS ({items.length})</div>
+        <div className="flex gap-1 ml-auto">
+          {["", "open", "planned", "done", "declined"].map((s) => (
+            <button
+              key={s || "all"}
+              onClick={() => setFilter(s)}
+              className={`font-mono text-[10px] uppercase tracking-label px-2.5 py-1 border transition-colors ${
+                filter === s ? "border-ash bg-ash text-night" : "border-cinder text-ghost hover:border-ash"
+              }`}
+            >
+              {s || "all"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <p className="text-mute text-[13px]">No suggestions here.</p>
+      ) : (
+        <ul className="panel divide-y divide-ruleSoft">
+          {items.map((s) => (
+            <li key={s.id} className="p-4">
+              <div className="flex items-start gap-3 flex-wrap">
+                <div className="flex-1 min-w-[240px]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium">{s.title}</span>
+                    <span className="label !text-[9px] border border-ruleSoft px-2 py-0.5">{s.category.toUpperCase()}</span>
+                    <span
+                      className={`font-mono text-[9px] uppercase tracking-label border px-2 py-0.5 ${
+                        s.status === "planned" ? "border-accent text-accent" : s.status === "done" ? "border-ash text-ash" : "border-cinder text-mute"
+                      }`}
+                    >
+                      {s.status}
+                    </span>
+                  </div>
+                  <p className="text-mute text-[13px] mt-1 whitespace-pre-wrap">{s.body}</p>
+                  <div className="label !text-[9px] mt-1.5">
+                    BY {s.userName.toUpperCase()} · {timeAgo(s.createdAt)}
+                    {s.adminNote ? ` · NOTE: ${s.adminNote}` : ""}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 w-full sm:w-auto">
+                  <input
+                    value={notes[s.id] ?? ""}
+                    onChange={(e) => setNotes((n) => ({ ...n, [s.id]: e.target.value }))}
+                    placeholder="Optional reply…"
+                    className="px-3 py-1.5 text-[12px] w-full sm:w-56"
+                  />
+                  <div className="flex gap-1">
+                    {["planned", "done", "declined", "open"].map((st) => (
+                      <button key={st} onClick={() => void triage(s.id, st)} disabled={busy === s.id} className="btn-ghost !text-[10px] !px-2 !py-1">
+                        {st.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </li>
           ))}

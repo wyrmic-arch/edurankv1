@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { and, desc, eq, like, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
-import { notes, noteReports, schools, staffInvites, users } from "../db/schema";
+import { notes, noteReports, schools, staffInvites, suggestions, users } from "../db/schema";
 import { requireAdmin } from "../lib/auth";
 import { awardPoints } from "../lib/points";
 import { evalBadges } from "../lib/badges";
@@ -464,6 +464,56 @@ app.post("/notifications/run-digest", async (c) => {
   await requireAdmin(c);
   const res = await runDigest(c.env);
   return c.json({ ok: true, ...res });
+});
+
+// GET /admin/suggestions — improvement ideas from users
+app.get("/suggestions", async (c) => {
+  const status = c.req.query("status");
+  const cond = status && ["open", "planned", "done", "declined"].includes(status) ? `WHERE s.status = '${status}'` : "";
+  const res = await c.env.DB.prepare(
+    `SELECT s.id, s.title, s.body, s.category, s.status, s.admin_note, s.created_at, s.updated_at,
+            u.display_name AS user_name
+       FROM suggestions s JOIN users u ON u.id = s.user_id
+       ${cond} ORDER BY s.created_at DESC LIMIT 200`,
+  ).all<{
+    id: string;
+    title: string;
+    body: string;
+    category: string;
+    status: string;
+    admin_note: string | null;
+    created_at: number;
+    updated_at: number | null;
+    user_name: string;
+  }>();
+  return c.json({
+    items: (res.results ?? []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      body: s.body,
+      category: s.category,
+      status: s.status,
+      adminNote: s.admin_note,
+      userName: s.user_name,
+      createdAt: new Date(Number(s.created_at)).toISOString(),
+      updatedAt: s.updated_at ? new Date(Number(s.updated_at)).toISOString() : null,
+    })),
+  });
+});
+
+// POST /admin/suggestions/:id { status, adminNote? } — triage a suggestion
+app.post("/suggestions/:id", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req
+    .json<{ status?: string; adminNote?: string }>()
+    .catch(() => ({} as { status?: string; adminNote?: string }));
+  const status = ["open", "planned", "done", "declined"].includes(body.status ?? "") ? body.status : null;
+  if (!status) err(400, "Invalid status.");
+  await drizzle(c.env.DB)
+    .update(suggestions)
+    .set({ status, adminNote: (body.adminNote ?? "").slice(0, 500) || null, updatedAt: Date.now() })
+    .where(eq(suggestions.id, id));
+  return c.json({ ok: true, status });
 });
 
 export default app;
