@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Search, X } from "lucide-react";
 import { useAuth } from "@/lib/store";
 import { roleHome } from "@/lib/roles";
 import { Avatar } from "./avatar";
@@ -72,6 +72,15 @@ export function Navbar() {
               <span className="font-mono text-[10px] text-dim">
                 {user.streakCount}d
               </span>
+            </Link>
+
+            <Link
+              href="/search"
+              className="text-ghost hover:text-ash no-underline"
+              title="Search"
+              aria-label="Search notes"
+            >
+              <Search className="w-4 h-4" />
             </Link>
 
             <NotificationBell />

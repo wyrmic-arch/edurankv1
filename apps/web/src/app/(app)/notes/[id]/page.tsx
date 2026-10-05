@@ -7,6 +7,8 @@ import { Download, ExternalLink, ShieldCheck, ThumbsUp, User } from "lucide-reac
 import { api, imgUrl, type Note, type NoteVerification } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
+import { ShareButton } from "@/components/share-button";
+import { siteOrigin } from "@/lib/share";
 import { fileSize, timeAgo } from "@/lib/format";
 import { POINTS_RULES, licenseLabel, isStaffRole } from "@edurank/shared";
 
@@ -220,6 +222,13 @@ export default function NoteDetailPage() {
           <button onClick={() => setReporting((v) => !v)} className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-mark hover:text-mark">
             REPORT STOLEN
           </button>
+          <ShareButton
+            title={note.title}
+            text={`Study notes on EduRank: ${note.title}`}
+            url={`${siteOrigin()}/notes/${note.id}`}
+            label="SHARE"
+            className="font-mono text-[10px] uppercase tracking-label border border-ruleSoft px-2 py-1 hover:border-ash inline-flex items-center gap-1"
+          />
           {reportFlash && <span className="text-accent text-[11px]">{reportFlash}</span>}
         </div>
         {reporting && (

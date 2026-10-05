@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Award, Bell, Download, Lock, ThumbsUp, UploadCloud } from "lucide-react";
-import { GRADES } from "@edurank/shared";
+import { Award, Bell, Download, Lock, Share2, ThumbsUp, UploadCloud, UserPlus } from "lucide-react";
+import { GRADES, seasonInfo } from "@edurank/shared";
 import { api, imgUrl, type ProfileResponse } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { Avatar, TierChip } from "@/components/avatar";
 import { PayoutTeaser } from "@/components/payout-teaser";
-import { dateTime } from "@/lib/format";
+import { dateTime, tierFor } from "@/lib/format";
+import { referralMessage, shareRankCard, siteOrigin, whatsappUrl } from "@/lib/share";
 
 export const runtime = "edge";
 
@@ -19,6 +20,8 @@ export default function ProfilePage() {
   const { user: me } = useAuth();
   const [data, setData] = useState<ProfileResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sharing, setSharing] = useState(false);
+  const [shareMsg, setShareMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setData(null);
@@ -29,6 +32,47 @@ export default function ProfilePage() {
   if (!data) return <Spinner label="PULLING PLAYER FILE…" />;
 
   const isMe = me?.id === data.user.id;
+
+  async function shareRank() {
+    if (!data || sharing) return;
+    setSharing(true);
+    setShareMsg(null);
+    try {
+      const result = await shareRankCard({
+        displayName: data.user.displayName,
+        rank: data.user.rank,
+        points: data.user.totalEarned,
+        schoolName: data.user.schoolName,
+        tierLabel: tierFor(data.user.totalEarned).label,
+        season: seasonInfo().season,
+      });
+      if (result === "downloaded") {
+        setShareMsg("Rank card downloaded — post it on WhatsApp or Instagram.");
+        setTimeout(() => setShareMsg(null), 4000);
+      }
+    } catch {
+      setShareMsg("Couldn't build the card — try again.");
+      setTimeout(() => setShareMsg(null), 3000);
+    } finally {
+      setSharing(false);
+    }
+  }
+
+  async function inviteFriends() {
+    if (!data) return;
+    const code = data.user.referralCode;
+    const link = `${siteOrigin()}/register?ref=${code}`;
+    const text = `${referralMessage(data.user.displayName, code)} ${link}`;
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: "Join EduRank", text });
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+      }
+    }
+    window.open(whatsappUrl(text), "_blank", "noopener");
+  }
 
   return (
     <div className="space-y-8">
@@ -58,6 +102,18 @@ export default function ProfilePage() {
           <PTS value={data.user.balance} size="lg" />
         </div>
       </div>
+
+      {isMe && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button onClick={() => void shareRank()} disabled={sharing} className="btn-mark !text-[10px]">
+            <Share2 className="w-3 h-3" /> {sharing ? "BUILDING…" : "SHARE MY RANK CARD"}
+          </button>
+          <button onClick={() => void inviteFriends()} className="btn-ghost !text-[10px]">
+            <UserPlus className="w-3 h-3" /> INVITE FRIENDS (+PTS)
+          </button>
+          {shareMsg && <span className="text-[12px] text-accent">{shareMsg}</span>}
+        </div>
+      )}
 
       {data.user.bio && <p className="text-mute max-w-2xl text-[15px]">{data.user.bio}</p>}
       {isMe && <PayoutTeaser />}
