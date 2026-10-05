@@ -135,6 +135,32 @@ export default function Landing() {
         </aside>
       </section>
 
+      {/* Free notes + roadmap */}
+      <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
+        <div className="flex items-baseline gap-3 mb-10">
+          <span className="label">RUNNING IN THE OPEN</span>
+          <span className="flex-1 h-px bg-cinder" />
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <Link href="/study" className="panel p-6 no-underline hover:bg-ink hover:text-paper transition-colors">
+            <div className="label !text-[9px]">FREE · NO SIGN-UP</div>
+            <div className="font-serif text-3xl font-medium tracking-tight mt-2">Free study notes.</div>
+            <p className="text-ghost text-[13px] leading-relaxed mt-2">
+              Original CAPS-aligned notes for Grades 11–12, written by the EduRank team. Read online or download the PDF.
+            </p>
+            <span className="label text-accent mt-4 inline-flex items-center gap-2">OPEN THE LIBRARY <ArrowRight className="w-3 h-3" /></span>
+          </Link>
+          <Link href="/roadmap" className="panel p-6 no-underline hover:bg-ink hover:text-paper transition-colors">
+            <div className="label !text-[9px]">BUILT WITH STUDENTS</div>
+            <div className="font-serif text-3xl font-medium tracking-tight mt-2">The roadmap.</div>
+            <p className="text-ghost text-[13px] leading-relaxed mt-2">
+              See what&rsquo;s coming next and what just shipped. Have an idea? Suggest it and watch it move.
+            </p>
+            <span className="label text-accent mt-4 inline-flex items-center gap-2">VIEW THE ROADMAP <ArrowRight className="w-3 h-3" /></span>
+          </Link>
+        </div>
+      </section>
+
       {/* Blob accent band */}
       <section className="relative z-10 max-w-[1400px] w-full mx-auto px-6 pb-24">
         <div className="flex items-baseline gap-3 mb-10">

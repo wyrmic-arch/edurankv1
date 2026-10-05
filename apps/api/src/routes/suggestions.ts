@@ -27,6 +27,26 @@ function toDTO(s: Row): SuggestionDTO {
   };
 }
 
+// GET /suggestions/public — the roadmap (no auth): planned + shipped items.
+app.get("/public", async (c) => {
+  const res = await c.env.DB.prepare(
+    `SELECT title, body, status, category, updated_at, created_at
+       FROM suggestions WHERE status IN ('planned', 'done')
+      ORDER BY CASE status WHEN 'planned' THEN 0 ELSE 1 END, COALESCE(updated_at, created_at) DESC
+      LIMIT 100`,
+  ).all<{ title: string; body: string; status: string; category: string; updated_at: number | null; created_at: number }>();
+  c.header("Cache-Control", "public, max-age=300");
+  return c.json({
+    items: (res.results ?? []).map((s) => ({
+      title: s.title,
+      body: s.body,
+      status: s.status,
+      category: s.category,
+      updatedAt: s.updated_at ? new Date(Number(s.updated_at)).toISOString() : null,
+    })),
+  });
+});
+
 // POST /suggestions — submit an improvement idea / bug / request
 app.post("/", async (c) => {
   const user = await requireUser(c);
