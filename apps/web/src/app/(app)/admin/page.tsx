@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Check, FileText, GraduationCap, ShieldAlert, Ticket, X } from "lucide-react";
-import { api, type AdminPendingNote, type AdminStats, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
+import { Check, FileText, GraduationCap, ShieldAlert, Sparkles, Ticket, X } from "lucide-react";
+import { api, type AdminPendingNote, type AdminStats, type AdminRejectedNote, type PromotionRow, type ReportRow, type StaffInvite, type School } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { ErrorPanel, Spinner } from "@/components/hud";
 import { InviteLink, CopyLinkButton } from "@/components/invite-link";
@@ -159,6 +159,10 @@ export default function AdminPage() {
       )}
 
       <div className="rule" />
+      <AiCheck />
+      <RejectedQueue />
+
+      <div className="rule" />
       <StaffAdmin />
 
       <div className="rule" />
@@ -306,6 +310,90 @@ function StaffAdmin() {
           )}
         </ul>
       </div>
+    </div>
+  );
+}
+
+function AiCheck() {
+  const [state, setState] = useState<"idle" | "loading" | "ok" | "bad">("idle");
+  const [msg, setMsg] = useState("");
+  async function run() {
+    setState("loading");
+    setMsg("");
+    try {
+      const r = await api.adminAiCheck();
+      if (r.ok) {
+        setState("ok");
+        setMsg(`Working — the model replied “${r.sample ?? ""}”.`);
+      } else {
+        setState("bad");
+        setMsg(r.error ?? "AI check failed.");
+      }
+    } catch (e) {
+      setState("bad");
+      setMsg(e instanceof Error ? e.message : "AI check failed.");
+    }
+  }
+  return (
+    <div className="panel p-4 flex flex-wrap items-center gap-3">
+      <div className="label inline-flex items-center gap-2"><Sparkles className="w-3.5 h-3.5 text-accent" /> AI MODERATION</div>
+      <p className="flex-1 min-w-[220px] text-[12px] text-mute">
+        New notes are auto-reviewed by Cloudflare Workers AI (and a hard rule set for exam papers). Test it here.
+      </p>
+      <button onClick={() => void run()} disabled={state === "loading"} className="btn-ghost !text-[10px]">
+        {state === "loading" ? "TESTING…" : "TEST AI"}
+      </button>
+      {msg && <span className={`text-[11px] ${state === "ok" ? "text-accent" : "text-mark"}`}>{msg}</span>}
+    </div>
+  );
+}
+
+function RejectedQueue() {
+  const [items, setItems] = useState<AdminRejectedNote[] | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  function load() {
+    api.adminRejected().then((r) => setItems(r.items)).catch(() => setItems([]));
+  }
+  useEffect(load, []);
+  async function restore(id: string) {
+    setBusy(id);
+    try {
+      await api.adminRestore(id);
+      load();
+    } finally {
+      setBusy(null);
+    }
+  }
+  if (items === null) return <Spinner label="LOADING REJECTED…" />;
+  return (
+    <div>
+      <div className="label inline-flex items-center gap-2"><X className="w-3.5 h-3.5 text-mark" /> REJECTED ({items.length})</div>
+      {items.length === 0 ? (
+        <p className="text-mute text-[13px] mt-3">Nothing has been rejected.</p>
+      ) : (
+        <ul className="panel divide-y divide-ruleSoft mt-4">
+          {items.map((n) => (
+            <li key={n.id} className="p-4">
+              <div className="flex flex-wrap items-start gap-3">
+                <div className="flex-1 min-w-[220px]">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-medium">{n.title}</span>
+                    <span className="label !text-[9px] border border-ruleSoft px-2 py-0.5">{n.subjectName.toUpperCase()} · GR {n.grade}</span>
+                  </div>
+                  <p className="text-mark text-[12px] mt-1.5">{n.reviewNote ?? "No reason recorded."}</p>
+                  <div className="label !text-[9px] mt-1.5">
+                    BY {n.uploaderName.toUpperCase()} · {timeAgo(n.createdAt)}
+                    {n.reviewedAt ? ` · REVIEWED ${timeAgo(n.reviewedAt)}` : ""}
+                  </div>
+                </div>
+                <button onClick={() => void restore(n.id)} disabled={busy === n.id} className="btn-ghost !text-[10px]">
+                  {busy === n.id ? "…" : "RESTORE"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

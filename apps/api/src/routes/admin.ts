@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { and, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/d1";
 import { notes, noteReports, schools, staffInvites, users } from "../db/schema";
 import { requireAdmin } from "../lib/auth";
@@ -58,6 +58,82 @@ app.get("/pending", async (c) => {
       createdAt: new Date(Number(n.created_at)).toISOString(),
     })),
   });
+});
+
+// GET /admin/rejected — notes the AI/human reviewers turned away (with reasons)
+app.get("/rejected", async (c) => {
+  const res = await c.env.DB.prepare(
+    `SELECT n.id, n.title, n.description, n.topic, n.grade, n.file_name, n.file_size, n.mime_type,
+            n.review_note, n.reviewed_by, n.reviewed_at, n.created_at,
+            u.display_name AS uploader_name, s.name AS subject_name
+       FROM notes n JOIN users u ON u.id = n.uploader_id JOIN subjects s ON s.id = n.subject_id
+      WHERE n.status = 'rejected'
+      ORDER BY n.reviewed_at DESC, n.created_at DESC LIMIT 100`,
+  ).all<{
+    id: string;
+    title: string;
+    description: string;
+    topic: string;
+    grade: number;
+    file_name: string;
+    file_size: number;
+    mime_type: string;
+    review_note: string | null;
+    reviewed_by: string | null;
+    reviewed_at: number | null;
+    created_at: number;
+    uploader_name: string;
+    subject_name: string;
+  }>();
+  return c.json({
+    items: (res.results ?? []).map((n) => ({
+      id: n.id,
+      title: n.title,
+      description: n.description,
+      topic: n.topic,
+      grade: Number(n.grade),
+      subjectName: n.subject_name,
+      uploaderName: n.uploader_name,
+      fileName: n.file_name,
+      fileSize: Number(n.file_size),
+      mimeType: n.mime_type,
+      reviewNote: n.review_note,
+      reviewedBy: n.reviewed_by,
+      reviewedAt: n.reviewed_at ? new Date(Number(n.reviewed_at)).toISOString() : null,
+      createdAt: new Date(Number(n.created_at)).toISOString(),
+    })),
+  });
+});
+
+// POST /admin/notes/:id/restore — bring a rejected note back to approved
+// (no payout: it is a moderation reversal, not a first approval).
+app.post("/notes/:id/restore", async (c) => {
+  const admin = (await requireAdmin(c)) as UserRow;
+  const id = c.req.param("id");
+  const db = drizzle(c.env.DB);
+  const flipped = await db
+    .update(notes)
+    .set({ status: "approved", reviewedBy: admin.id, reviewedAt: Date.now(), reviewNote: null })
+    .where(and(eq(notes.id, id), ne(notes.status, "approved")))
+    .returning({ id: notes.id });
+  if (flipped.length === 0) err(404, "Note not found or already approved.");
+  return c.json({ ok: true, status: "approved" });
+});
+
+// GET /admin/ai-check — verify the Workers AI moderation binding is working
+app.get("/ai-check", async (c) => {
+  await requireAdmin(c);
+  if (!c.env.AI) return c.json({ ok: false, error: "AI binding is not configured." });
+  try {
+    const res = (await c.env.AI.run("@cf/meta/llama-3.1-8b-instruct-fp8", {
+      prompt: "Reply with exactly: OK",
+      max_tokens: 5,
+      temperature: 0,
+    })) as { response?: string };
+    return c.json({ ok: true, sample: (res.response ?? "").trim().slice(0, 40) });
+  } catch (e) {
+    return c.json({ ok: false, error: (e instanceof Error ? e.message : String(e)).slice(0, 200) });
+  }
 });
 
 // POST /admin/notes/:id/approve

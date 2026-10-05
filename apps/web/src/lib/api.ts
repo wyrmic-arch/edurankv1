@@ -164,6 +164,9 @@ export const api = {
   purchase: (id: string): Promise<{ purchased: boolean; balanceAfter: number }> => request(`/shop/${id}/purchase`, { method: "POST" }),
   challenges: (): Promise<ChallengesResponse> => request("/challenges/daily"),
   adminPending: (): Promise<{ items: AdminPendingNote[] }> => request("/admin/pending"),
+  adminRejected: (): Promise<{ items: AdminRejectedNote[] }> => request("/admin/rejected"),
+  adminRestore: (id: string): Promise<{ ok: boolean }> => request(`/admin/notes/${id}/restore`, { method: "POST" }),
+  adminAiCheck: (): Promise<{ ok: boolean; sample?: string; error?: string }> => request("/admin/ai-check"),
   adminStats: (): Promise<AdminStats> => request("/admin/stats"),
   approve: (id: string): Promise<{ ok: boolean }> => request(`/admin/notes/${id}/approve`, { method: "POST" }),
   reject: (id: string, reason: string): Promise<{ ok: boolean }> => request(`/admin/notes/${id}/reject`, { method: "POST", body: { reason } }),
@@ -297,6 +300,22 @@ export interface AdminStats {
   rejected: number;
   players: number;
   pointsEarnedAllTime: number;
+}
+export interface AdminRejectedNote {
+  id: string;
+  title: string;
+  description: string;
+  topic: string;
+  grade: number;
+  subjectName: string;
+  uploaderName: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  reviewNote: string | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
 }
 export interface ProfileResponse {
   user: PublicUser;
