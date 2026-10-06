@@ -4,7 +4,21 @@ import type { PublicUser, UserRole, NotificationDTO, SuggestionDTO, SuggestionCa
 // always talks to the worker even if NEXT_PUBLIC_API_URL isn't set.
 // Override locally by setting NEXT_PUBLIC_API_URL=http://127.0.0.1:8787
 // in apps/web/.env.local.
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.edurank.co.za";
+//
+// Guard: NEXT_PUBLIC_* is inlined at build time and `.env.local` wins during a
+// local production build, so a loopback URL can accidentally ship to real
+// visitors (whose browsers would then call their own machine). If the baked URL
+// is loopback but this page is NOT being served from localhost, fall back to
+// the canonical API.
+const LOOPBACK_RE = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/|$)/i;
+const LOCAL_HOST_RE = /^(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])$/i;
+
+const API_BASE = (() => {
+  const configured = process.env.NEXT_PUBLIC_API_URL;
+  const onLocalhost = typeof window === "undefined" || LOCAL_HOST_RE.test(window.location.hostname);
+  if (configured && LOOPBACK_RE.test(configured) && !onLocalhost) return "https://api.edurank.co.za";
+  return configured ?? "https://api.edurank.co.za";
+})();
 
 export const TOKEN_KEY = "edurank_token";
 
