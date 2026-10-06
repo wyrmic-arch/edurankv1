@@ -409,3 +409,23 @@ export const suggestions = sqliteTable(
     statusCreatedIdx: index("idx_suggestions_status").on(t.status, t.createdAt),
   }),
 );
+
+// --- Live presence ---------------------------------------------------------
+
+// One row per open browser (anonymous client id), refreshed by a heartbeat.
+// "Online now" = rows whose last_seen falls inside the trailing window.
+// user_id is intentionally not a FK: it is best-effort (signed-in visitors)
+// and a stale row must never block a user delete.
+export const presence = sqliteTable(
+  "presence",
+  {
+    clientId: text("client_id").primaryKey(),
+    userId: text("user_id"),
+    path: text("path"),
+    firstSeen: integer("first_seen").notNull(),
+    lastSeen: integer("last_seen").notNull(),
+  },
+  (t) => ({
+    lastSeenIdx: index("idx_presence_last_seen").on(t.lastSeen),
+  }),
+);

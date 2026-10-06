@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Crown, ShieldAlert, Ticket, Users, FileText, Coins } from "lucide-react";
-import { api, type OwnerOverview } from "@/lib/api";
+import { Crown, ShieldAlert, Ticket, Users, FileText, Coins, Activity } from "lucide-react";
+import { api, type OwnerOverview, type OwnerLive } from "@/lib/api";
 import { useAuth } from "@/lib/store";
 import { PTS, ErrorPanel, Spinner } from "@/components/hud";
 import { timeAgo } from "@/lib/format";
@@ -11,11 +11,25 @@ import { timeAgo } from "@/lib/format";
 export default function OwnerPage() {
   const { user } = useAuth();
   const [data, setData] = useState<OwnerOverview | null>(null);
+  const [live, setLive] = useState<OwnerLive | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     api.ownerOverview().then(setData).catch((e) => setError(e instanceof Error ? e.message : "Failed"));
   }, []);
+
+  useEffect(() => {
+    if (user?.role !== "owner") return;
+    let alive = true;
+    const tick = () =>
+      api.ownerLive().then((v) => alive && setLive(v)).catch(() => {});
+    tick();
+    const timer = window.setInterval(tick, 15_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [user]);
 
   if (!user) return <Spinner />;
   if (user.role !== "owner") {
@@ -42,6 +56,48 @@ export default function OwnerPage() {
         </div>
         <div className="label">SIGNED IN AS {user.displayName.toUpperCase()}</div>
       </div>
+
+      <section>
+        <SectionLabel icon={<Activity className="w-3.5 h-3.5" />} text="LIVE" />
+        <div className="panel p-4 flex flex-wrap items-center gap-x-8 gap-y-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping-slow" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-accent" />
+            </span>
+            <div>
+              <div className="font-mono text-4xl tabular-nums leading-none">
+                {live ? live.active.toLocaleString("en-ZA") : "—"}
+              </div>
+              <div className="label !text-[9px] mt-1">ON THE SITE NOW</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <LiveStat label="SIGNED IN" value={live?.signedIn} />
+            <LiveStat label="GUESTS" value={live?.guests} />
+          </div>
+
+          <div className="min-w-[200px] flex-1">
+            <div className="label !text-[9px] mb-1.5">HOT PAGES</div>
+            <ul className="space-y-1">
+              {(live?.topPaths ?? []).slice(0, 4).map((p) => (
+                <li key={p.path} className="flex items-center gap-3 text-[12px]">
+                  <span className="flex-1 min-w-0 truncate font-mono text-mute">{p.path}</span>
+                  <span className="font-mono tabular-nums">{p.count}</span>
+                </li>
+              ))}
+              {live && live.topPaths.length === 0 && (
+                <li className="text-[12px] text-mute">No one on the site yet.</li>
+              )}
+            </ul>
+          </div>
+
+          <div className="label !text-[9px] self-start">
+            {live ? `UPDATED ${timeAgo(live.updatedAt)}` : "LOADING…"}
+          </div>
+        </div>
+      </section>
 
       {s.principalInvites === 0 && (
         <div className="panel p-4 border-accent flex flex-wrap items-center gap-3">
@@ -137,6 +193,17 @@ function Stat({ label, value }: { label: string; value: number }) {
     <div className="hairline px-4 py-3">
       <div className="label !text-[9px]">{label}</div>
       <div className="font-mono text-2xl tabular-nums mt-1">{value.toLocaleString("en-ZA")}</div>
+    </div>
+  );
+}
+
+function LiveStat({ label, value }: { label: string; value: number | undefined }) {
+  return (
+    <div>
+      <div className="font-mono text-xl tabular-nums leading-none">
+        {value === undefined ? "—" : value.toLocaleString("en-ZA")}
+      </div>
+      <div className="label !text-[9px] mt-1">{label}</div>
     </div>
   );
 }

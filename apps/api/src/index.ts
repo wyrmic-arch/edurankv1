@@ -16,6 +16,7 @@ import studyRoutes from "./routes/study";
 import ownerRoutes from "./routes/owner";
 import imageRoutes from "./routes/images";
 import metaRoutes from "./routes/meta";
+import presenceRoutes, { pruneStalePresence } from "./routes/presence";
 import { rateLimit } from "./lib/ratelimit";
 import { runDigest } from "./lib/digest";
 import { sendAlert } from "./lib/email";
@@ -136,6 +137,9 @@ app.use("/auth/resend-verification", rateLimit({ max: 3, windowMs: 60_000 }));
 app.use("/notes/*/unlock", rateLimit({ max: 10, windowMs: 60_000 }));
 app.use("/notes/*/upvote", rateLimit({ max: 30, windowMs: 60_000 }));
 app.use("/shop/*/purchase", rateLimit({ max: 5, windowMs: 60_000 }));
+// Heartbeats are cheap but frequent; allow plenty of headroom for schools
+// behind a single NAT IP (~2/min per tab).
+app.use("/presence", rateLimit({ max: 600, windowMs: 60_000 }));
 
 app.route("/auth", authRoutes);
 app.route("/", userRoutes); // /users/:id, /me/*
@@ -152,6 +156,7 @@ app.route("/study", studyRoutes);
 app.route("/owner", ownerRoutes);
 app.route("/img", imageRoutes);
 app.route("/", metaRoutes); // /subjects, /schools
+app.route("/presence", presenceRoutes);
 
 // Public R2 read passthrough for avatars/covers/img keys (files stay gated
 // behind /notes/:id/file).
@@ -180,5 +185,6 @@ export default {
   fetch: (request: Request, env: AppEnv["Bindings"], ctx: ExecutionContext) => app.fetch(request, env, ctx),
   scheduled: (_event: ScheduledEvent, env: AppEnv["Bindings"], ctx: ExecutionContext) => {
     ctx.waitUntil(runDigest(env));
+    ctx.waitUntil(pruneStalePresence(env.DB));
   },
 };

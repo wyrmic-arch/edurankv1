@@ -219,6 +219,9 @@ export const api = {
     request(`/admin/reports/${id}/resolve`, { method: "POST", body: { action } }),
 
   ownerOverview: (): Promise<OwnerOverview> => request("/owner/overview"),
+  ownerLive: (): Promise<OwnerLive> => request("/owner/live"),
+  heartbeat: (clientId: string, path: string): Promise<{ ok: boolean }> =>
+    request("/presence", { method: "POST", body: { clientId, path } }),
 
   // --- principal ---
   schoolDashboard: (): Promise<SchoolDashboard> => request("/school"),
@@ -454,4 +457,12 @@ export interface OwnerOverview {
   };
   recentUsers: { id: string; displayName: string; role: UserRole; createdAt: string }[];
   recentNotes: { id: string; title: string; status: string; official: boolean; createdAt: string }[];
+}
+export interface OwnerLive {
+  active: number;
+  signedIn: number;
+  guests: number;
+  windowSeconds: number;
+  topPaths: { path: string; count: number }[];
+  updatedAt: string;
 }

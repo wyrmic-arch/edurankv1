@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/store";
 import { SiteFooter } from "@/components/site-footer";
+import { PresenceHeartbeat } from "@/components/presence-heartbeat";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://edurank.co.za";
 const DESCRIPTION =
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-theme="night">
       <body className="bg-night text-ash font-sans antialiased">
         <AuthProvider>{children}</AuthProvider>
+        <PresenceHeartbeat />
         <SiteFooter />
       </body>
     </html>

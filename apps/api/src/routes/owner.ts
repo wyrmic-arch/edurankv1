@@ -1,8 +1,14 @@
 import { Hono } from "hono";
 import { requireOwner } from "../lib/auth";
+import { pruneStalePresence } from "./presence";
 import type { AppEnv } from "../types";
 
 const app = new Hono<AppEnv>();
+
+// A visitor counts as "online" if their tab sent a heartbeat in this window.
+// Heartbeats are every 30s, so 90s tolerates one missed beat (background tab,
+// flaky connection) without dropping someone who is genuinely still around.
+const ONLINE_WINDOW_MS = 90_000;
 
 app.use("*", async (c, next) => {
   await requireOwner(c);
@@ -73,6 +79,49 @@ app.get("/overview", async (c) => {
       official: x.is_official === 1,
       createdAt: new Date(Number(x.created_at)).toISOString(),
     })),
+  });
+});
+
+// GET /owner/live — "who is on the site right now" for the control-room tile.
+// Cheap by design: two indexed aggregate queries over the trailing window.
+app.get("/live", async (c) => {
+  const now = Date.now();
+  const cutoff = now - ONLINE_WINDOW_MS;
+
+  const totals = await c.env.DB.prepare(
+    `SELECT
+       COUNT(*) AS active,
+       SUM(CASE WHEN user_id IS NOT NULL THEN 1 ELSE 0 END) AS signed_in
+     FROM presence
+     WHERE last_seen > ?`,
+  )
+    .bind(cutoff)
+    .all<{ active: number; signed_in: number }>();
+  const t = totals.results?.[0];
+  const active = Number(t?.active ?? 0);
+  const signedIn = Number(t?.signed_in ?? 0);
+
+  const paths = await c.env.DB.prepare(
+    `SELECT path, COUNT(*) AS n
+     FROM presence
+     WHERE last_seen > ? AND path IS NOT NULL AND path != ''
+     GROUP BY path
+     ORDER BY n DESC
+     LIMIT 6`,
+  )
+    .bind(cutoff)
+    .all<{ path: string; n: number }>();
+
+  // Opportunistic cleanup: owner polling is low-volume, so it's a free sweep.
+  await pruneStalePresence(c.env.DB);
+
+  return c.json({
+    active,
+    signedIn,
+    guests: Math.max(0, active - signedIn),
+    windowSeconds: ONLINE_WINDOW_MS / 1000,
+    topPaths: (paths.results ?? []).map((p) => ({ path: p.path, count: Number(p.n) })),
+    updatedAt: new Date(now).toISOString(),
   });
 });
 
